@@ -324,12 +324,6 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
   }, [movingItem, selectedPlacedItem, isManageMode, selectedTool]);
 
   useEffect(() => {
-    const container = document.getElementById('grid-scroll-container');
-    if (container) {
-      container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-      container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
-    }
-
     const init = async () => {
       let localUsername = localStorage.getItem('localUsername') || undefined;
       const profileData = localStorage.getItem('userProfileData');
@@ -370,6 +364,35 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
 
     init();
   }, []);
+
+  // Centrar la cámara en la arena y ajustar zoom óptimo en móviles al cargar
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setZoom(0.65);
+    }
+
+    const centerGrid = () => {
+      const container = document.getElementById('grid-scroll-container');
+      if (container) {
+        container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
+        container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+      }
+    };
+
+    const timer1 = setTimeout(centerGrid, 40);
+    const timer2 = setTimeout(centerGrid, 200);
+    const timer3 = setTimeout(centerGrid, 500);
+
+    window.addEventListener('resize', centerGrid);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      window.removeEventListener('resize', centerGrid);
+    };
+  }, [isLoaded]);
 
   // Lógica de Atractivo y Densidad
   const occupiedCells = placedItems.reduce((acc, item) => {
@@ -801,72 +824,72 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
             </p>
           </div>
           
-          <div className="flex flex-wrap gap-4">
-            <div className="bg-amber-100 text-amber-800 px-4 py-2 rounded-xl font-bold flex flex-col justify-center items-center gap-1 min-w-[100px]">
-              <div className="flex items-center gap-2"><span>🪙</span> {tikolones}</div>
-              <span className="text-[10px] uppercase font-black opacity-70">Tikolones</span>
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-3 w-full sm:w-auto">
+            <div className="bg-amber-100 text-amber-800 p-2 sm:px-4 sm:py-2 rounded-xl font-bold flex flex-col justify-center items-center gap-0.5 sm:gap-1 text-center min-w-0">
+              <div className="flex items-center gap-1 text-xs sm:text-base font-black truncate"><span>🪙</span> {tikolones}</div>
+              <span className="text-[9px] sm:text-[10px] uppercase font-black opacity-70 truncate">Tikolones</span>
             </div>
-            <div className="bg-emerald-100 text-emerald-800 px-4 py-2 rounded-xl font-bold flex flex-col justify-center items-center gap-1 min-w-[100px]">
-              <div className="flex items-center gap-2"><span>🧍</span> {visitors}</div>
-              <span className="text-[10px] uppercase font-black opacity-70">{isEn ? "Visitors" : "Visitantes"}</span>
+            <div className="bg-emerald-100 text-emerald-800 p-2 sm:px-4 sm:py-2 rounded-xl font-bold flex flex-col justify-center items-center gap-0.5 sm:gap-1 text-center min-w-0">
+              <div className="flex items-center gap-1 text-xs sm:text-base font-black truncate"><span>🧍</span> {visitors}</div>
+              <span className="text-[9px] sm:text-[10px] uppercase font-black opacity-70 truncate">{isEn ? "Visitors" : "Visitantes"}</span>
             </div>
-            <div className={`px-4 py-2 rounded-xl font-bold flex flex-col justify-center items-center gap-1 min-w-[100px] transition-colors ${density > 0.4 ? 'bg-red-100 text-red-800' : 'bg-pink-100 text-pink-800'}`}>
-              <div className="flex items-center gap-2">
+            <div className={`p-2 sm:px-4 sm:py-2 rounded-xl font-bold flex flex-col justify-center items-center gap-0.5 sm:gap-1 text-center min-w-0 transition-colors ${density > 0.4 ? 'bg-red-100 text-red-800' : 'bg-pink-100 text-pink-800'}`}>
+              <div className="flex items-center gap-1 text-xs sm:text-base font-black truncate">
                  <span>✨</span> {effectiveAttractiveness}
               </div>
-              <span className="text-[10px] uppercase font-black opacity-70">{isEn ? "Attractiveness" : "Atractivo"}</span>
+              <span className="text-[9px] sm:text-[10px] uppercase font-black opacity-70 truncate">{isEn ? "Attract." : "Atractivo"}</span>
             </div>
-            <div className={`px-4 py-2 rounded-xl font-bold flex flex-col justify-center items-center gap-1 min-w-[100px] transition-colors ${currentPollution > 10 ? 'bg-stone-300 text-stone-800' : 'bg-green-100 text-green-800'}`}>
-              <div className="flex items-center gap-2">
+            <div className={`p-2 sm:px-4 sm:py-2 rounded-xl font-bold flex flex-col justify-center items-center gap-0.5 sm:gap-1 text-center min-w-0 transition-colors ${currentPollution > 10 ? 'bg-stone-300 text-stone-800' : 'bg-green-100 text-green-800'}`}>
+              <div className="flex items-center gap-1 text-xs sm:text-base font-black truncate">
                  <span>♻️</span> {currentPollution}
               </div>
-              <span className="text-[10px] uppercase font-black opacity-70">{isEn ? "Pollution" : "Contaminación"}</span>
+              <span className="text-[9px] sm:text-[10px] uppercase font-black opacity-70 truncate">{isEn ? "Pollution" : "Contam."}</span>
             </div>
           </div>
         </div>
 
         {/* Dashboard de Capacidades */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {/* Hospedaje */}
-          <div className={`p-3 rounded-xl border-2 flex flex-col gap-1 ${isHospedajeFull ? 'border-red-400 bg-red-50' : 'border-blue-200 bg-blue-50'}`}>
-            <div className="flex justify-between items-center text-sm font-bold text-blue-900">
-              <span>🛏️ {isEn ? 'Lodging' : 'Hospedaje'}</span>
-              <span className={isHospedajeFull ? 'text-red-600' : ''}>{visitors} / {maxHospedaje}</span>
+          <div className={`p-2 sm:p-3 rounded-xl border-2 flex flex-col gap-1 min-w-0 ${isHospedajeFull ? 'border-red-400 bg-red-50' : 'border-blue-200 bg-blue-50'}`}>
+            <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-blue-900">
+              <span className="truncate">🛏️ <span className="hidden sm:inline">{isEn ? 'Lodging' : 'Hospedaje'}</span></span>
+              <span className={`text-[10px] sm:text-sm font-black ${isHospedajeFull ? 'text-red-600' : ''}`}>{visitors}/{maxHospedaje}</span>
             </div>
-            <div className="w-full bg-blue-200 rounded-full h-2.5 overflow-hidden">
-              <div className={`h-2.5 rounded-full ${isHospedajeFull ? 'bg-red-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(100, (visitors / maxHospedaje) * 100)}%` }}></div>
+            <div className="w-full bg-blue-200 rounded-full h-2 sm:h-2.5 overflow-hidden">
+              <div className={`h-2 sm:h-2.5 rounded-full ${isHospedajeFull ? 'bg-red-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(100, (visitors / maxHospedaje) * 100)}%` }}></div>
             </div>
           </div>
 
           {/* Alimentación */}
-          <div className={`p-3 rounded-xl border-2 flex flex-col gap-1 ${isAlimentacionFull ? 'border-red-400 bg-red-50' : 'border-orange-200 bg-orange-50'}`}>
-            <div className="flex justify-between items-center text-sm font-bold text-orange-900">
-              <span>🍔 {isEn ? 'Food' : 'Alimentación'}</span>
-              <span className={isAlimentacionFull ? 'text-red-600' : ''}>{visitors} / {maxAlimentacion}</span>
+          <div className={`p-2 sm:p-3 rounded-xl border-2 flex flex-col gap-1 min-w-0 ${isAlimentacionFull ? 'border-red-400 bg-red-50' : 'border-orange-200 bg-orange-50'}`}>
+            <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-orange-900">
+              <span className="truncate">🍔 <span className="hidden sm:inline">{isEn ? 'Food' : 'Alimentación'}</span></span>
+              <span className={`text-[10px] sm:text-sm font-black ${isAlimentacionFull ? 'text-red-600' : ''}`}>{visitors}/{maxAlimentacion}</span>
             </div>
-            <div className="w-full bg-orange-200 rounded-full h-2.5 overflow-hidden">
-              <div className={`h-2.5 rounded-full ${isAlimentacionFull ? 'bg-red-500' : 'bg-orange-500'}`} style={{ width: `${Math.min(100, (visitors / maxAlimentacion) * 100)}%` }}></div>
+            <div className="w-full bg-orange-200 rounded-full h-2 sm:h-2.5 overflow-hidden">
+              <div className={`h-2 sm:h-2.5 rounded-full ${isAlimentacionFull ? 'bg-red-500' : 'bg-orange-500'}`} style={{ width: `${Math.min(100, (visitors / maxAlimentacion) * 100)}%` }}></div>
             </div>
           </div>
 
           {/* Entretenimiento */}
-          <div className={`p-3 rounded-xl border-2 flex flex-col gap-1 ${isEntretenimientoFull ? 'border-red-400 bg-red-50' : 'border-purple-200 bg-purple-50'}`}>
-            <div className="flex justify-between items-center text-sm font-bold text-purple-900">
-              <span>🏄 {isEn ? 'Entertainment' : 'Entretenimiento'}</span>
-              <span className={isEntretenimientoFull ? 'text-red-600' : ''}>{visitors} / {maxEntretenimiento}</span>
+          <div className={`p-2 sm:p-3 rounded-xl border-2 flex flex-col gap-1 min-w-0 ${isEntretenimientoFull ? 'border-red-400 bg-red-50' : 'border-purple-200 bg-purple-50'}`}>
+            <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-purple-900">
+              <span className="truncate">🏄 <span className="hidden sm:inline">{isEn ? 'Fun' : 'Entretenimiento'}</span></span>
+              <span className={`text-[10px] sm:text-sm font-black ${isEntretenimientoFull ? 'text-red-600' : ''}`}>{visitors}/{maxEntretenimiento}</span>
             </div>
-            <div className="w-full bg-purple-200 rounded-full h-2.5 overflow-hidden">
-              <div className={`h-2.5 rounded-full ${isEntretenimientoFull ? 'bg-red-500' : 'bg-purple-500'}`} style={{ width: `${Math.min(100, (visitors / maxEntretenimiento) * 100)}%` }}></div>
+            <div className="w-full bg-purple-200 rounded-full h-2 sm:h-2.5 overflow-hidden">
+              <div className={`h-2 sm:h-2.5 rounded-full ${isEntretenimientoFull ? 'bg-red-500' : 'bg-purple-500'}`} style={{ width: `${Math.min(100, (visitors / maxEntretenimiento) * 100)}%` }}></div>
             </div>
           </div>
         </div>
 
       </div>
 
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-4 h-[75vh]">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-4 md:h-[75vh]">
         
         {/* Toolbar */}
-        <div className="w-full md:w-72 bg-white rounded-2xl shadow-md p-4 flex flex-col gap-3 overflow-y-auto">
+        <div className="order-2 md:order-1 w-full md:w-72 bg-white rounded-2xl shadow-md p-3 sm:p-4 flex flex-col gap-3 overflow-y-auto max-h-[50vh] md:max-h-full">
           <h2 className="font-bold text-lg mb-1">{isEn ? 'Build' : 'Construir'}</h2>
 
           {/* Botón de acceso rápido a Mover o Re-vender en la barra lateral */}
@@ -959,46 +982,48 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
             );
           })()}
           
-          {Object.values(ITEM_TYPES).map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setSelectedPlacedItem(null);
-                const nextTool = selectedTool === item.id ? null : item.id;
-                setSelectedTool(nextTool);
-                if (nextTool) playSound('select_tool');
-              }}
-              className={`p-3 rounded-xl border-2 text-left flex items-center gap-3 transition-all ${
-                selectedTool === item.id 
-                  ? 'border-amber-500 bg-amber-50 scale-105 shadow-md' 
-                  : 'border-stone-200 hover:border-amber-300 hover:bg-stone-50'
-              }`}
-            >
-              <div className="w-12 h-12 bg-white rounded-md shadow-sm border border-stone-200 overflow-hidden flex-shrink-0 flex items-center justify-center relative">
-                {item.image ? (
-                   <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
-                ) : (
-                   <span className="text-stone-400 text-xs text-center p-1">{item.w}x{item.h}</span>
-                )}
-              </div>
-              <div className="flex-1">
-                <p className="font-bold leading-tight">{isEn ? (item as any).name_en : item.name}</p>
-                <div className="flex gap-2 mt-1">
-                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-stone-100 font-bold uppercase">{isEn ? (item as any).cat_en : item.cat}</span>
-                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">Cap: {item.cap}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-col gap-2">
+            {Object.values(ITEM_TYPES).map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setSelectedPlacedItem(null);
+                  const nextTool = selectedTool === item.id ? null : item.id;
+                  setSelectedTool(nextTool);
+                  if (nextTool) playSound('select_tool');
+                }}
+                className={`p-2.5 sm:p-3 rounded-xl border-2 text-left flex items-center gap-3 transition-all ${
+                  selectedTool === item.id 
+                    ? 'border-amber-500 bg-amber-50 scale-105 shadow-md' 
+                    : 'border-stone-200 hover:border-amber-300 hover:bg-stone-50'
+                }`}
+              >
+                <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white rounded-md shadow-sm border border-stone-200 overflow-hidden flex-shrink-0 flex items-center justify-center relative">
+                  {item.image ? (
+                     <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                  ) : (
+                     <span className="text-stone-400 text-xs text-center p-1">{item.w}x{item.h}</span>
+                  )}
                 </div>
-                <div className="flex justify-between items-end mt-1">
-                  <span className="text-xs font-bold text-amber-600">{item.cost} TIK</span>
-                  <div className="flex gap-2">
-                     <span className={`text-xs font-bold ${item.pollution > 0 ? 'text-stone-500' : 'text-green-600'}`}>
-                        {item.pollution > 0 ? `+${item.pollution}` : item.pollution}♻️
-                     </span>
-                     <span className="text-xs font-bold text-pink-600">+{item.attract}✨</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold leading-tight truncate">{isEn ? (item as any).name_en : item.name}</p>
+                  <div className="flex gap-1.5 mt-1">
+                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-stone-100 font-bold uppercase">{isEn ? (item as any).cat_en : item.cat}</span>
+                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">Cap: {item.cap}</span>
+                  </div>
+                  <div className="flex justify-between items-end mt-1">
+                    <span className="text-xs font-bold text-amber-600">{item.cost} TIK</span>
+                    <div className="flex gap-2">
+                       <span className={`text-xs font-bold ${item.pollution > 0 ? 'text-stone-500' : 'text-green-600'}`}>
+                          {item.pollution > 0 ? `+${item.pollution}` : item.pollution}♻️
+                       </span>
+                       <span className="text-xs font-bold text-pink-600">+{item.attract}✨</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
           
           <div className="mt-auto pt-4 border-t border-stone-200 flex flex-col gap-2">
              {movingItem ? (
@@ -1030,7 +1055,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
         </div>
 
         {/* Game Grid Wrapper */}
-        <div className="flex-1 relative flex flex-col min-w-0 h-full overflow-hidden rounded-2xl shadow-inner border-4 border-[#8B5A2B] bg-[#c2913f]">
+        <div className="order-1 md:order-2 flex-1 relative flex flex-col min-w-0 w-full h-[58vh] sm:h-[65vh] md:h-full min-h-[380px] overflow-hidden rounded-2xl shadow-inner border-4 border-[#8B5A2B] bg-[#c2913f]">
           
           {/* Card Flotante de Gestión / Inspector de Estructura Seleccionada */}
           {selectedPlacedItem && (() => {
@@ -1204,7 +1229,8 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
             <button
               type="button"
               onClick={() => {
-                setZoom(1);
+                const defaultZoom = typeof window !== 'undefined' && window.innerWidth < 768 ? 0.65 : 1;
+                setZoom(defaultZoom);
                 const container = scrollContainerRef.current;
                 if (container) {
                   container.scrollTo({
@@ -1215,7 +1241,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                 }
               }}
               className="px-2 h-8 rounded-xl hover:bg-stone-100 active:scale-95 text-xs font-black text-stone-700 transition-all select-none"
-              title={isEn ? "Reset Zoom (100%)" : "Restablecer Zoom (100%)"}
+              title={isEn ? "Reset Zoom" : "Restablecer Zoom"}
             >
               {Math.round(zoom * 100)}%
             </button>
