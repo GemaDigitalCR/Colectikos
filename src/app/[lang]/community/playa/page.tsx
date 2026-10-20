@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ZoomIn, ZoomOut, Move, Coins, RotateCcw, X, Volume2, VolumeX, ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import { loadBeachState, saveBeachState, saveBeachName } from "../../../../actions/playa";
+import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound } from "../../../../lib/soundUtils";
 
 const GRID_SIZE = 25;
 
@@ -70,9 +71,8 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
   const [zoom, setZoom] = useState(1);
   const [isPinching, setIsPinching] = useState(false);
 
-  // Control de sonido sintetizado con Web Audio API (Similar a Parejitikas)
+  // Control de sonido sintetizado con Web Audio API
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-  const audioCtxRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     document.title = isEn ? "Tiko Beach (Beta) | Colectikos" : "Tiko Playa (Beta) | Colectikos";
@@ -80,23 +80,12 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
     if (savedSound !== null) {
       setIsSoundEnabled(savedSound === 'true');
     }
+    const cleanup = initMobileAudioUnlock();
+    return cleanup;
   }, []);
 
   const playSound = (type: 'build' | 'relocate' | 'select_tool' | 'select_placed' | 'sell' | 'error' | 'reward') => {
-    if (!isSoundEnabled || typeof window === 'undefined') return;
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
-        audioCtxRef.current = new AudioCtx();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
-      const t0 = ctx.currentTime;
-
+    playSynthesizedSound(isSoundEnabled, (ctx, t0) => {
       if (type === 'build') {
         // Golpe táctil de madera/arena + acorde armónico playero (E5, G#5, B5, E6)
         const popOsc = ctx.createOscillator();
@@ -206,9 +195,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           osc.stop(start + 0.35);
         });
       }
-    } catch {
-      // Ignorar restricciones de audio del navegador
-    }
+    });
   };
 
   const toggleSound = () => {
@@ -216,6 +203,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
     setIsSoundEnabled(nextVal);
     localStorage.setItem('tiko_playa_sound', String(nextVal));
     if (nextVal) {
+      unlockAudio();
       playSound('select_tool');
     }
   };

@@ -30,6 +30,7 @@ import {
   DailySopitikaStatus, 
   AwardSopitikaXPResult 
 } from "../../../../actions/sopitika";
+import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound } from "../../../../lib/soundUtils";
 
 const GRID_SIZE = 11;
 const TARGET_WORDS_COUNT = 6;
@@ -136,7 +137,6 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
 
   // Audio sintetizado
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-  const audioCtxRef = useRef<AudioContext | null>(null);
 
   // Modales
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
@@ -155,37 +155,29 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
 
   const gridContainerRef = useRef<HTMLDivElement>(null);
 
-  // Cargar preferencia de sonido
+  // Cargar preferencia de sonido y desbloquear audio en móvil
   useEffect(() => {
     const saved = localStorage.getItem("sopitika_sound");
     if (saved !== null) {
       setIsSoundEnabled(saved === "true");
     }
+    const cleanup = initMobileAudioUnlock();
+    return cleanup;
   }, []);
 
   const toggleSound = () => {
     const next = !isSoundEnabled;
     setIsSoundEnabled(next);
     localStorage.setItem("sopitika_sound", String(next));
-    if (next) playSound("click");
+    if (next) {
+      unlockAudio();
+      playSound("click");
+    }
   };
 
   // Sonidos Web Audio API
   const playSound = (type: "click" | "found" | "error" | "hint" | "victory") => {
-    if (!isSoundEnabled || typeof window === "undefined") return;
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
-        audioCtxRef.current = new AudioCtx();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
-
-      const t0 = ctx.currentTime;
-
+    playSynthesizedSound(isSoundEnabled, (ctx, t0) => {
       if (type === "click") {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -251,7 +243,7 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
           osc.stop(start + 0.4);
         });
       }
-    } catch {}
+    });
   };
 
   // Cargar estado diario

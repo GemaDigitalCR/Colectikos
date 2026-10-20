@@ -33,6 +33,7 @@ import {
   AwardPreguntikasXPResult,
 } from "../../../../actions/preguntikas";
 import { TriviaQuestion } from "../../../../data/preguntikasBank";
+import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound } from "../../../../lib/soundUtils";
 
 const CATEGORY_STYLES: Record<
   TriviaQuestion["category"],
@@ -97,40 +98,34 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
 
   // Audio y preferencias
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const audioCtxRef = useRef<AudioContext | null>(null);
 
   // Modales
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
-  // Cargar preferencia de sonido
+  // Cargar preferencia de sonido y desbloquear audio en móvil
   useEffect(() => {
     const saved = localStorage.getItem("preguntikas_sound");
     if (saved !== null) {
       setSoundEnabled(saved === "true");
     }
+    const cleanup = initMobileAudioUnlock();
+    return cleanup;
   }, []);
 
   const toggleSound = () => {
     const nextVal = !soundEnabled;
     setSoundEnabled(nextVal);
     localStorage.setItem("preguntikas_sound", String(nextVal));
+    if (nextVal) {
+      unlockAudio();
+      playSound("click");
+    }
   };
 
   // Sonidos con Web Audio API
   const playSound = (type: "click" | "correct" | "wrong" | "victory") => {
-    if (!soundEnabled) return;
-    try {
-      if (!audioCtxRef.current) {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        audioCtxRef.current = new AudioCtx();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
-      const t0 = ctx.currentTime;
-
+    playSynthesizedSound(soundEnabled, (ctx, t0) => {
       if (type === "click") {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -187,7 +182,7 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
           osc.stop(start + 0.45);
         });
       }
-    } catch {}
+    });
   };
 
   // Cargar estado diario

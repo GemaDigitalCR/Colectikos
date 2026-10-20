@@ -33,6 +33,7 @@ import {
 } from "../../../../actions/parejitikas";
 import { useProgress } from "../../../../context/ProgressContext";
 import { useUser } from "@clerk/nextjs";
+import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound } from "../../../../lib/soundUtils";
 
 const MAX_DAILY_GAMES = 2;
 const MAX_DAILY_XP = 100;
@@ -122,7 +123,7 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
     }
   };
 
-  // Cargar preferencias iniciales y récords
+  // Cargar preferencias iniciales y récords, y desbloquear audio en móvil
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedSound = localStorage.getItem("parejitikas_sound");
@@ -134,6 +135,8 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
       const savedBestTime = localStorage.getItem("parejitikas_best_time");
       if (savedBestTime) setBestTime(parseInt(savedBestTime, 10));
     }
+    const cleanup = initMobileAudioUnlock();
+    return cleanup;
   }, []);
 
   // Inicializar o reiniciar partida
@@ -243,66 +246,61 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
 
   // Audio sintetizado con Web Audio API
   const playSound = (type: 'flip' | 'match' | 'mismatch' | 'victory') => {
-    if (!isSoundEnabled || typeof window === 'undefined') return;
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-
+    playSynthesizedSound(isSoundEnabled, (ctx, t0) => {
       if (type === 'flip') {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(320, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(540, ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.12, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(320, t0);
+        osc.frequency.exponentialRampToValueAtTime(540, t0 + 0.1);
+        gain.gain.setValueAtTime(0.12, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.1);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.1);
+        osc.start(t0);
+        osc.stop(t0 + 0.1);
       } else if (type === 'match') {
         [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.06);
-          gain.gain.setValueAtTime(0.15, ctx.currentTime + idx * 0.06);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.06 + 0.28);
+          const start = t0 + idx * 0.06;
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.15, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
           osc.connect(gain);
           gain.connect(ctx.destination);
-          osc.start(ctx.currentTime + idx * 0.06);
-          osc.stop(ctx.currentTime + idx * 0.06 + 0.28);
+          osc.start(start);
+          osc.stop(start + 0.28);
         });
       } else if (type === 'mismatch') {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(260, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.18);
-        gain.gain.setValueAtTime(0.08, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+        osc.frequency.setValueAtTime(260, t0);
+        osc.frequency.exponentialRampToValueAtTime(180, t0 + 0.18);
+        gain.gain.setValueAtTime(0.08, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.18);
+        osc.start(t0);
+        osc.stop(t0 + 0.18);
       } else if (type === 'victory') {
         [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
-          gain.gain.setValueAtTime(0.2, ctx.currentTime + idx * 0.1);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.1 + 0.4);
+          const start = t0 + idx * 0.1;
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.2, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
           osc.connect(gain);
           gain.connect(ctx.destination);
-          osc.start(ctx.currentTime + idx * 0.1);
-          osc.stop(ctx.currentTime + idx * 0.1 + 0.4);
+          osc.start(start);
+          osc.stop(start + 0.4);
         });
       }
-    } catch (e) {
-      // Ignorar restricciones de audio del navegador
-    }
+    });
   };
 
   const toggleSound = () => {
@@ -310,6 +308,10 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
     setIsSoundEnabled(nextVal);
     if (typeof window !== "undefined") {
       localStorage.setItem("parejitikas_sound", String(nextVal));
+    }
+    if (nextVal) {
+      unlockAudio();
+      playSound('flip');
     }
   };
 
