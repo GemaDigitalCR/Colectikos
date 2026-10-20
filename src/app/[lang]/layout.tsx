@@ -5,7 +5,7 @@ import "../globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "100% Tico",
+  title: "Colectikos",
   applicationName: "Colectikos",
   description: "Conquistando el país más bello del mundo",
   manifest: "/manifest.json",

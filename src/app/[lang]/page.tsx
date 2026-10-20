@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Hero from '../../components/Hero';
+import UpcomingRideWidget from '../../components/UpcomingRideWidget';
 import CategoryFilter from '../../components/CategoryFilter';
 import PlaceCard from '../../components/PlaceCard';
 
@@ -22,6 +23,49 @@ export default function Home() {
   const dbLugares = useLugaresData();
   const lang = dict?.lang || 'es';
   const localizedLugares = mapLugaresByLocale(dbLugares, lang);
+
+  // Soporte para selección y navegación directa a postales desde el buscador
+  useEffect(() => {
+    const handleSelectLugar = (e: any) => {
+      const lugarId = e.detail?.lugarId;
+      if (!lugarId) return;
+      setActiveCategory('ALL');
+      setActiveProvince(null);
+      setTimeout(() => {
+        const element = document.getElementById(`lugar-${lugarId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-4', 'ring-emerald-400', 'shadow-2xl', 'transition-all', 'duration-500');
+          setTimeout(() => {
+            element.classList.remove('ring-4', 'ring-emerald-400', 'shadow-2xl');
+          }, 2500);
+        }
+      }, 150);
+    };
+
+    window.addEventListener('tico-select-lugar', handleSelectLugar);
+
+    // Revisar hash al cargar la página (ej: #lugar-123)
+    if (typeof window !== 'undefined' && window.location.hash.startsWith('#lugar-')) {
+      const hashLugarId = window.location.hash.replace('#lugar-', '');
+      setActiveCategory('ALL');
+      setActiveProvince(null);
+      setTimeout(() => {
+        const element = document.getElementById(`lugar-${hashLugarId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-4', 'ring-emerald-400', 'shadow-2xl', 'transition-all', 'duration-500');
+          setTimeout(() => {
+            element.classList.remove('ring-4', 'ring-emerald-400', 'shadow-2xl');
+          }, 2500);
+        }
+      }, 500);
+    }
+
+    return () => {
+      window.removeEventListener('tico-select-lugar', handleSelectLugar);
+    };
+  }, []);
 
   // Filter places
   const filteredLugares = localizedLugares.filter(l => {
@@ -81,9 +125,12 @@ export default function Home() {
         <Hero 
           completedCount={baseCompletedCount} 
           totalCount={baseTotalCount} 
+          lang={lang}
         />
 
-        <div id="seccion-logros" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 md:mt-8 mb-4 scroll-mt-32">
+        <UpcomingRideWidget />
+
+        <div id="seccion-logros" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 md:mt-4 mb-4 scroll-mt-32">
           <h2 className="text-2xl md:text-3xl font-extrabold text-stone-900 tracking-tight">
             {dict?.home?.yourStickers || 'Tus Postales'}
           </h2>
@@ -107,18 +154,20 @@ export default function Home() {
               </h3>
               
               <div className="flex items-center gap-2 bg-stone-100 p-1 rounded-full shadow-inner">
-                <span className="text-xs font-semibold text-stone-500 pl-2">Estilo de pegado:</span>
+                <span className="text-xs font-semibold text-stone-500 pl-2">
+                  {lang === 'en' ? 'Sticker style:' : 'Estilo de pegado:'}
+                </span>
                 <button 
                   onClick={() => setIsMessyView(false)}
                   className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 ${!isMessyView ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
                 >
-                  Perfecto
+                  {lang === 'en' ? 'Neat' : 'Perfecto'}
                 </button>
                 <button 
                   onClick={() => setIsMessyView(true)}
                   className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 ${isMessyView ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
                 >
-                  Desordenado
+                  {lang === 'en' ? 'Playful' : 'Desordenado'}
                 </button>
               </div>
             </div>
@@ -158,8 +207,9 @@ export default function Home() {
           >
             {filteredLugares.map((lugar, index) => {
               const isProv = lugar.categoria === 'PROVINCIA';
-              const provinceName = isProv ? lugar.id : getProvincesForLugar(lugar.id, dbLugares).join(' / ');
-              const progress = progressData[provinceName]?.percentage || 0;
+              const provList = getProvincesForLugar(lugar.id, dbLugares);
+              const provinceName = isProv ? provList[0] : provList.join(' / ');
+              const progress = progressData[provList[0]]?.percentage || 0;
               const isDerivedCompleted = progress >= 25;
               const rotations = ['-rotate-2', 'rotate-2', '-rotate-1', 'rotate-1', '-rotate-[1.5deg]', 'rotate-[1.5deg]', '-rotate-3', 'rotate-3'];
               const randomRotation = isMessyView ? rotations[index % rotations.length] : 'rotate-0';

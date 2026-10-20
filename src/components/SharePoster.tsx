@@ -99,7 +99,7 @@ export default function SharePoster({
   }, [avatarUrl]);
 
   return (
-    <div className="fixed top-0 left-[-9999px] z-[-50] pointer-events-none" aria-hidden="true">
+    <div className="fixed top-0 left-0 w-[1080px] h-[1080px] z-[-50] opacity-0 pointer-events-none overflow-hidden" aria-hidden="true">
       <div 
         ref={posterRef}
         className="flex flex-col items-center justify-between overflow-hidden text-white shadow-[inset_0_0_120px_rgba(0,0,0,0.8)] relative"
@@ -116,11 +116,12 @@ export default function SharePoster({
           {/* LEFT: Avatar and User Info */}
           <div className="flex items-center gap-5 justify-self-start">
             <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-emerald-500 shadow-2xl bg-stone-800 flex-shrink-0 flex items-center justify-center">
-              {base64Avatar ? (
+              {base64Avatar || avatarUrl ? (
                 <img 
-                  src={base64Avatar}
+                  src={base64Avatar || (avatarUrl?.startsWith('/') && typeof window !== 'undefined' ? `${window.location.origin}${avatarUrl}` : avatarUrl!)}
                   className="h-full w-full object-cover"
                   alt="Avatar"
+                  crossOrigin="anonymous"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-stone-400">
@@ -160,7 +161,9 @@ export default function SharePoster({
           <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl py-2 px-3 w-full border border-white/5 shadow-lg">
             <div className="flex flex-col items-center flex-1">
               <span className="text-xl">🔥</span> 
-              <div className="text-xs text-stone-300 font-semibold uppercase tracking-wider mt-1">Racha</div> 
+              <div className="text-xs text-stone-300 font-semibold uppercase tracking-wider mt-1">
+                {dict?.profile?.streak || (dict?.categories?.ALL === 'All' ? 'Streak' : 'Racha')}
+              </div> 
               <div className="text-xl font-bold text-white">{currentStreak}</div>
             </div>
             
@@ -168,7 +171,9 @@ export default function SharePoster({
             
             <div className="flex flex-col items-center flex-1">
               <span className="text-xl">⭐</span> 
-              <div className="text-xs text-stone-300 font-semibold uppercase tracking-wider mt-1">Nivel</div> 
+              <div className="text-xs text-stone-300 font-semibold uppercase tracking-wider mt-1">
+                {dict?.profile?.level || (dict?.categories?.ALL === 'All' ? 'Level' : 'Nivel')}
+              </div> 
               <div className="text-xl font-bold text-white">{level}</div>
             </div>
 
@@ -183,9 +188,9 @@ export default function SharePoster({
             <div className="w-px h-10 bg-white/10 mx-2"></div>
             
             <Link 
-              href="/es/nuestra-app?tab=instrucciones" 
+              href={`/${dict?.categories?.ALL === 'All' ? 'en' : 'es'}/nuestra-app?tab=instrucciones`} 
               className="flex flex-col items-center justify-center px-2 text-white/50 hover:text-white hover:opacity-100 transition-all cursor-pointer"
-              title="¿Cómo funcionan las rachas y niveles?"
+              title={dict?.categories?.ALL === 'All' ? "How do streaks and levels work?" : "¿Cómo funcionan las rachas y niveles?"}
             >
               <HelpCircle className="w-5 h-5" />
             </Link>

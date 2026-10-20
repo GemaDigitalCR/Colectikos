@@ -43,6 +43,8 @@ model User {
   ratings                Rating[]
   actionLogs             UserActionLog[]
   progress               UserProgress[]
+  tikolones              Int             @default(500)
+  beach                  Beach?
 }
 
 model Lugar {
@@ -74,6 +76,7 @@ model UserProgress {
   completado      Boolean   @default(false)
   fechaCompletado DateTime?
   notas           String?
+  esPublico       Boolean   @default(false)
   lugar           Lugar     @relation(fields: [lugarId], references: [id], onDelete: Cascade)
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -129,7 +132,11 @@ model Sponsor {
   fotoExtra1    String?
   fotoExtra2    String?
   sitioWeb      String?
-  SponsorEnRuta SponsorEnRuta[]
+  alcanceNacional Boolean       @default(false)
+  imagen1         String?
+  imagen2         String?
+  imagen3         String?
+  SponsorEnRuta   SponsorEnRuta[]
 }
 
 model SponsorEnRuta {
@@ -151,4 +158,18 @@ enum CategoriaLugar {
   HITOS_CULTURALES
   BOSQUES_RESERVAS
   CIUDAD_Y_CULTURA
+}
+
+model Beach {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  gridState        Json     @default("[]")
+  visitors         Int      @default(0)
+  lastUpdated      DateTime @default(now())
+  xpClaimed        Int      @default(0)
+  lifetimeVisitors Int      @default(0)
+  lastDailyReward  DateTime?
+  name             String?
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

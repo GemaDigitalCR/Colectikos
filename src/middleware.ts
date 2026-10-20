@@ -36,6 +36,10 @@ const isPublicRoute = createRouteMatcher([
   '/:lang/contact',
   '/:lang/provincias',
   '/:lang/proximos-destinos',
+  '/destinos/complementos(.*)',
+  '/:lang/destinos/complementos(.*)',
+  '/nuestra-app(.*)',
+  '/:lang/nuestra-app(.*)',
   '/api/(.*)'
 ]);
 

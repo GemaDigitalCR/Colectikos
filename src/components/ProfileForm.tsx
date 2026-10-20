@@ -142,7 +142,7 @@ export default function ProfileForm({ initialData = {} }: ProfileFormProps) {
 
     if (hasMedal) {
       toast.success(formDict?.successMessage || (dict?.lang === 'en' ? 'Thank you for updating your profile. Keep collecting.' : 'Gracias por actualizar tu perfil. Continúa coleccionando.'));
-      router.push(dict?.lang === 'en' ? '/en/profile' : '/profile');
+      router.push(`/${dict?.lang === 'en' ? 'en' : 'es'}/profile`);
     } else {
       // Simular guardado y otorgar medalla por primera vez
       setShowMedal(true);
@@ -244,7 +244,7 @@ export default function ProfileForm({ initialData = {} }: ProfileFormProps) {
                   className="w-full p-3 border rounded-xl focus:outline-none transition-shadow bg-stone-100 text-stone-500 cursor-not-allowed border-stone-200"
                 />
                 {usernameError && <p className="text-sm font-medium text-red-600 mt-1">{usernameError}</p>}
-                <p className="text-xs text-stone-500">{formDict?.usernameHelp || 'El Nombre de Coleccionista es tu identidad única en Tico100 y fue asignado durante tu registro. No puede ser modificado.'}</p>
+                <p className="text-xs text-stone-500">{formDict?.usernameHelp || 'El Nombre de Coleccionista es tu identidad única en Colectikos y fue asignado durante tu registro. No puede ser modificado.'}</p>
               </div>
 
               {/* Selección de Avatar */}
@@ -456,7 +456,7 @@ export default function ProfileForm({ initialData = {} }: ProfileFormProps) {
             {step === 1 ? (
               <button
                 type="button"
-                onClick={() => router.push('/profile')}
+                onClick={() => router.push(`/${dict?.lang === 'en' ? 'en' : 'es'}/profile`)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition-colors"
               >
                 {formDict?.cancel || 'Cancelar'}
@@ -497,7 +497,7 @@ export default function ProfileForm({ initialData = {} }: ProfileFormProps) {
         isOpen={showMedal} 
         onClose={() => {
           setShowMedal(false);
-          router.push(dict?.lang === 'en' ? '/en/profile' : '/profile');
+          router.push(`/${dict?.lang === 'en' ? 'en' : 'es'}/profile`);
         }} 
         newRank={formDict?.identityReady || (dict?.lang === 'en' ? 'Identity Ready 🎖️' : 'Identidad Lista 🎖️')} 
       />

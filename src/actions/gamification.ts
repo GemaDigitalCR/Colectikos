@@ -242,15 +242,50 @@ export async function checkInAndAwardXP(lugarId: string, mode: string, localUser
         limitReached = true;
       }
 
+      // Verificar si estaba en bucketList para otorgar el bono de Próximo Destino cumplido (+10 XP)
+      const currentUser = await tx.user.findUnique({ where: { id: userId } });
+      const currentBucketList: string[] = currentUser?.bucketList || [];
+      const wasInBucketList = currentBucketList.includes(lugarId);
+
+      let bucketListBonusXp = 0;
+      let updatedBucketList = currentBucketList;
+
+      if (wasInBucketList) {
+        updatedBucketList = currentBucketList.filter((id: string) => id !== lugarId);
+
+        const existingBucketBonus = await tx.userActionLog.findFirst({
+          where: {
+            userId,
+            actionType: 'BUCKET_LIST_COMPLETE',
+            targetId: lugarId
+          }
+        });
+
+        if (!existingBucketBonus) {
+          bucketListBonusXp = 10;
+          await tx.userActionLog.create({
+            data: {
+              userId,
+              actionType: 'BUCKET_LIST_COMPLETE',
+              targetId: lugarId,
+              xpAwarded: bucketListBonusXp
+            }
+          });
+        }
+      }
+
       let newTotalXp = dbUser!.xp;
       let newLevel = dbUser!.level;
+      const totalXpGain = xpAwarded + bucketListBonusXp;
+
+      if (totalXpGain > 0) {
+        newTotalXp += totalXpGain;
+        // Fórmula básica: cada 100 XP = 1 nivel
+        newLevel = Math.floor(newTotalXp / 100) + 1;
+      }
 
       if (xpAwarded > 0) {
-        newTotalXp += xpAwarded;
-        // Fórmula básica temporal: cada 100 XP = 1 nivel
-        newLevel = Math.floor(newTotalXp / 100) + 1;
-
-        // Registrar Log
+        // Registrar Log de desbloqueo
         await tx.userActionLog.create({
           data: {
             userId,
@@ -268,11 +303,21 @@ export async function checkInAndAwardXP(lugarId: string, mode: string, localUser
           xp: newTotalXp,
           level: newLevel,
           estampillasDisponibles: activeUser.estampillasDisponibles - 1,
-          ultimaFechaEstampillas: new Date()
+          ultimaFechaEstampillas: new Date(),
+          ...(wasInBucketList ? { bucketList: updatedBucketList } : {})
         }
       });
 
-      return { success: true, xpAwarded, newTotalXp, newLevel, limitReached, unlocksToday: unlocksToday + 1 };
+      return { 
+        success: true, 
+        xpAwarded, 
+        bucketListBonus: bucketListBonusXp,
+        newTotalXp, 
+        newLevel, 
+        limitReached, 
+        unlocksToday: unlocksToday + 1,
+        updatedBucketList: wasInBucketList ? updatedBucketList : undefined
+      };
     });
 
     return result;
@@ -280,6 +325,115 @@ export async function checkInAndAwardXP(lugarId: string, mode: string, localUser
   } catch (error: any) {
     console.error("Error en checkInAndAwardXP:", error);
     return { success: false, error: error.message || 'Ocurrió un error al registrar el progreso y XP', xpAwarded: 0 };
+  }
+}
+
+/**
+ * Agrega o quita una postal de la lista de Próximos Destinos (bucketList).
+ * Otorga +10 XP la primera vez que se marca un destino (acción BUCKET_LIST_ADD).
+ * Si se desmarca, otorga 0 XP. Si se vuelve a marcar, no otorga XP de nuevo (anti-farming).
+ */
+export async function toggleBucketListAndAwardXP(
+  lugarId: string,
+  localUsername?: string,
+  fallbackClerkId?: string
+) {
+  try {
+    const dbUser = await ensureDbUser(localUsername, fallbackClerkId);
+    if (!dbUser) {
+      return { success: false, error: 'Usuario no autenticado', xpAwarded: 0 };
+    }
+
+    const userId = dbUser.id;
+
+    const result = await prisma.$transaction(async (tx: any) => {
+      const user = await tx.user.findUnique({ where: { id: userId } });
+      if (!user) throw new Error('Usuario no encontrado');
+
+      const currentList: string[] = user.bucketList || [];
+      const isAlreadyInList = currentList.includes(lugarId);
+
+      if (isAlreadyInList) {
+        // Quitar de la lista: 0 XP
+        const updatedList = currentList.filter((id: string) => id !== lugarId);
+        await tx.user.update({
+          where: { id: userId },
+          data: { bucketList: updatedList }
+        });
+        return {
+          success: true,
+          action: 'removed',
+          newList: updatedList,
+          xpAwarded: 0,
+          newTotalXp: user.xp,
+          newLevel: user.level
+        };
+      } else {
+        // Agregar a la lista
+        if (currentList.length >= 4) {
+          return {
+            success: false,
+            error: 'limit_reached',
+            newList: currentList,
+            xpAwarded: 0
+          };
+        }
+
+        const updatedList = [...currentList, lugarId];
+
+        // Verificar si ya recibió XP por marcar este lugar en el pasado (Anti-Farming)
+        const existingLog = await tx.userActionLog.findFirst({
+          where: {
+            userId,
+            actionType: 'BUCKET_LIST_ADD',
+            targetId: lugarId
+          }
+        });
+
+        let xpAwarded = 0;
+        let newTotalXp = user.xp;
+        let newLevel = user.level;
+
+        if (!existingLog) {
+          xpAwarded = 10;
+          newTotalXp = user.xp + xpAwarded;
+          newLevel = Math.floor(newTotalXp / 100) + 1;
+
+          await tx.userActionLog.create({
+            data: {
+              userId,
+              actionType: 'BUCKET_LIST_ADD',
+              targetId: lugarId,
+              xpAwarded
+            }
+          });
+        }
+
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            bucketList: updatedList,
+            xp: newTotalXp,
+            level: newLevel
+          }
+        });
+
+        return {
+          success: true,
+          action: 'added',
+          newList: updatedList,
+          xpAwarded,
+          newTotalXp,
+          newLevel,
+          alreadyAwarded: !!existingLog
+        };
+      }
+    });
+
+    return result;
+  } catch (error: any) {
+    console.error("Error en toggleBucketListAndAwardXP:", error);
+    return { success: false, error: error.message || 'Error al actualizar próximos destinos', xpAwarded: 0 };
   }
 }
 

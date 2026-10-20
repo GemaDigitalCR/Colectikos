@@ -19,7 +19,7 @@ export default function CategoryFilter({ activeCategory, onSelectCategory }: Cat
     { id: 'PLAYA', icon: '🏖️', label: dict?.categories?.PLAYA || 'Playas' },
     { id: 'RIOS_Y_CATARATAS', icon: '💧', label: dict?.categories?.RIOS_Y_CATARATAS || 'Ríos y Cataratas' },
     { id: 'LAGUNAS', icon: '🏞️', label: dict?.categories?.LAGUNAS || 'Lagunas' },
-    { id: 'CIUDAD_Y_CULTURA', icon: '🎭', label: dict?.categories?.CIUDAD_Y_CULTURA || 'Cultura' },
+    { id: 'CIUDAD_Y_CULTURA', icon: '🏛️', label: dict?.categories?.CIUDAD_Y_CULTURA || 'Ciudad y Cultura' },
     { id: 'BOSQUES_RESERVAS', icon: '🌳', label: dict?.categories?.BOSQUES_RESERVAS || 'Bosques y Reservas' },
   ];
 

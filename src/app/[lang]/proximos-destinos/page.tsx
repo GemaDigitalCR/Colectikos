@@ -27,6 +27,27 @@ export default function ProximosDestinosPage() {
     ? localizedLugares.find(l => l.id === activeDestinationId) 
     : null;
 
+  // Auto-seleccionar el destino indicado en query param (o el primero) si hay alguno en bucketList
+  React.useEffect(() => {
+    if (bucketList && bucketList.length > 0) {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const paramId = params.get('destino');
+        if (paramId && bucketList.includes(paramId)) {
+          setActiveDestinationId(paramId);
+          return;
+        }
+      }
+      if (!activeDestinationId || !bucketList.includes(activeDestinationId)) {
+        setActiveDestinationId(bucketList[0]);
+      }
+    } else {
+      if (activeDestinationId) {
+        setActiveDestinationId(null);
+      }
+    }
+  }, [bucketList, activeDestinationId]);
+
   React.useEffect(() => {
     let isMounted = true;
     async function fetchSponsors() {
@@ -155,9 +176,11 @@ export default function ProximosDestinosPage() {
               <div className="flex flex-col mb-6">
                 <h3 className="text-2xl font-bold text-stone-800 flex items-center gap-3">
                   <span className="text-emerald-500">✨</span> 
-                  {dict?.home?.addonsTitle || 'Complementos de tu ride a'} {activeDestination.nombre}
+                  {lang === 'en' ? 'Ride Add-ons for ' : 'Complementos de tu Ride a '} {activeDestination.nombre}
                 </h3>
-                <p className="text-stone-500 mt-1">Negocios y paradas recomendadas en tu ruta</p>
+                <p className="text-stone-500 mt-1">
+                  {lang === 'en' ? 'Recommended businesses and stops on your route' : 'Negocios y paradas recomendadas en tu ruta'}
+                </p>
               </div>
 
               {isLoadingSponsors ? (
@@ -175,9 +198,13 @@ export default function ProximosDestinosPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center text-center p-12 bg-white/50 backdrop-blur-sm rounded-2xl border border-stone-200 shadow-sm">
                   <span className="text-4xl mb-4 opacity-40">🧭</span>
-                  <h4 className="text-lg font-bold text-stone-700">Aún no hay recomendaciones</h4>
+                  <h4 className="text-lg font-bold text-stone-700">
+                    {lang === 'en' ? 'No recommendations yet' : 'Aún no hay recomendaciones'}
+                  </h4>
                   <p className="text-stone-500 mt-2 max-w-md">
-                    Pronto agregaremos restaurantes, hoteles y paradas clave recomendadas para tu viaje a {activeDestination.nombre}.
+                    {lang === 'en'
+                      ? `Soon we will add recommended restaurants, hotels, and key stops for your trip to ${activeDestination.nombre}.`
+                      : `Pronto agregaremos restaurantes, hoteles y paradas clave recomendadas para tu viaje a ${activeDestination.nombre}.`}
                   </p>
                 </div>
               )}
@@ -196,7 +223,7 @@ export default function ProximosDestinosPage() {
               
               <div className="max-w-md mx-auto h-full overflow-y-auto pb-6 scrollbar-hide">
                 <h2 className="text-2xl font-bold text-stone-800 mb-6 px-1">
-                  {activeDestination?.nombre || 'Detalles del Destino'}
+                  {activeDestination?.nombre || (lang === 'en' ? 'Destination Details' : 'Detalles del Destino')}
                 </h2>
                 
                 {/* Cross-Selling / Complementos del Ride */}
@@ -205,9 +232,11 @@ export default function ProximosDestinosPage() {
                     <div className="flex flex-col mb-4 px-1">
                       <h3 className="text-xl font-bold text-stone-800 flex items-center gap-2">
                         <span className="text-emerald-500">✨</span> 
-                        {dict?.home?.addonsTitle || 'Complementos del ride'}
+                        {lang === 'en' ? 'Ride Add-ons' : 'Complementos del ride'}
                       </h3>
-                      <p className="text-sm text-stone-500 mt-1">Negocios y paradas recomendadas</p>
+                      <p className="text-sm text-stone-500 mt-1">
+                        {lang === 'en' ? 'Recommended businesses and stops' : 'Negocios y paradas recomendadas'}
+                      </p>
                     </div>
                     
                     {isLoadingSponsors ? (
@@ -223,9 +252,11 @@ export default function ProximosDestinosPage() {
                     ) : (
                       <div className="flex flex-col items-center justify-center text-center p-8 bg-stone-50 rounded-2xl border border-stone-200 shadow-sm">
                         <span className="text-3xl mb-3 opacity-40">🧭</span>
-                        <h4 className="text-base font-bold text-stone-700">Aún no hay recomendaciones</h4>
+                        <h4 className="text-base font-bold text-stone-700">
+                          {lang === 'en' ? 'No recommendations yet' : 'Aún no hay recomendaciones'}
+                        </h4>
                         <p className="text-xs text-stone-500 mt-1">
-                          Pronto agregaremos paradas recomendadas para tu viaje.
+                          {lang === 'en' ? 'Soon we will add recommended stops for your trip.' : 'Pronto agregaremos paradas recomendadas para tu viaje.'}
                         </p>
                       </div>
                     )}

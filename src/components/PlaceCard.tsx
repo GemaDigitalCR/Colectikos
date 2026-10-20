@@ -5,15 +5,18 @@ import { createPortal } from 'react-dom';
 import { useDictionary } from '../context/DictionaryContext';
 import { useProgress } from '../context/ProgressContext';
 import { Lugar } from '../data/mockData';
-import { MapPin, CheckCircle2, Navigation2, XCircle, Lock, BookOpen, Flag, PawPrint, X, Info, Eye, Navigation, Award } from 'lucide-react';
+import { MapPin, CheckCircle2, Navigation2, XCircle, Lock, BookOpen, Flag, PawPrint, X, Info, Eye, Navigation, Award, Compass, Store } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import UnlockModal from './UnlockModal';
 import MemoriesModal from './MemoriesModal';
+import ComplementosModal from './ComplementosModal';
 import SwapPuzzle from './SwapPuzzle';
 import ConfirmRemoveModal from './ConfirmRemoveModal';
 import { solvePuzzleAndAwardXP } from '../actions/gamification';
+import { useLugaresData } from '../context/LugaresContext';
+import { getProvincesForLugar } from '../utils/getLugares';
 
 interface PlaceCardProps {
   lugar: Lugar;
@@ -41,10 +44,13 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
   const dict = useDictionary();
   const { placeDetails, updatePlaceDetails, bucketList, toggleBucketList, unlockModes, handleCheckInWithMode, handleRate, estampillas, hasReceivedBonusToday, hasRefundedTicketToday } = (useProgress() as any);
 
-  const currentDetails = placeDetails[lugar.id] || { date: '', note: '' };
+  const currentDetails = placeDetails[lugar.id] || { date: '', note: '', isPublic: false };
   const isInBucketList = bucketList?.includes(lugar.id);
   const [isMemoriesOpen, setIsMemoriesOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isComplementosOpen, setIsComplementosOpen] = useState(false);
+  const dbLugares = useLugaresData();
+  const provinceName = getProvincesForLugar(lugar.id, dbLugares).join(' / ');
   
   // Extraer el communityRating del contexto global (ya fue pre-cargado)
   // @ts-ignore
@@ -100,17 +106,33 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
   const categoryKey = lugar.categoria as keyof typeof dict.categories;
   const categoryLabel = dict?.categories?.[categoryKey] || lugar.categoria.replace(/_/g, ' ');
 
-  // Generar un slug a partir del nombre para la imagen local (ej: "volcan-miravalles")
-  const imageSlug = lugar.nombre
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '');
+  // Slug de provincia determinístico y resiliente
+  const getProvinceSlug = (lugarObj: Lugar) => {
+    const text = `${lugarObj.nombre || ''} ${lugarObj.nombre_en || ''}`
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    if (text.includes('san jose')) return 'san-jose';
+    if (text.includes('alajuela')) return 'alajuela';
+    if (text.includes('cartago')) return 'cartago';
+    if (text.includes('heredia')) return 'heredia';
+    if (text.includes('guanacaste')) return 'guanacaste';
+    if (text.includes('puntarenas')) return 'puntarenas';
+    if (text.includes('limon')) return 'limon';
+
+    return (lugarObj.nombre || '')
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
+  };
 
   // Determinar la imagen a mostrar basándose en la categoría y el progreso
   const isProv = lugar.categoria === 'PROVINCIA';
+  const provSlug = isProv ? getProvinceSlug(lugar) : '';
   const displayImage = isProv && progressPercentage !== undefined
-    ? getProvinceImage(imageSlug, progressPercentage)
+    ? getProvinceImage(provSlug, progressPercentage)
     : lugar.imagenUrl;
 
   const mode = unlockModes?.[lugar.id];
@@ -121,7 +143,18 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
   let modeLabel = '';
   let modeBadgeClass = '';
 
-  if (mode === 'Curioso') {
+  if (isProv && progressPercentage !== undefined) {
+    if (progressPercentage >= 75) {
+      borderClass = 'border-[#ffd700] shadow-[#ffd700]/30';
+      badgeColor = 'border-[#ffd700] bg-[#ffd700]/90 text-stone-900';
+    } else if (progressPercentage >= 50) {
+      borderClass = 'border-[#c0c0c0] shadow-[#c0c0c0]/30';
+      badgeColor = 'border-[#c0c0c0] bg-[#c0c0c0]/80 text-stone-800';
+    } else if (progressPercentage >= 25) {
+      borderClass = 'border-[#cd7f32] shadow-[#cd7f32]/25';
+      badgeColor = 'border-[#cd7f32] bg-[#cd7f32]/80 text-white';
+    }
+  } else if (mode === 'Curioso') {
     borderClass = 'border-[#cd7f32] shadow-[#cd7f32]/20';
     badgeColor = 'border-[#cd7f32] bg-[#cd7f32]/80 text-white';
     ModeIcon = Eye;
@@ -140,6 +173,46 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
     modeLabel = (dict?.unlockModal?.conquistador || 'Conquistador').replace(/^Modo\s+/i, '').replace(/\s+Mode$/i, '');
     modeBadgeClass = 'text-amber-600 bg-amber-50 border-amber-200/60';
   }
+
+  const provinceFooterBlock = (
+    <div className="pt-1 sm:pt-2 pb-0.5 px-0.5 sm:px-1 flex justify-between items-center w-full mt-0.5 overflow-hidden gap-1">
+      <div className="flex items-center gap-1 min-w-0">
+        <span className="text-[7px] sm:text-[9px] font-extrabold uppercase tracking-widest text-stone-400 shrink-0">
+          {dict?.categories?.ALL === 'All' ? 'Level:' : 'Nivel:'}
+        </span>
+        <div className={`flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 rounded-full border shadow-xs ${
+          (progressPercentage ?? 0) >= 75
+            ? 'bg-amber-50 text-amber-800 border-amber-300'
+            : (progressPercentage ?? 0) >= 50
+            ? 'bg-slate-100 text-slate-700 border-slate-300'
+            : (progressPercentage ?? 0) >= 25
+            ? 'bg-amber-100/50 text-[#b45309] border-[#b45309]/30'
+            : 'bg-stone-100 text-stone-500 border-stone-200'
+        }`}>
+          <span className="text-[8px] sm:text-[9px]">
+            {(progressPercentage ?? 0) >= 75 ? '🥇' : (progressPercentage ?? 0) >= 50 ? '🥈' : (progressPercentage ?? 0) >= 25 ? '🥉' : '🔒'}
+          </span>
+          <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-wider truncate">
+            {(progressPercentage ?? 0) >= 75
+              ? (dict?.map?.gold || 'Oro')
+              : (progressPercentage ?? 0) >= 50
+              ? (dict?.map?.silver || 'Plata')
+              : (progressPercentage ?? 0) >= 25
+              ? (dict?.map?.bronze || 'Bronce')
+              : (dict?.placeCard?.toCollect || (dict?.categories?.ALL === 'All' ? 'To Collect' : 'Bloqueado'))}
+          </span>
+        </div>
+      </div>
+
+      <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full border shadow-inner font-black text-[10px] sm:text-[11px] ${
+        (progressPercentage ?? 0) >= 25
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          : 'bg-stone-100 text-stone-600 border-stone-200'
+      }`}>
+        <span>{progressPercentage ?? 0}%</span>
+      </div>
+    </div>
+  );
 
   const communityRatingBlock = (
     <div className="pt-1 sm:pt-2 pb-0.5 px-0.5 sm:px-1 flex justify-between items-center w-full mt-0.5 overflow-hidden gap-1">
@@ -190,13 +263,24 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
           </button>
         )}
 
-        {/* Mobile Info Hint (Hidden on sm) */}
-        <div className={`absolute top-2 left-2 z-30 sm:hidden transition-opacity duration-300 ${isMobileExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-none'}`}>
-           <div className="bg-stone-900/60 backdrop-blur-md rounded-full p-1.5 shadow-md flex items-center gap-1">
-             <Info size={12} className="text-white" />
-             <span className="text-[9px] font-bold text-white uppercase px-1 leading-none">Toca</span>
-           </div>
-        </div>
+        {/* Botón Sutil Complementos en Postal Desbloqueada */}
+        {!isProv && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsComplementosOpen(true);
+            }}
+            className="absolute top-2 left-2 z-30 flex items-center gap-1 px-2 py-0.5 sm:py-1 bg-stone-900/80 hover:bg-stone-900 text-white rounded-full shadow-md border border-white/20 backdrop-blur-md transition-all hover:scale-105 active:scale-95 group/comp cursor-pointer"
+            title={dict?.placeCard?.complementos || "Complementos"}
+          >
+            <Compass size={11} className="text-emerald-400 group-hover/comp:rotate-45 transition-transform duration-300" />
+            <span className="text-[8px] sm:text-[9px] font-bold tracking-tight">
+              {dict?.placeCard?.complementos || "Complementos"}
+            </span>
+          </button>
+        )}
 
         <div 
           className="relative aspect-[3/4] w-full overflow-hidden bg-stone-100 border-2 border-stone-100 flex flex-col shrink-0"
@@ -242,7 +326,36 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
                 "{descToUse}"
               </p>
               
-              <div className="mt-4 mb-2">
+              <div className="mt-4 mb-2 flex flex-col gap-2">
+                {!isProv ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsComplementosOpen(true);
+                    }}
+                    className="w-full bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 py-2 rounded-lg font-bold shadow-sm transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+                  >
+                    <Compass size={15} />
+                    {dict?.placeCard?.complementos || 'Complementos'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const hubEl = document.getElementById('hub-aliados-provincia');
+                      if (hubEl) {
+                        hubEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      } else {
+                        window.location.href = `/${dict?.lang === 'en' ? 'en' : 'es'}/provincias`;
+                      }
+                    }}
+                    className="w-full bg-amber-500/30 hover:bg-amber-500/50 border border-amber-400/50 text-amber-200 py-2 rounded-lg font-bold shadow-sm transition-all text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Store size={15} />
+                    {dict?.categories?.ALL === 'All' ? 'View Province Partners' : 'Ver Aliados del Ride'}
+                  </button>
+                )}
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
@@ -257,7 +370,7 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
             </div>
           </div>
         </div>
-        {communityRatingBlock}
+        {isProv ? provinceFooterBlock : communityRatingBlock}
       {isPuzzleOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-3 sm:p-4 bg-stone-900/80 backdrop-blur-md" onClick={() => setIsPuzzleOpen(false)}>
           <div className="bg-white rounded-[2rem] shadow-2xl p-5 sm:p-6 w-full max-w-sm max-h-[95vh] overflow-y-auto relative flex flex-col" onClick={(e) => e.stopPropagation()}>
@@ -312,6 +425,14 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
         canRefundTicket={!hasRefundedTicketToday}
         isSpanish={dict?.categories?.ALL !== 'All'}
       />
+      <ComplementosModal 
+        isOpen={isComplementosOpen}
+        onClose={() => setIsComplementosOpen(false)}
+        lugar={lugar}
+        provinceName={provinceName}
+        dict={dict}
+        lang={dict?.lang === 'en' ? 'en' : 'es'}
+      />
       </div>
     );
   }
@@ -334,6 +455,25 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
           }`} 
         />
 
+        {/* Botón Sutil Complementos en Postal Pendiente */}
+        {!isProv && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsComplementosOpen(true);
+            }}
+            className="absolute top-2 left-2 z-30 flex items-center gap-1 px-2 py-0.5 sm:py-1 bg-stone-900/80 hover:bg-stone-900 text-white rounded-full shadow-md border border-white/20 backdrop-blur-md transition-all hover:scale-105 active:scale-95 group/comp cursor-pointer"
+            title={dict?.placeCard?.complementos || "Complementos"}
+          >
+            <Compass size={11} className="text-emerald-400 group-hover/comp:rotate-45 transition-transform duration-300" />
+            <span className="text-[8px] sm:text-[9px] font-bold tracking-tight">
+              {dict?.placeCard?.complementos || "Complementos"}
+            </span>
+          </button>
+        )}
+
         {/* Flag Icon (Bucket List) */}
         {!isDerivedState && (
           <button 
@@ -342,7 +482,7 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
               if (toggleBucketList) toggleBucketList(lugar.id);
             }}
             className="absolute top-2 right-2 z-30 p-1.5 transition-all duration-300 hover:scale-110"
-            title={dict?.home?.bucketListTitle || "Mis Próximos Destinos"}
+            title={isInBucketList ? (dict?.home?.removeFromBucketList || "Quitar de Próximos Destinos") : (dict?.home?.bucketListTitle || "Mis Próximos Destinos")}
           >
             <Flag 
               size={24} 
@@ -413,7 +553,7 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
           )}
         </div>
       </div>
-      {communityRatingBlock}
+      {isProv ? provinceFooterBlock : communityRatingBlock}
       <UnlockModal 
         isOpen={isUnlockModalOpen} 
         onClose={() => setIsUnlockModalOpen(false)} 
@@ -455,6 +595,14 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
           </div>
         </div>
       )}
+      <ComplementosModal 
+        isOpen={isComplementosOpen}
+        onClose={() => setIsComplementosOpen(false)}
+        lugar={lugar}
+        provinceName={provinceName}
+        dict={dict}
+        lang={dict?.lang === 'en' ? 'en' : 'es'}
+      />
     </div>
   );
 }

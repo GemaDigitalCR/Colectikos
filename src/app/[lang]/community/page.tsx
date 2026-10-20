@@ -18,7 +18,7 @@ export default async function CommunityHubPage({ params }: { params: Promise<{ l
                     : "Conecta con otros exploradores, comparte tus notas y descubre quién lidera la aventura."}
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
                 
                 {/* Rankings Card */}
                 <Link href={`/${lang}/community/rankings`} className="group">
@@ -45,24 +45,107 @@ export default async function CommunityHubPage({ params }: { params: Promise<{ l
                     </div>
                 </Link>
 
-                {/* Coming Soon / Feed Card */}
-                <Link href={`/${lang}/community/proximamente`} className="group">
+                {/* Muro de Exploradores Card */}
+                <Link href={`/${lang}/community/muro`} className="group">
                     <div className="bg-white rounded-2xl shadow-lg border-2 border-sky-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-sky-300 relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="bg-sky-100 text-sky-600 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M17 6.1H3"></path>
-                                <path d="M21 12.1H3"></path>
-                                <path d="M15.1 18H3"></path>
-                            </svg>
+                        <div className="bg-sky-100 text-sky-600 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
+                            <span className="text-4xl leading-none block">🧭</span>
                         </div>
                         <h2 className="text-2xl font-bold text-sky-800 mb-3 relative z-10">
-                            {isEn ? "Community Feed" : "Muro Comunitario"}
+                            {isEn ? "Explorers' Wall" : "Muro de Exploradores"}
                         </h2>
                         <p className="text-stone-600 relative z-10">
                             {isEn 
-                                ? "See what other explorers are doing. New features coming soon!"
-                                : "Mira lo que otros exploradores están haciendo. ¡Nuevas funciones pronto!"}
+                                ? "Discover authentic reviews, tips, and experiences shared by fellow travelers."
+                                : "Descubre reseñas auténticas, recomendaciones y experiencias de la comunidad."}
+                        </p>
+                    </div>
+                </Link>
+
+                {/* Parejitikas Card */}
+                <Link href={`/${lang}/community/parejitikas`} className="group">
+                    <div className="bg-white rounded-2xl shadow-lg border-2 border-teal-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-teal-300 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="bg-teal-100 text-teal-700 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
+                            <span className="text-4xl leading-none block pt-1">🧩</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black mb-2 relative z-10 border border-amber-200">
+                            <span>⭐</span>
+                            <span>{isEn ? "Earn up to 50 XP" : "Gana hasta 50 XP"}</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-teal-900 mb-3 relative z-10">
+                            Parejitikas
+                        </h2>
+                        <p className="text-stone-600 relative z-10">
+                            {isEn 
+                                ? "Test your memory matching Costa Rican postcards and earn XPs!"
+                                : "¡Pon a prueba tu memoria encontrando parejas de postales y gana XPs!"}
+                        </p>
+                    </div>
+                </Link>
+
+                {/* Sopitika Card */}
+                <Link href={`/${lang}/community/sopitika`} className="group">
+                    <div className="bg-white rounded-2xl shadow-lg border-2 border-emerald-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-emerald-300 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="bg-emerald-100 text-emerald-700 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
+                            <span className="text-4xl leading-none block pt-1">🍲</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black mb-2 relative z-10 border border-amber-200">
+                            <span>⭐</span>
+                            <span>{isEn ? "Earn up to 50 XP" : "Gana hasta 50 XP"}</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-emerald-950 mb-3 relative z-10">
+                            Sopitika
+                        </h2>
+                        <p className="text-stone-600 relative z-10">
+                            {isEn 
+                                ? "Discover Costa Rican destinations in this word search and earn XPs!"
+                                : "¡Encuentra destinos de Costa Rica en la sopa de letras diaria y gana XPs!"}
+                        </p>
+                    </div>
+                </Link>
+
+                {/* Preguntikas Card (Trivia Diaria Verificada) */}
+                <Link href={`/${lang}/community/preguntikas`} className="group">
+                    <div className="bg-white rounded-2xl shadow-lg border-2 border-amber-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-amber-300 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="bg-amber-100 text-amber-700 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
+                            <span className="text-4xl leading-none block pt-1">🦜</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black mb-2 relative z-10 border border-amber-200">
+                            <span>⭐</span>
+                            <span>{isEn ? "Earn up to 50 XP" : "Gana hasta 50 XP"}</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-amber-950 mb-3 relative z-10">
+                            Preguntikas
+                        </h2>
+                        <p className="text-stone-600 relative z-10">
+                            {isEn 
+                                ? "Test your knowledge with 3 verified daily trivia questions about Costa Rica!"
+                                : "¡Pon a prueba tu conocimiento con 3 preguntas diarias verificadas sobre Costa Rica!"}
+                        </p>
+                    </div>
+                </Link>
+
+                {/* Tiko Playa Card */}
+                <Link href={`/${lang}/community/playa`} className="group">
+                    <div className="bg-white rounded-2xl shadow-lg border-2 border-amber-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-amber-300 relative overflow-hidden">
+                        <div className="absolute top-4 right-4 bg-amber-500/15 border border-amber-300 text-amber-700 text-xs font-black px-2.5 py-0.5 rounded-full shadow-sm tracking-wide z-20">
+                            BETA
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="bg-amber-100 text-amber-600 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
+                            <span className="text-4xl leading-none block pt-1">🏖️</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-amber-800 mb-3 relative z-10">
+                            {isEn ? "Tiko Beach (Beta)" : "Tiko Playa (Beta)"}
+                        </h2>
+                        <p className="text-stone-600 relative z-10">
+                            {isEn 
+                                ? "Build your beach, attract visitors and earn Tikolones!"
+                                : "¡Arma tu playa, atrae visitantes y gana Tikolones!"}
                         </p>
                     </div>
                 </Link>

@@ -4,13 +4,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
-import { UserCircle, Award, Trophy, Medal, Star, Edit3, BookOpen, Loader2, HelpCircle } from 'lucide-react';
+import { UserCircle, Award, Trophy, Medal, Star, Edit3, BookOpen, Loader2, HelpCircle, LogIn } from 'lucide-react';
 import { Categoria } from '../../../data/mockData';
 import { useLugaresData } from '../../../context/LugaresContext';
 import { toPng } from 'html-to-image';
 import toast from 'react-hot-toast';
 import { calcularNivel } from '../../../utils/gamification';
 import SharePoster from '../../../components/SharePoster';
+import PassportModal from '../../../components/PassportModal';
 
 // Constantes visuales para las categorías
 const CATEGORY_UI: Partial<Record<Categoria, { icon: string, label: string, color: string }>> = {
@@ -42,7 +43,11 @@ export default function Profile() {
   const localizedLugares = mapLugaresByLocale(dbLugares, lang);
   
   const progressRef = useRef<HTMLDivElement>(null);
+  const generatedFileRef = useRef<File | null>(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
+  const [isPassportModalOpen, setIsPassportModalOpen] = useState(false);
+  const [canShareNative, setCanShareNative] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { user, isLoaded } = useUser();
   const [username, setUsername] = useState<string>('Coleccionista');
@@ -71,47 +76,85 @@ export default function Profile() {
     }
   }, [isLoaded, user, userProfile]);
   
+  const handleNativeShare = async () => {
+    if (!generatedFileRef.current || typeof navigator === 'undefined' || !('share' in navigator)) return;
+    try {
+      if ('canShare' in navigator && navigator.canShare({ files: [generatedFileRef.current] })) {
+        await navigator.share({
+          title: lang === 'en' ? 'My Colectikos Passport' : 'Mi Pasaporte Colectikos',
+          text: lang === 'en'
+            ? `I have conquered ${completadosGlobal} of ${totalGlobal} places in Colectikos! 🇨🇷✨`
+            : `¡Llevo ${completadosGlobal} de ${totalGlobal} lugares conquistados en Colectikos! 🇨🇷✨`,
+          files: [generatedFileRef.current]
+        });
+      }
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        console.warn('Native share error:', e);
+      }
+    }
+  };
+
   const handleShareProgress = async () => {
     if (!progressRef.current) return;
     
     try {
       setIsSharing(true);
       
-      // Workaround para Safari:
-      // Usamos html-to-image nuevamente porque html2canvas no soporta 
-      // funciones modernas de color CSS (como lab()).
-      // El contenedor ahora es "absolute" y dentro del viewport (invisible)
-      // por lo que SVG foreignObject ya no debería bloquear las imágenes.
-      await toPng(progressRef.current, { pixelRatio: 1 });
+      const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // En móviles usamos pixelRatio: 1.25 para evitar agotar la memoria de GPU de WebKit / Safari
+      // y prevenir reinicios de pestaña. En Desktop mantenemos 2.0.
+      const pixelRatio = isMobile ? 1.25 : 2;
       
       const dataUrl = await toPng(progressRef.current, { 
-        pixelRatio: 2
+        pixelRatio,
+        cacheBust: true,
       });
       
-      // Native Share API for mobile devices
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (isMobile && navigator.share) {
+      setPreviewDataUrl(dataUrl);
+
+      // Crear archivo para Native Share
+      try {
         const res = await fetch(dataUrl);
         const blob = await res.blob();
-        const file = new File([blob], 'mi-progreso-tico.png', { type: blob.type });
-        
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: 'Mi progreso en Tico 100',
-            text: `¡Llevo ${completadosGlobal} de ${totalGlobal} lugares conquistados en Tico 100! 🇨🇷✨`,
-            files: [file]
-          });
-          setIsSharing(false);
-          return;
+        const file = new File([blob], lang === 'en' ? 'My-Colectikos-Passport.png' : 'Mi-Pasaporte-Colectikos.png', { type: blob.type || 'image/png' });
+        generatedFileRef.current = file;
+
+        const hasShare = Boolean(
+          typeof navigator !== 'undefined' &&
+          'share' in navigator &&
+          'canShare' in navigator &&
+          navigator.canShare({ files: [file] })
+        );
+        setCanShareNative(hasShare);
+
+        // Si es móvil y soporta compartir archivos directamente, intentamos invocar el menú nativo
+        if (isMobile && hasShare) {
+          try {
+            await navigator.share({
+              title: 'Mi Pasaporte Colectikos',
+              text: `¡Llevo ${completadosGlobal} de ${totalGlobal} lugares conquistados en Colectikos! 🇨🇷✨`,
+              files: [file]
+            });
+            toast.success(dict?.profile?.downloadSuccess || '¡Pasaporte listo!');
+            setIsSharing(false);
+            return;
+          } catch (shareErr: any) {
+            // Si el usuario canceló el share sheet nativo de iOS, no mostramos error
+            if (shareErr?.name === 'AbortError') {
+              setIsSharing(false);
+              return;
+            }
+          }
         }
+      } catch (fileErr) {
+        console.warn("Could not prepare file for native share:", fileErr);
       }
-      
-      // Fallback: Download on desktop or unsupported browsers
-      const link = document.createElement('a');
-      link.download = 'mi-progreso-tico.png';
-      link.href = dataUrl;
-      link.click();
-      toast.success(dict?.profile?.downloadSuccess || '¡Imagen guardada! Lista para compartir.');
+
+      // Si no usó el share sheet nativo o en Desktop, abrimos el modal visual de respaldo
+      setIsPassportModalOpen(true);
+      toast.success(dict?.profile?.downloadSuccess || '¡Tu Pasaporte está listo!');
       
     } catch (error) {
       console.error('Error sharing progress:', error);
@@ -248,7 +291,7 @@ export default function Profile() {
             <div className="flex-shrink-0">
               <div className="w-32 h-32 bg-stone-100 rounded-full flex items-center justify-center border-4 border-emerald-50 overflow-hidden relative">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar de Perfil" className="w-full h-full object-cover" />
+                  <img src={avatarUrl} alt={lang === 'en' ? 'Profile Avatar' : 'Avatar de Perfil'} className="w-full h-full object-cover" />
                 ) : (
                   <UserCircle size={80} className="text-stone-300" />
                 )}
@@ -274,7 +317,7 @@ export default function Profile() {
                     {isSharing ? <Loader2 size={16} className="animate-spin" /> : <BookOpen size={16} />}
                     {isSharing ? (dict?.profile?.generating || 'Generando...') : (dict?.profile?.shareProgress || 'Mi Pasaporte')}
                   </button>
-                  <Link href="/settings" className="inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-bold text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 transition-all shadow-sm hover:shadow">
+                  <Link href={`/${lang}/settings`} className="inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-bold text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 transition-all shadow-sm hover:shadow">
                     <Edit3 size={16} /> {dict?.profile?.editProfile || 'Editar Perfil'}
                   </Link>
                 </div>
@@ -294,7 +337,7 @@ export default function Profile() {
                 <Link 
                   href={`/${lang}/nuestra-app?tab=instrucciones`} 
                   className="bg-stone-50 text-stone-500 px-3 py-1 rounded-full text-sm font-medium border border-stone-200 flex items-center gap-1 cursor-pointer hover:opacity-80 hover:bg-stone-100 transition-all"
-                  title="¿Cómo funcionan las rachas y niveles?"
+                  title={lang === 'en' ? 'How do streaks and levels work?' : '¿Cómo funcionan las rachas y niveles?'}
                 >
                   <HelpCircle className="w-4 h-4" />
                 </Link>
@@ -379,6 +422,14 @@ export default function Profile() {
         xp={xp}
         level={level}
         gender={userGender}
+      />
+      <PassportModal 
+        isOpen={isPassportModalOpen}
+        onClose={() => setIsPassportModalOpen(false)}
+        imageUrl={previewDataUrl}
+        onShareNative={handleNativeShare}
+        canShareNative={canShareNative}
+        dict={dict}
       />
     </>
   );

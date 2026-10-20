@@ -1,5 +1,7 @@
 {
+  "lang": "en",
   "navbar": {
+    "search": "Search",
     "searchPlaceholder": "Search places...",
     "language": "Language",
     "settings": "Profile",
@@ -7,12 +9,14 @@
     "destinations": "Destinations",
     "community": "Community",
     "contact": "Contact",
+    "login": "Sign In",
     "logout": "Logout",
     "home": "Home",
     "provinces": "Provinces",
     "visitedDestinations": "My Visited Destinations",
     "upcomingDestinations": "My Upcoming Destinations",
-    "rideAddons": "Ride Add-ons"
+    "rideAddons": "Ride Add-ons",
+    "explorersWall": "Explorers' Wall"
   },
   "communityPage": {
     "title": "Community Album",
@@ -28,6 +32,7 @@
     "filterByProvince": "Filter by Province",
     "openAlbum": "Open my Virtual Album",
     "bucketListTitle": "My Upcoming Destinations",
+    "removeFromBucketList": "Remove from Upcoming Destinations",
     "emptyBucketList": "You don't have upcoming destinations yet... Use the flag on locked postcards to add them.",
     "visitedDestinationsTitle": "My Visited Destinations",
     "emptyVisitedDestinations": "You haven't visited any destinations yet... Go explore and unlock postcards."
@@ -63,7 +68,8 @@
     "rating_3": "Awesome Vibe",
     "rating_4": "Absolute Must!",
     "community_rating": "Community:",
-    "my_rating": "My rating:"
+    "my_rating": "My rating:",
+    "complementos": "Add-ons"
   },
   "unlockModal": {
     "title": "Unlocking Postcard!",
@@ -83,7 +89,7 @@
     "conquistador": "Conquered Postcards"
   },
   "toast": {
-    "firstGlobal": "Congratulations! You've started your 100% {tico} collection. 🎉",
+    "firstGlobal": "Congratulations! You've started your Colectikos collection. 🎉",
     "firstCat": "First step in {category}! You've started this category. 🌟",
     "nudgeVariant": "Congratulations! If you made a full visit, remember you can also unlock this destination's postcard in the {Categoria_Gemela} category.",
     "bucketListLimit": "You can only have 4 upcoming destinations on your list. Uncheck one to add this one.",
@@ -99,7 +105,7 @@
     "perfect": "Perfect!",
     "categoryProgress": "Category Progress",
     "places": "{completed} of {total} places",
-    "shareProgress": "My Passport",
+    "shareProgress": "Digital Passport",
     "generating": "Generating...",
     "posterTitleLine1": "My Colectikos",
     "posterTitleLine2": "Passport",
@@ -154,7 +160,7 @@
     "usernamePlaceholder": "E.g. Collector19",
     "usernameErrorEmpty": "Please enter a Collector Name.",
     "usernameErrorTaken": "This Collector Name is already in use. Please choose another.",
-    "usernameHelp": "Your Collector Name is your unique identity in Tico100 and cannot be modified.",
+    "usernameHelp": "Your Collector Name is your unique identity in Colectikos and cannot be modified.",
     "genderLabel": "Gender (For your Tico/Tica titles)",
     "genders": {
       "Masculino": "Male",
@@ -274,7 +280,7 @@
     "instH2_6": "6. Show Off Your Achievements (How to export your digital passport)",
     "instP2_6": "Your effort deserves recognition. COLECTIKOS generates an official and personalized passport with your progress, ready to share with the world.",
     "instLi6_1": "<strong>Visit your profile:</strong> Head to your personal space by clicking on your Avatar.",
-    "instLi6_2": "<strong>Generate your poster:</strong> Look for the 'Share Achievements' button. Pressing it will magically create a high-quality image of your Digital Passport.",
+    "instLi6_2": "<strong>Generate your passport:</strong> Look for the 'Digital Passport' button in your profile. Pressing it will create your official high-quality passport ready to share or save to your photos.",
     "instLi6_3": "<strong>Discover your stamp:</strong> This image will include your name, current level, percentage of the map conquered, and your official Game Mode.",
     "instLi6_4": "<strong>Share with the world:</strong> Download the image and upload it to your social media to challenge your friends or show off your explorer rank.",
     "instH2_7": "7. Your Next Adventure (My 4 Destinations to Visit)",
@@ -417,5 +423,18 @@
     "passportTica": "You are Tica{level}",
     "streakDays": "{days} Days",
     "level": "Level {level}"
+  },
+  "upcomingWidget": {
+    "activeBadge": "Your Next Ride",
+    "emptyBadge": "Plan Your Adventure",
+    "xpBadge": "+10 XP per destination",
+    "activeSubtitle": "Course charted. Discover selected local recommendations and trip add-ons for your journey.",
+    "activeCta": "View my route & stops",
+    "emptyTitle": "Where are you heading this weekend?",
+    "emptySubtitle": "Flag your favorite destinations with 🚩 to earn +10 XP and discover recommended stops and spots on your route.",
+    "emptyCta": "Plan my ride",
+    "destinationsCount": "of 4 planned",
+    "emptyExplore": "Pick postcards below",
+    "andMore": "+{count} more on your list"
   }
 }

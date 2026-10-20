@@ -227,7 +227,7 @@ export default function ContactPage() {
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <a 
-                    href="https://facebook.com" 
+                    href="https://facebook.com/Colectikos" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-3 py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md transition-colors"
@@ -235,7 +235,7 @@ export default function ContactPage() {
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Facebook
                   </a>
                   <a 
-                    href="https://instagram.com" 
+                    href="https://instagram.com/Colectikos" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-3 py-3 px-6 rounded-xl bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 hover:opacity-90 text-white font-bold shadow-md transition-opacity"

@@ -11,6 +11,56 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
   
   const [activeProvince, setActiveProvince] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
+  const [highlightedSponsorId, setHighlightedSponsorId] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Verificar si viene provincia en la URL (ej: ?provincia=Guanacaste)
+    const searchParams = new URLSearchParams(window.location.search);
+    const provParam = searchParams.get('provincia');
+    if (provParam) {
+      const match = provinces.find(
+        p => p.id && (p.id.toLowerCase() === provParam.toLowerCase() || p.label.toLowerCase() === provParam.toLowerCase())
+      );
+      if (match && match.id) {
+        setActiveProvince(match.id);
+      }
+    }
+
+    // Verificar si viene ancla específica de patrocinador (ej: #sponsor-xyz)
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#sponsor-')) {
+        const targetId = hash.replace('#sponsor-', '');
+        const targetSponsor = sponsors.find(s => s.id === targetId);
+        if (targetSponsor) {
+          // Limpiar filtros para garantizar visibilidad de la tarjeta
+          setActiveProvince(null);
+          setActiveCategory('ALL');
+        }
+
+        setHighlightedSponsorId(targetId);
+
+        setTimeout(() => {
+          const el = document.getElementById(`sponsor-${targetId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 350);
+
+        const timer = setTimeout(() => {
+          setHighlightedSponsorId(null);
+        }, 4000);
+
+        return () => clearTimeout(timer);
+      }
+    };
+
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, [sponsors]);
 
   const provinces = [
     { id: null, label: lang === 'en' ? 'All' : 'Todas' },
@@ -30,6 +80,7 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
     { id: 'TOURS', icon: '🧭', label: 'Tours' },
     { id: 'TRANSPORTE', icon: '🚗', label: lang === 'en' ? 'Transport' : 'Transporte' },
     { id: 'SOUVENIRS', icon: '🛍️', label: 'Souvenirs' },
+    { id: 'NEGOCIOS_EN_LINEA', icon: '💻', label: lang === 'en' ? 'Online Businesses' : 'Negocios en Línea' },
   ];
 
   // FILTRAR PATROCINADORES
@@ -39,7 +90,12 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
       const cat = sponsor.categoria ? sponsor.categoria.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
       const prov = sponsor.provincia ? sponsor.provincia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
 
-      const matchCategory = activeCategory === 'ALL' || cat === activeCategory;
+      const isOnlineFilter = activeCategory === 'NEGOCIOS_EN_LINEA' || activeCategory === 'ONLINE';
+      const matchCategory = activeCategory === 'ALL' || (
+        isOnlineFilter
+          ? (sponsor.alcanceNacional === true || cat === 'NEGOCIOS_EN_LINEA' || cat === 'ONLINE' || cat === 'NEGOCIOS EN LINEA')
+          : cat === activeCategory
+      );
       const matchProvince = !activeProvince || prov === activeProvince;
       return matchCategory && matchProvince;
     });
@@ -51,13 +107,20 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
         <div className="relative z-10 max-w-3xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight drop-shadow-md">
-            {lang === 'en' ? 'Ride Add-ons' : 'Complementos de tu ride'}
+            {lang === 'en' ? 'Ride Add-ons' : 'Complementos de tu Ride'}
           </h1>
-          <p className="text-lg md:text-xl text-emerald-100 max-w-2xl mx-auto leading-relaxed">
-            {lang === 'en' 
-              ? 'Discover local businesses that will make your trip unforgettable. See what postcards are nearby!' 
-              : 'Descubrí negocios locales que harán de tu viaje algo inolvidable. ¡Mirá qué postales tienen cerca!'}
-          </p>
+          <div className="text-lg md:text-xl text-emerald-100 max-w-2xl mx-auto leading-relaxed space-y-1">
+            <p>
+              {lang === 'en' 
+                ? 'Discover local businesses that will make your trip unforgettable.' 
+                : 'Descubrí negocios locales que harán de tu viaje algo inolvidable.'}
+            </p>
+            <p>
+              {lang === 'en' 
+                ? 'See what postcards are nearby!' 
+                : '¡Mirá qué postales tienen cerca!'}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -107,7 +170,17 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
         {filteredSponsors.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredSponsors.map(sponsor => (
-              <SponsorCard key={sponsor.id} sponsor={sponsor} lang={lang} variant="compact" />
+              <div
+                key={sponsor.id}
+                id={`sponsor-${sponsor.id}`}
+                className={`transition-all duration-700 rounded-2xl scroll-mt-28 ${
+                  highlightedSponsorId === sponsor.id
+                    ? 'ring-4 ring-emerald-500 shadow-2xl scale-[1.02] bg-emerald-50/40 p-1'
+                    : ''
+                }`}
+              >
+                <SponsorCard sponsor={sponsor} lang={lang} variant="compact" />
+              </div>
             ))}
           </div>
         ) : (

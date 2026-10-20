@@ -9,7 +9,7 @@ import OnboardingModal from '../components/OnboardingModal';
 import { calcularNivel } from '../utils/gamification';
 import { useLugaresData } from './LugaresContext';
 import { getAllCommunityRatings } from '../actions/ratings';
-import { checkInAndAwardXP, rateAndAwardXP, getUserGamification, recordDailyLogin } from '../actions/gamification';
+import { checkInAndAwardXP, rateAndAwardXP, getUserGamification, recordDailyLogin, toggleBucketListAndAwardXP } from '../actions/gamification';
 import { toast as sonnerToast } from 'sonner';
 import { useUser } from '@clerk/nextjs';
 import { updateUserProgressNote, getUserProgress, removeUserProgress, updateUserBucketList } from '../actions/progress';
@@ -17,11 +17,11 @@ import { getUserProfile } from '../actions/user';
 import { isSameCRDay } from '../lib/dateUtils';
 interface ProgressContextType {
   completedPlaces: string[];
-  placeDetails: Record<string, { date: string; note: string }>;
+  placeDetails: Record<string, { date: string; note: string; isPublic?: boolean }>;
   unlockModes: Record<string, string>;
   handleCheckIn: (id: string) => Promise<number>;
   handleCheckInWithMode: (id: string, mode: string) => Promise<number>;
-  updatePlaceDetails: (id: string, date: string, note: string) => void;
+  updatePlaceDetails: (id: string, date: string, note: string, isPublic?: boolean) => void;
   bucketList: string[];
   toggleBucketList: (id: string) => void;
   communityRatings: Record<string, number>;
@@ -36,6 +36,7 @@ interface ProgressContextType {
   userProfile: any;
   showTour: boolean;
   setShowTour: (val: boolean) => void;
+  updateLocalXp?: (newXp: number, newLevel: number) => void;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -44,7 +45,7 @@ import { useDictionary } from './DictionaryContext';
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [completedPlaces, setCompletedPlaces] = useState<string[]>([]);
-  const [placeDetails, setPlaceDetails] = useState<Record<string, { date: string; note: string }>>({});
+  const [placeDetails, setPlaceDetails] = useState<Record<string, { date: string; note: string; isPublic?: boolean }>>({});
   const [unlockModes, setUnlockModes] = useState<Record<string, string>>({});
   const [bucketList, setBucketList] = useState<string[]>([]);
   const [communityRatings, setCommunityRatings] = useState<Record<string, number>>({});
@@ -215,27 +216,52 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         const progressRes = await getUserProgress(localUsername, user?.id);
         if (progressRes.success && progressRes.checkins) {
           const dbCompleted: string[] = [];
-          const dbDetails: Record<string, { date: string; note: string }> = {};
+          const dbDetails: Record<string, { date: string; note: string; isPublic?: boolean }> = {};
           
           progressRes.checkins.forEach((item: any) => {
             dbCompleted.push(item.lugarId);
-            if (item.notas || item.fechaCompletado) {
+            if (item.notas || item.fechaCompletado || item.esPublico !== undefined) {
               dbDetails[item.lugarId] = {
                 date: item.fechaCompletado ? new Date(item.fechaCompletado).toISOString().split('T')[0] : '',
-                note: item.notas || ''
+                note: item.notas || '',
+                isPublic: Boolean(item.esPublico)
               };
             }
           });
 
           setCompletedPlaces(dbCompleted);
-          setPlaceDetails(dbDetails);
+          
+          setPlaceDetails(prev => {
+            const merged: Record<string, { date: string; note: string; isPublic?: boolean }> = { ...prev };
+            Object.entries(dbDetails).forEach(([placeId, dbItem]) => {
+              const localItem = merged[placeId];
+              if (dbItem.note && dbItem.note.trim() !== '') {
+                merged[placeId] = dbItem;
+              } else if (localItem && localItem.note && localItem.note.trim() !== '') {
+                // Preservar la nota local y actualizar fecha si la BD la tiene
+                merged[placeId] = {
+                  date: dbItem.date || localItem.date || '',
+                  note: localItem.note,
+                  isPublic: localItem.isPublic ?? dbItem.isPublic ?? false
+                };
+                // Sincronizar en segundo plano a la BD para no perder el dato
+                updateUserProgressNote(placeId, localItem.note, merged[placeId].date, localUsername, user?.id, merged[placeId].isPublic).catch(console.error);
+              } else {
+                merged[placeId] = dbItem;
+              }
+            });
+            try {
+              localStorage.setItem('tico100_place_details', JSON.stringify(merged));
+            } catch (e) {}
+            return merged;
+          });
 
           if (progressRes.userRatings) {
             const parsedRatings: Record<string, number> = {};
             progressRes.userRatings.forEach((ur: any) => {
               parsedRatings[ur.placeId] = ur.score;
             });
-            setUserRatings(parsedRatings);
+            setUserRatings(prev => ({ ...prev, ...parsedRatings }));
           }
         }
       } catch (e) {
@@ -327,19 +353,18 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   }, [completedPlaces, placeDetails, bucketList, unlockModes, userRatings, isLoaded]);
 
   const toggleBucketList = async (id: string) => {
-    let newList = [...bucketList];
-    
-    if (newList.includes(id)) {
-      newList = newList.filter(placeId => placeId !== id);
-    } else {
-      if (newList.length >= 4) {
-        toast.error(dict?.toast?.bucketListLimit || 'Solo puedes tener 4 próximos destinos en tu lista. Desmarca uno para agregar este.', { id: 'bucket-limit' });
-        return;
-      }
-      newList.push(id);
+    const isAdding = !bucketList.includes(id);
+
+    if (isAdding && bucketList.length >= 4) {
+      toast.error(dict?.toast?.bucketListLimit || 'Solo puedes tener 4 próximos destinos en tu lista. Desmarca uno para agregar este.', { id: 'bucket-limit' });
+      return;
     }
-    
-    setBucketList(newList);
+
+    // Optimistic UI update
+    const optimisticList = isAdding 
+      ? [...bucketList, id] 
+      : bucketList.filter(placeId => placeId !== id);
+    setBucketList(optimisticList);
 
     try {
       let localUsername = user?.username || undefined;
@@ -354,7 +379,28 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         localUsername = localStorage.getItem('localUsername') || undefined;
       }
 
-      await updateUserBucketList(newList, localUsername, user?.id);
+      const res = await toggleBucketListAndAwardXP(id, localUsername, user?.id) as any;
+      if (res && res.success) {
+        if (res.newList) {
+          setBucketList(res.newList);
+        }
+        if (res.xpAwarded && res.xpAwarded > 0) {
+          setXp(res.newTotalXp || (xp + res.xpAwarded));
+          setLevel(res.newLevel || level);
+
+          const currentPlace = dbLugares.find(l => l.id === id);
+          const placeName = currentPlace?.nombre || '';
+          
+          sonnerToast.success(`¡Próximo destino marcado! +${res.xpAwarded} XP 🚩`, {
+            description: placeName 
+              ? `Agregaste ${placeName} a tu lista de viaje.`
+              : 'Guardado en tu lista de próximos viajes.',
+          });
+        }
+      } else if (res && !res.success && res.error === 'limit_reached') {
+        toast.error(dict?.toast?.bucketListLimit || 'Solo puedes tener 4 próximos destinos en tu lista. Desmarca uno para agregar este.', { id: 'bucket-limit' });
+        setBucketList(bucketList); // rollback
+      }
     } catch (e) {
       console.error("Error saving bucket list to backend", e);
     }
@@ -481,7 +527,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         const completedInCat = placesInCat.filter(l => completedPlaces.includes(l.id));
 
         if (completedPlaces.length === 0) {
-          const rawMsg = dict?.toast?.firstGlobal || `¡Felicidades! Has iniciado tu colección 100% {tico}. 🎉`;
+          const rawMsg = dict?.toast?.firstGlobal || `¡Felicidades! Has iniciado tu colección en Colectikos. 🎉`;
           toast.success(rawMsg.replace('{tico}', ticoLabel), { icon: '🇨🇷', id: 'first-global' });
         } else if (completedInCat.length === 0) {
           const label = dict?.categories?.[cat] || cat;
@@ -539,19 +585,38 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         const res = rawRes as any;
         
         if (res.success && 'xpAwarded' in res) {
-          if (res.xpAwarded && res.xpAwarded > 0) {
-            setXp(res.newTotalXp || xp);
-            setLevel(res.newLevel || level);
-            const titleRaw = dict?.toast?.destinationDiscovered || `¡Destino descubierto! +{xp} XP`;
-            const descRaw = dict?.toast?.totalXp || `Tu XP total: {total} (Nivel {level})`;
-            const finalTitle = titleRaw.replace('{xp}', res.xpAwarded.toString());
-            const finalDesc = descRaw
-              .replace('{total}', res.newTotalXp.toString())
-              .replace('{level}', res.newLevel.toString());
+          if (res.updatedBucketList) {
+            setBucketList(res.updatedBucketList);
+          }
+          if (res.newTotalXp !== undefined) {
+            setXp(res.newTotalXp);
+          } else if (res.xpAwarded && res.xpAwarded > 0) {
+            setXp(prev => prev + res.xpAwarded);
+          }
+          if (res.newLevel !== undefined) {
+            setLevel(res.newLevel);
+          }
 
+          const titleRaw = dict?.toast?.destinationDiscovered || `¡Destino descubierto! +{xp} XP`;
+          const descRaw = dict?.toast?.totalXp || `Tu XP total: {total} (Nivel {level})`;
+          const finalTitle = titleRaw.replace('{xp}', (res.xpAwarded || 0).toString());
+          const finalDesc = descRaw
+            .replace('{total}', (res.newTotalXp || xp).toString())
+            .replace('{level}', (res.newLevel || level).toString());
+
+          if (res.xpAwarded && res.xpAwarded > 0) {
             sonnerToast.success(finalTitle, {
               description: finalDesc,
             });
+          }
+
+          // Bono de Próximo Destino cumplido (+10 XP)
+          if (res.bucketListBonus && res.bucketListBonus > 0) {
+            setTimeout(() => {
+              sonnerToast.success(`¡Bono de Próximo Destino cumplido! +${res.bucketListBonus} XP 🎯`, {
+                description: 'Completaste un destino que tenías planificado en tu lista.',
+              });
+            }, 700);
           } else if (res.limitReached) {
             sonnerToast.info(dict?.gamification?.toastPostcardLimit || "¡Llevala suave y disfruta el paisaje! 🌴 Ya alcanzaste el límite de XP de hoy. A partir de tu cuarta postal ya no sumás XP, pero podés seguir coleccionando y sumando descubrimientos a tu álbum. ¡Mañana recargamos el XP!", {
               duration: 8000
@@ -581,12 +646,20 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     return 0;
   };
 
-  const updatePlaceDetails = async (id: string, date: string, note: string) => {
-    // 1. Actualización optimista en el estado local (UI instantánea)
-    setPlaceDetails(prev => ({
-      ...prev,
-      [id]: { date, note }
-    }));
+  const updatePlaceDetails = async (id: string, date: string, note: string, isPublic?: boolean) => {
+    // 1. Actualización optimista inmediata en estado local y en localStorage
+    setPlaceDetails(prev => {
+      const existing = prev[id];
+      const finalIsPublic = isPublic !== undefined ? isPublic : (existing?.isPublic ?? false);
+      const updated = {
+        ...prev,
+        [id]: { date, note, isPublic: finalIsPublic }
+      };
+      try {
+        localStorage.setItem('tico100_place_details', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
 
     // 2. Persistencia asíncrona en la Base de Datos
     try {
@@ -602,18 +675,26 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         localUsername = localStorage.getItem('localUsername') || undefined;
       }
       
-      const res = await updateUserProgressNote(id, note, date, localUsername, user?.id);
+      const finalIsPublic = isPublic !== undefined ? isPublic : (placeDetails[id]?.isPublic ?? false);
+      const res = await updateUserProgressNote(id, note, date, localUsername, user?.id, finalIsPublic);
 
       if (!res.success) {
         console.error('Error al persistir la bitácora en la BD', res.error);
+        sonnerToast.error('Aviso: Tu nota se guardó en este dispositivo, pero hubo un detalle sincronizando con la nube.');
       }
     } catch (e) {
       console.error('Error de red al guardar la bitácora', e);
+      sonnerToast.error('Aviso: Error de conexión. Tu nota se guardó localmente y se sincronizará al reconectar.');
     }
   };
 
+  const updateLocalXp = (newXp: number, newLevel: number) => {
+    setXp(newXp);
+    setLevel(newLevel);
+  };
+
   return (
-    <ProgressContext.Provider value={{ completedPlaces, placeDetails, unlockModes, bucketList, handleCheckIn, handleCheckInWithMode, updatePlaceDetails, toggleBucketList, communityRatings, userRatings, xp, level, currentStreak, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, handleRate, userProfile, showTour, setShowTour }}>
+    <ProgressContext.Provider value={{ completedPlaces, placeDetails, unlockModes, bucketList, handleCheckIn, handleCheckInWithMode, updatePlaceDetails, toggleBucketList, communityRatings, userRatings, xp, level, currentStreak, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, handleRate, userProfile, showTour, setShowTour, updateLocalXp }}>
       {children}
       {showOnboarding && <OnboardingModal onCompleted={() => setShowOnboarding(false)} />}
       <LevelUpModal 

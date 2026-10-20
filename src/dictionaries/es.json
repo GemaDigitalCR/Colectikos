@@ -1,5 +1,7 @@
 {
+  "lang": "es",
   "navbar": {
+    "search": "Buscar",
     "searchPlaceholder": "Buscar lugares...",
     "language": "Idioma",
     "settings": "Perfil",
@@ -7,12 +9,14 @@
     "destinations": "Destinos",
     "community": "Comunidad",
     "contact": "Contacto",
+    "login": "Iniciar Sesión",
     "logout": "Salir",
     "home": "Inicio",
     "provinces": "Provincias",
     "visitedDestinations": "Mis Destinos Visitados",
     "upcomingDestinations": "Mis Próximos Destinos",
-    "rideAddons": "Complementos de tu ride"
+    "rideAddons": "Complementos de tu Ride",
+    "explorersWall": "Muro de Exploradores"
   },
   "communityPage": {
     "title": "Álbum de la Comunidad",
@@ -28,6 +32,7 @@
     "filterByProvince": "Filtra por Provincia",
     "openAlbum": "Abrir mi Álbum Virtual",
     "bucketListTitle": "Mis Próximos Destinos",
+    "removeFromBucketList": "Quitar de Próximos Destinos",
     "emptyBucketList": "Aún no tienes próximos destinos... Usa la banderita en las postales bloqueadas para añadirlos.",
     "visitedDestinationsTitle": "Mis Destinos Visitados",
     "emptyVisitedDestinations": "Aún no has visitado destinos... Sal a explorar y desbloquea postales."
@@ -63,7 +68,8 @@
     "rating_3": "Muy Chiva",
     "rating_4": "¡Rajado!",
     "community_rating": "Comunidad:",
-    "my_rating": "Mi calificación:"
+    "my_rating": "Mi calificación:",
+    "complementos": "Complementos"
   },
   "unlockModal": {
     "title": "¡Desbloqueando Postal!",
@@ -83,7 +89,7 @@
     "conquistador": "Postales Conquistadas"
   },
   "toast": {
-    "firstGlobal": "¡Felicidades! Has iniciado tu colección 100% {tico}. 🎉",
+    "firstGlobal": "¡Felicidades! Has iniciado tu colección en Colectikos. 🎉",
     "firstCat": "¡Primer paso en {category}! Has iniciado esta categoría. 🌟",
     "nudgeVariant": "¡Felicidades! Si hiciste una visita completa, recuerda que también puedes desbloquear la postal de este destino en la categoría {Categoria_Gemela}.",
     "bucketListLimit": "Solo puedes tener 4 próximos destinos en tu lista. Desmarca uno para agregar este.",
@@ -99,7 +105,7 @@
     "perfect": "¡Perfecto!",
     "categoryProgress": "Avance por Categoría",
     "places": "{completed} de {total} lugares",
-    "shareProgress": "Mi Pasaporte",
+    "shareProgress": "Pasaporte Digital",
     "generating": "Generando...",
     "posterTitleLine1": "Mi Pasaporte",
     "posterTitleLine2": "Colectikos",
@@ -154,7 +160,7 @@
     "usernamePlaceholder": "Ej. Coleccionista19",
     "usernameErrorEmpty": "Por favor ingresa un Nombre de Coleccionista.",
     "usernameErrorTaken": "Este Nombre de Coleccionista ya está en uso. Por favor, elige otro.",
-    "usernameHelp": "El Nombre de Coleccionista es tu identidad única en Tico100 y no puede ser modificado.",
+    "usernameHelp": "El Nombre de Coleccionista es tu identidad única en Colectikos y no puede ser modificado.",
     "genderLabel": "Género (Para tus títulos Tico/Tica)",
     "genders": {
       "Masculino": "Masculino",
@@ -274,7 +280,7 @@
     "instH2_6": "6. Presume tus Logros (Cómo exportar tu pasaporte digital)",
     "instP2_6": "Tu esfuerzo merece ser reconocido. COLECTIKOS genera un pasaporte oficial y personalizado con tu progreso, listo para compartir con el mundo.",
     "instLi6_1": "<strong>Visita tu perfil:</strong> Dirígete a tu espacio personal haciendo clic en tu Avatar.",
-    "instLi6_2": "<strong>Genera tu póster:</strong> Busca el botón 'Compartir Logros'. Al presionarlo, el sistema creará mágicamente una imagen en alta calidad de tu Pasaporte Digital.",
+    "instLi6_2": "<strong>Genera tu pasaporte:</strong> Busca el botón 'Pasaporte Digital' en tu perfil. Al presionarlo, el sistema creará tu Pasaporte oficial en alta calidad listo para compartir o guardar en tus fotos.",
     "instLi6_3": "<strong>Descubre tu sello:</strong> Esta imagen incluirá tu nombre, tu nivel actual, el porcentaje del mapa conquistado y tu Modo de Juego oficial.",
     "instLi6_4": "<strong>Comparte con el mundo:</strong> Descarga la imagen y súbela a tus redes sociales para retar a tus amigos o demostrar tu rango de explorador.",
     "instH2_7": "7. Tu Próxima Aventura (Mis 4 Destinos por Visitar)",
@@ -417,5 +423,18 @@
     "passportTica": "Sos Tica{level}",
     "streakDays": "{days} Días",
     "level": "Nivel {level}"
+  },
+  "upcomingWidget": {
+    "activeBadge": "Tu Próximo Ride",
+    "emptyBadge": "Planifica tu Aventura",
+    "xpBadge": "+10 XP por destino",
+    "activeSubtitle": "Rumbo trazado. Descubre recomendaciones locales y complementos seleccionados para tu viaje.",
+    "activeCta": "Ver mi ruta y paradas",
+    "emptyTitle": "¿A dónde vas este fin de semana?",
+    "emptySubtitle": "Marca tus destinos favoritos con la banderita roja 🚩 para ganar +10 XP y descubrir comercios y paradas recomendadas en tu ruta.",
+    "emptyCta": "Planificar mi ride",
+    "destinationsCount": "de 4 planificados",
+    "emptyExplore": "Elegir postales abajo",
+    "andMore": "+{count} más en tu lista"
   }
 }

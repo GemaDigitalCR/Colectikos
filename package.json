@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--max_old_space_size=8192' next dev --webpack",
+    "dev": "NODE_OPTIONS='--max_old_space_size=8192' next dev -H 0.0.0.0 --webpack",
     "build": "NODE_OPTIONS='--max_old_space_size=8192' next build",
     "start": "NODE_OPTIONS='--max_old_space_size=8192' next start",
     "lint": "next lint",
@@ -16,6 +16,7 @@
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.9.1",
     "@types/nodemailer": "^8.0.1",
+    "@vercel/blob": "^2.8.1",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.43.0",
     "html-to-image": "^1.11.13",

@@ -19,6 +19,17 @@ const CATEGORIAS: Record<string, string> = {
   'CIUDAD_Y_CULTURA': 'Ciudad y Cultura'
 };
 
+const CATEGORIAS_EN: Record<string, string> = {
+  'Todas': 'All Categories',
+  'VOLCAN': 'Volcanoes',
+  'PARQUE_NACIONAL': 'National Parks',
+  'PLAYA': 'Beaches',
+  'RIOS_Y_CATARATAS': 'Rivers & Waterfalls',
+  'LAGUNAS': 'Lagoons',
+  'BOSQUES_RESERVAS': 'Forests & Reserves',
+  'CIUDAD_Y_CULTURA': 'City & Culture'
+};
+
 export default function RankingsView({ isEn }: { isEn: boolean }) {
   const { user: clerkUser } = useUser();
   const currentUserId = clerkUser?.id;
@@ -126,7 +137,11 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
                   onChange={(e) => setProvincia(e.target.value)}
                   className="w-full appearance-none bg-stone-50 border border-stone-200 text-stone-700 py-2.5 px-4 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 >
-                  {PROVINCIAS.map(p => <option key={p} value={p}>{p}</option>)}
+                  {PROVINCIAS.map(p => (
+                    <option key={p} value={p}>
+                      {p === 'Todas' ? (isEn ? 'All Provinces' : 'Todas') : p}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={18} />
               </div>
@@ -143,7 +158,9 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
                   className="w-full appearance-none bg-stone-50 border border-stone-200 text-stone-700 py-2.5 px-4 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 >
                   {Object.entries(CATEGORIAS).map(([key, val]) => (
-                    <option key={key} value={key}>{val}</option>
+                    <option key={key} value={key}>
+                      {isEn ? CATEGORIAS_EN[key] || val : val}
+                    </option>
                   ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={18} />
@@ -287,7 +304,7 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
                 {isEn ? "Your Position" : "Tu Posición"}
               </p>
               <div className="flex items-center gap-2">
-                <p className="font-bold text-stone-800 truncate">{currentUserRank.username || "Tú"}</p>
+                <p className="font-bold text-stone-800 truncate">{currentUserRank.username || (isEn ? "You" : "Tú")}</p>
                 <span className="text-xs font-bold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">Lvl {currentUserRank.level}</span>
               </div>
             </div>
