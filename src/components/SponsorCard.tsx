@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, Phone, Mail, Image as ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { useProgress } from '../context/ProgressContext';
+import { useLugaresData } from '../context/LugaresContext';
+import { getProvincesForLugar } from '../utils/getLugares';
 
 export interface SponsorType {
   id: string;
@@ -37,6 +40,92 @@ interface SponsorCardProps {
 export default function SponsorCard({ sponsor, lang, variant = 'full' }: SponsorCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isCompact = variant === 'compact';
+
+  // Contextos para calcular medallas/evolución provincial en las cápsulas
+  const progressContext = useProgress?.();
+  const completedPlaces = progressContext?.completedPlaces || [];
+  const dbLugares = useLugaresData?.() || [];
+
+  const getProvinceSlug = (text: string) => {
+    const norm = (text || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (norm.includes('san jose')) return 'san-jose';
+    if (norm.includes('alajuela')) return 'alajuela';
+    if (norm.includes('cartago')) return 'cartago';
+    if (norm.includes('heredia')) return 'heredia';
+    if (norm.includes('guanacaste')) return 'guanacaste';
+    if (norm.includes('puntarenas')) return 'puntarenas';
+    if (norm.includes('limon')) return 'limon';
+    return norm.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  };
+
+  const getProvinceProgressPercentage = (provSlug: string) => {
+    if (!dbLugares || dbLugares.length === 0) return 0;
+    const provKeyMap: Record<string, string> = {
+      'san-jose': 'SAN JOSE',
+      'alajuela': 'ALAJUELA',
+      'cartago': 'CARTAGO',
+      'heredia': 'HEREDIA',
+      'guanacaste': 'GUANACASTE',
+      'puntarenas': 'PUNTARENAS',
+      'limon': 'LIMON',
+    };
+    const targetProv = provKeyMap[provSlug];
+    if (!targetProv) return 0;
+
+    let total = 0;
+    let completed = 0;
+
+    dbLugares.forEach((l: any) => {
+      if (l.categoria === 'PROVINCIA') return;
+      const provs = getProvincesForLugar(l.id, dbLugares);
+      if (provs.includes(targetProv)) {
+        total++;
+        if (completedPlaces.includes(l.id)) {
+          completed++;
+        }
+      }
+    });
+
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
+  };
+
+  const resolvePostcardImage = (pc: any) => {
+    const isProv = pc.categoria === 'PROVINCIA' || (pc.imagenUrl && pc.imagenUrl.includes('Postales_Provincias'));
+    if (isProv) {
+      const provSlug = getProvinceSlug(pc.nombre || pc.nombre_en || '');
+      const pct = getProvinceProgressPercentage(provSlug);
+      if (pct >= 75) {
+        return `/images/Postales_Provincias/Postales-provincias-${provSlug}-golden.png`;
+      }
+      if (pct >= 50) {
+        return `/images/Postales_Provincias/Postales-provincias-${provSlug}-silver.png`;
+      }
+      if (pct >= 25) {
+        return `/images/Postales_Provincias/Postales-provincias-${provSlug}-bronze.png`;
+      }
+      return `/images/Postales_Provincias/Postales-provincias-${provSlug}.png`;
+    }
+
+    if (pc.imagenUrl) {
+      if (pc.imagenUrl.includes('/images/Postales_Provincias/')) {
+        const parts = pc.imagenUrl.split('/');
+        const filename = parts[parts.length - 1];
+        return `/images/Postales_Provincias/${filename.toLowerCase()}`;
+      }
+      return pc.imagenUrl;
+    }
+
+    return null;
+  };
+
+  const cleanImageUrl = (url?: string | null) => {
+    if (!url) return '/images/Postales_Generales/Playas/Postales-playas-coyote.png';
+    if (url.startsWith('/Users/')) {
+      return '/images/Patrocinadores/Ohana01.webp';
+    }
+    return url;
+  };
+
   // Configurar emojis de categoría
   const getCategoryEmoji = (rawCat: string) => {
     const cat = rawCat ? rawCat.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
@@ -83,6 +172,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
   };
 
   const description = lang === 'en' && sponsor.descripcion_en ? sponsor.descripcion_en : sponsor.descripcion;
+  const heroImage = cleanImageUrl(sponsor.imagen1 || sponsor.imagenUrl);
 
   return (
     <div className={`bg-white rounded-3xl overflow-hidden shadow-lg border border-stone-200 flex flex-col hover:shadow-xl transition-all duration-300 ${isCompact ? 'h-auto' : ''}`}>
@@ -93,14 +183,14 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
       >
         {/* Fondo difuminado ambiental para rellenar los bordes laterales sin bandas duras */}
         <Image 
-          src={sponsor.imagen1 || sponsor.imagenUrl || '/images/Postales_Generales/Playas/Postales-playas-coyote.png'} 
+          src={heroImage} 
           alt="" 
           fill 
           className="object-cover blur-md opacity-35 scale-110 pointer-events-none" 
         />
         {/* Imagen principal nítida, 100% contenida: NUNCA se recorta ningún texto ni gráfico */}
         <Image 
-          src={sponsor.imagen1 || sponsor.imagenUrl || '/images/Postales_Generales/Playas/Postales-playas-coyote.png'} 
+          src={heroImage} 
           alt={sponsor.nombre}
           fill
           className="object-contain relative z-10 p-1 sm:p-2"
@@ -252,16 +342,20 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden relative border border-stone-200/80 shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300 bg-stone-100">
                       <ImageIcon className="absolute inset-0 m-auto w-3.5 h-3.5 text-stone-400" />
-                      {pc.imagenUrl && (
-                        <Image
-                          src={encodeURI(pc.imagenUrl)}
-                          alt={pc.nombre || 'Postal'}
-                          fill
-                          sizes="32px"
-                          className="object-cover"
-                          unoptimized
-                        />
-                      )}
+                      {(() => {
+                        const imgUrl = resolvePostcardImage(pc);
+                        if (!imgUrl) return null;
+                        return (
+                          <Image
+                            src={encodeURI(imgUrl)}
+                            alt={pc.nombre || 'Postal'}
+                            fill
+                            sizes="32px"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        );
+                      })()}
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className="text-xs font-semibold text-stone-800 leading-tight truncate">

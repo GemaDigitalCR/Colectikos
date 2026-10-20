@@ -40,10 +40,10 @@ const FALLBACK_SOPITIKA_PLACES: GameWordPlace[] = [
   { id: "p-tenorio", word: "TENORIO", nombre: "Volcán Tenorio", nombre_en: "Tenorio Volcano", categoria: "VOLCAN", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Volcanes/Postales-volcanes-Tenorio.png" },
   { id: "p-rincon", word: "RINCON", nombre: "Rincón de la Vieja", nombre_en: "Rincón de la Vieja", categoria: "PARQUE_NACIONAL", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Parques/Postales-parques-Rincon.png" },
   { id: "p-canonegro", word: "CAÑONEGRO", nombre: "Caño Negro", nombre_en: "Caño Negro", categoria: "PARQUE_NACIONAL", ubicacion: "Alajuela", imagenUrl: "/images/Postales_Parques/Postales-parques-Tortuguero.png" },
-  { id: "p-cartago", word: "CARTAGO", nombre: "Cartago", nombre_en: "Cartago", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-Cartago.png" },
-  { id: "p-heredia", word: "HEREDIA", nombre: "Heredia", nombre_en: "Heredia", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-Heredia.png" },
-  { id: "p-alajuela", word: "ALAJUELA", nombre: "Alajuela", nombre_en: "Alajuela", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-Alajuela.png" },
-  { id: "p-limon", word: "LIMON", nombre: "Limón", nombre_en: "Limón", categoria: "PROVINCIA", ubicacion: "Caribe", imagenUrl: "/images/Postales_Provincias/Postales-provincias-Limon.png" },
+  { id: "p-cartago", word: "CARTAGO", nombre: "Cartago", nombre_en: "Cartago", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-cartago.png" },
+  { id: "p-heredia", word: "HEREDIA", nombre: "Heredia", nombre_en: "Heredia", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-heredia.png" },
+  { id: "p-alajuela", word: "ALAJUELA", nombre: "Alajuela", nombre_en: "Alajuela", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-alajuela.png" },
+  { id: "p-limon", word: "LIMON", nombre: "Limón", nombre_en: "Limón", categoria: "PROVINCIA", ubicacion: "Caribe", imagenUrl: "/images/Postales_Provincias/Postales-provincias-limon.png" },
   { id: "p-hermosa", word: "HERMOSA", nombre: "Playa Hermosa", nombre_en: "Hermosa Beach", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Playas/Postales-playas-Hermosa.png" },
 ];
 

@@ -23,7 +23,7 @@ export const mockLugares: Lugar[] = [
     "descripcion_en": "Cultural and political capital of the country.",
     "ubicacion": "Valle Central",
     "ubicacion_en": "Central Valley",
-    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-San-Jose.png"
+    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-san-jose.png"
   },
   {
     "id": "2",
@@ -34,7 +34,7 @@ export const mockLugares: Lugar[] = [
     "descripcion_en": "City of Mangos and natural beauties.",
     "ubicacion": "Norte del Valle Central",
     "ubicacion_en": "North Central Valley",
-    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-Alajuela.png"
+    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-alajuela.png"
   },
   {
     "id": "3",
@@ -45,7 +45,7 @@ export const mockLugares: Lugar[] = [
     "descripcion_en": "Ancient metropolis with great historical wealth.",
     "ubicacion": "Este del Valle Central",
     "ubicacion_en": "East Central Valley",
-    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-Cartago.png"
+    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-cartago.png"
   },
   {
     "id": "4",
@@ -56,7 +56,7 @@ export const mockLugares: Lugar[] = [
     "descripcion_en": "City of Flowers and colonial architecture.",
     "ubicacion": "Norte del Valle Central",
     "ubicacion_en": "North Central Valley",
-    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-Heredia.png"
+    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-heredia.png"
   },
   {
     "id": "5",
@@ -67,7 +67,7 @@ export const mockLugares: Lugar[] = [
     "descripcion_en": "Pearl of the Pacific and beautiful coastal destination.",
     "ubicacion": "Costa Pacífica Central y Sur",
     "ubicacion_en": "Central and Southern Pacific Coast",
-    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-Puntarenas.png"
+    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-puntarenas.png"
   },
   {
     "id": "6",
@@ -78,7 +78,7 @@ export const mockLugares: Lugar[] = [
     "descripcion_en": "Afro-Caribbean wealth and exuberant nature.",
     "ubicacion": "Costa Caribe",
     "ubicacion_en": "Caribbean Coast",
-    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-Limon.png"
+    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-limon.png"
   },
   {
     "id": "7",
@@ -89,7 +89,7 @@ export const mockLugares: Lugar[] = [
     "descripcion_en": "Paradise beaches and cradle of national folklore.",
     "ubicacion": "Pacífico Norte",
     "ubicacion_en": "Northern Pacific",
-    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-Guanacaste.png"
+    "imagenUrl": "/images/Postales_Provincias/Postales-provincias-guanacaste.png"
   },
   {
     "id": "8",

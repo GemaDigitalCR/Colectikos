@@ -297,7 +297,7 @@ export default function SponsorsAdminClient({ initialSponsors, availableLugares 
                                   >
                                     {lugar.imagenUrl && (
                                       <img
-                                        src={lugar.imagenUrl}
+                                        src={lugar.imagenUrl.includes('/images/Postales_Provincias/') ? lugar.imagenUrl.toLowerCase() : lugar.imagenUrl}
                                         alt=""
                                         className="w-3.5 h-3.5 rounded-full object-cover shrink-0"
                                       />

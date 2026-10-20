@@ -757,7 +757,7 @@ export default function SponsorForm({ initialData, availableLugares = [], onSucc
                   <div className="w-8 h-8 rounded-xl overflow-hidden relative bg-stone-100 shrink-0 border border-stone-200 shadow-2xs">
                     {lugar.imagenUrl ? (
                       <img
-                        src={lugar.imagenUrl}
+                        src={lugar.imagenUrl.includes('/images/Postales_Provincias/') ? lugar.imagenUrl.toLowerCase() : lugar.imagenUrl}
                         alt=""
                         className="w-full h-full object-cover"
                       />
@@ -852,7 +852,7 @@ export default function SponsorForm({ initialData, availableLugares = [], onSucc
                   <div className="w-8 h-8 rounded-lg overflow-hidden relative bg-stone-200 shrink-0">
                     {lugar.imagenUrl && (
                       <img
-                        src={lugar.imagenUrl}
+                        src={lugar.imagenUrl.includes('/images/Postales_Provincias/') ? lugar.imagenUrl.toLowerCase() : lugar.imagenUrl}
                         alt=""
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
