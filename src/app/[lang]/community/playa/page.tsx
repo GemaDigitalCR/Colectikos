@@ -1214,8 +1214,8 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
             </button>
           </div>
 
-          {/* Floating Zoom Controls */}
-          <div className="absolute bottom-4 right-4 z-40 flex items-center gap-1 bg-white/95 backdrop-blur-md px-2 py-1.5 rounded-2xl shadow-xl border border-stone-300">
+          {/* Floating Zoom Controls (Esquina Superior Derecha) */}
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-40 flex items-center gap-1 bg-white/95 backdrop-blur-md px-2 py-1.5 rounded-2xl shadow-xl border border-stone-300">
             <button
               type="button"
               onClick={() => setZoom(prev => Math.max(0.5, Number((prev - 0.15).toFixed(2))))}
