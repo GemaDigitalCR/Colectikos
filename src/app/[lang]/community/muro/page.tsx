@@ -11,6 +11,7 @@ import {
   Filter, 
   Sparkles, 
   ChevronRight, 
+  ChevronDown,
   ArrowLeft,
   X,
   Compass,
@@ -383,7 +384,31 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
                 </button>
               )}
             </div>
-            <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+            {/* Mobile Dropdown for Province */}
+            <div className="block md:hidden w-full pb-2">
+              <div className="relative">
+                <select
+                  value={selectedProvince}
+                  onChange={(e) => setSelectedProvince(e.target.value)}
+                  className="w-full appearance-none bg-stone-50 text-stone-800 font-bold text-xs py-2.5 pl-8 pr-8 rounded-xl border border-stone-200/90 shadow-2xs focus:outline-none focus:border-emerald-600 cursor-pointer"
+                >
+                  {provinces.map(prov => (
+                    <option key={prov.id} value={prov.id}>
+                      📍 {prov.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-600">
+                  <MapPin size={14} />
+                </div>
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Pills for Province */}
+            <div className="hidden md:flex gap-1.5 flex-wrap pb-2">
               {provinces.map(prov => {
                 const active = selectedProvince === prov.id;
                 return (
@@ -403,12 +428,37 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
             </div>
           </div>
 
-          {/* Categories Horizontal Scroll Pills */}
+          {/* Categories Filters */}
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1 mb-1.5">
               <Compass size={12} /> {lang === 'en' ? 'Filter by Category' : 'Filtrar por Categoría'}
             </span>
-            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+
+            {/* Mobile Dropdown for Category */}
+            <div className="block md:hidden w-full pb-1">
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full appearance-none bg-stone-50 text-stone-800 font-bold text-xs py-2.5 pl-8 pr-8 rounded-xl border border-stone-200/90 shadow-2xs focus:outline-none focus:border-emerald-600 cursor-pointer"
+                >
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.icon} {cat.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-base leading-none">
+                  {categories.find(c => c.id === selectedCategory)?.icon || '🌍'}
+                </div>
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Pills for Category */}
+            <div className="hidden md:flex gap-1.5 flex-wrap pb-1">
               {categories.map(cat => {
                 const active = selectedCategory === cat.id;
                 return (

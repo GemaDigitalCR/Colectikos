@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import CategoryFilter from './CategoryFilter';
+import ProvinceFilter from './ProvinceFilter';
 import CommunityPlaceCard from './CommunityPlaceCard';
 import { useLugaresData } from '../context/LugaresContext';
 import { mapLugaresByLocale, getProvincesForLugar } from '../utils/getLugares';
@@ -41,39 +42,11 @@ export default function CommunityClient({ posts }: CommunityClientProps) {
         }} 
       />
       
-      <div className="mb-2 flex flex-col gap-2 mt-6">
-        <h3 className="text-base md:text-lg font-bold text-stone-700 tracking-tight">
-          {dict?.home?.filterByProvince || 'Filtra por Provincia'}
-        </h3>
-        
-        {/* Pill Navigation para Provincias */}
-        <div className="flex gap-2 overflow-x-auto md:flex-wrap md:overflow-visible md:whitespace-normal pb-4 pt-2 scrollbar-hide whitespace-nowrap mb-4 px-1">
-          {[
-            { id: null, label: isEnglish ? 'All' : 'Todas' },
-            { id: 'SAN JOSE', label: isEnglish ? 'San Jose' : 'San José' },
-            { id: 'ALAJUELA', label: 'Alajuela' },
-            { id: 'CARTAGO', label: 'Cartago' },
-            { id: 'HEREDIA', label: 'Heredia' },
-            { id: 'GUANACASTE', label: 'Guanacaste' },
-            { id: 'PUNTARENAS', label: 'Puntarenas' },
-            { id: 'LIMON', label: isEnglish ? 'Limon' : 'Limón' },
-          ].map(prov => {
-            const isActive = activeProvince === prov.id;
-            return (
-              <button
-                key={prov.id || 'all'}
-                onClick={() => setActiveProvince(prov.id)}
-                className={`rounded-full px-4 py-2 md:px-6 md:py-2 text-sm font-semibold transition-all duration-300 ease-in-out cursor-pointer shadow-sm border ${
-                  isActive 
-                    ? 'bg-emerald-500 text-white shadow-md border-emerald-500 scale-105'
-                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
-                }`}
-              >
-                {prov.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="mb-4 mt-6">
+        <ProvinceFilter
+          activeProvince={activeProvince}
+          onSelectProvince={setActiveProvince}
+        />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import CategoryFilter from '../../../components/CategoryFilter';
+import ProvinceFilter from '../../../components/ProvinceFilter';
 import PlaceCard from '../../../components/PlaceCard';
 
 import { useLugaresData } from '../../../context/LugaresContext';
@@ -85,38 +86,11 @@ export default function DestinosVisitadosPage() {
 
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 pt-2">
         <div className="bg-stone-50 rounded-xl p-4 md:p-6 border border-stone-200/60 shadow-inner">
-          <div className="mb-4 flex flex-col gap-2">
-            <h3 className="text-base md:text-lg font-bold text-stone-700 tracking-tight">
-              {dict?.home?.filterByProvince || 'Filtra por Provincia'}
-            </h3>
-            
-            <div className="flex gap-2 overflow-x-auto md:flex-wrap md:overflow-visible md:whitespace-normal pb-4 pt-2 scrollbar-hide whitespace-nowrap mb-2 px-1">
-              {[
-                { id: null, label: lang === 'en' ? 'All' : 'Todas' },
-                { id: 'SAN JOSE', label: lang === 'en' ? 'San Jose' : 'San José' },
-                { id: 'ALAJUELA', label: 'Alajuela' },
-                { id: 'CARTAGO', label: 'Cartago' },
-                { id: 'HEREDIA', label: 'Heredia' },
-                { id: 'GUANACASTE', label: 'Guanacaste' },
-                { id: 'PUNTARENAS', label: 'Puntarenas' },
-                { id: 'LIMON', label: lang === 'en' ? 'Limon' : 'Limón' },
-              ].map(prov => {
-                const isActive = activeProvince === prov.id;
-                return (
-                  <button
-                    key={prov.id || 'all'}
-                    onClick={() => setActiveProvince(prov.id)}
-                    className={`rounded-full px-4 py-2 md:px-6 md:py-2 text-sm font-semibold transition-all duration-300 ease-in-out cursor-pointer shadow-sm border ${
-                      isActive 
-                        ? 'bg-emerald-500 text-white shadow-md border-emerald-500 scale-105'
-                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    {prov.label}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="mb-4">
+            <ProvinceFilter
+              activeProvince={activeProvince}
+              onSelectProvince={setActiveProvince}
+            />
           </div>
 
           {filteredLugares.length === 0 ? (

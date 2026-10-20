@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Hero from '../../components/Hero';
 import UpcomingRideWidget from '../../components/UpcomingRideWidget';
 import CategoryFilter from '../../components/CategoryFilter';
+import ProvinceFilter from '../../components/ProvinceFilter';
 import PlaceCard from '../../components/PlaceCard';
 
 import { useLugaresData } from '../../context/LugaresContext';
@@ -147,59 +148,30 @@ export default function Home() {
         />
         
         <section ref={galleryRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-20 pt-2">
-          <div className="mb-2 flex flex-col gap-2">
-            <div className="flex justify-between items-center flex-wrap gap-4">
-              <h3 className="text-base md:text-lg font-bold text-stone-700 tracking-tight">
-                {dict?.home?.filterByProvince || 'Filtra por Provincia'}
-              </h3>
-              
-              <div className="flex items-center gap-2 bg-stone-100 p-1 rounded-full shadow-inner">
-                <span className="text-xs font-semibold text-stone-500 pl-2">
-                  {lang === 'en' ? 'Sticker style:' : 'Estilo de pegado:'}
-                </span>
-                <button 
-                  onClick={() => setIsMessyView(false)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 ${!isMessyView ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
-                >
-                  {lang === 'en' ? 'Neat' : 'Perfecto'}
-                </button>
-                <button 
-                  onClick={() => setIsMessyView(true)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 ${isMessyView ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
-                >
-                  {lang === 'en' ? 'Playful' : 'Desordenado'}
-                </button>
-              </div>
-            </div>
-            
-            {/* Pill Navigation para Provincias */}
-            <div className="flex gap-2 overflow-x-auto md:flex-wrap md:overflow-visible md:whitespace-normal pb-4 pt-2 scrollbar-hide whitespace-nowrap mb-4 px-1">
-              {[
-                { id: null, label: lang === 'en' ? 'All' : 'Todas' },
-                { id: 'SAN JOSE', label: lang === 'en' ? 'San Jose' : 'San José' },
-                { id: 'ALAJUELA', label: 'Alajuela' },
-                { id: 'CARTAGO', label: 'Cartago' },
-                { id: 'HEREDIA', label: 'Heredia' },
-                { id: 'GUANACASTE', label: 'Guanacaste' },
-                { id: 'PUNTARENAS', label: 'Puntarenas' },
-                { id: 'LIMON', label: lang === 'en' ? 'Limon' : 'Limón' },
-              ].map(prov => {
-                const isActive = activeProvince === prov.id;
-                return (
-                  <button
-                    key={prov.id || 'all'}
-                    onClick={() => setActiveProvince(prov.id)}
-                    className={`rounded-full px-4 py-2 md:px-6 md:py-2 text-sm font-semibold transition-all duration-300 ease-in-out cursor-pointer shadow-sm border ${
-                      isActive 
-                        ? 'bg-emerald-500 text-white shadow-md border-emerald-500 scale-105'
-                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
-                    }`}
+          <div className="mb-4">
+            <ProvinceFilter
+              activeProvince={activeProvince}
+              onSelectProvince={setActiveProvince}
+              rightElement={
+                <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-full shadow-inner">
+                  <span className="text-xs font-semibold text-stone-500 pl-2">
+                    {lang === 'en' ? 'Sticker style:' : 'Estilo de pegado:'}
+                  </span>
+                  <button 
+                    onClick={() => setIsMessyView(false)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 ${!isMessyView ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
                   >
-                    {prov.label}
+                    {lang === 'en' ? 'Neat' : 'Perfecto'}
                   </button>
-                );
-              })}
-            </div>
+                  <button 
+                    onClick={() => setIsMessyView(true)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 ${isMessyView ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                  >
+                    {lang === 'en' ? 'Playful' : 'Desordenado'}
+                  </button>
+                </div>
+              }
+            />
           </div>
           <div 
             key={`${activeCategory}-${activeProvince || 'all'}`}

@@ -189,7 +189,39 @@ export default function ProvinciasClient({ sponsors }: ProvinciasClientProps) {
 
       {/* Píldoras de Selección de Provincia con Contador de Aliados */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
-        <div className="flex gap-2 overflow-x-auto md:flex-wrap pb-2 pt-1 scrollbar-hide">
+        {/* Versión Celular: Dropdown táctil estilizado */}
+        <div className="block md:hidden w-full pb-2">
+          <div className="relative">
+            <select
+              value={selectedProvince}
+              onChange={(e) => handleSelectProvince(e.target.value)}
+              className="w-full appearance-none bg-white text-stone-800 font-bold text-sm py-3 pl-11 pr-10 rounded-2xl border-2 border-stone-200/90 shadow-xs focus:outline-none focus:border-emerald-600 focus:ring-4 focus:ring-emerald-500/15 transition-all cursor-pointer"
+            >
+              <option value="ALL">
+                🧭 {lang === 'en' ? 'All Provinces' : 'Todas las Provincias'} ({sponsors.length} {lang === 'en' ? 'allies' : 'aliados'})
+              </option>
+              {PROVINCES_LIST.map((pKey) => {
+                const provPercentage = progressData[pKey]?.percentage || 0;
+                const medal = provPercentage >= 75 ? '🥇' : provPercentage >= 50 ? '🥈' : provPercentage >= 25 ? '🥉' : '';
+                const spCount = getSponsorsCountForProvince(pKey);
+                return (
+                  <option key={pKey} value={pKey}>
+                    {medal ? `${medal} ` : '📍 '}{getProvinceDisplayName(pKey)} ({provPercentage}% - {spCount} {lang === 'en' ? 'allies' : 'aliados'})
+                  </option>
+                );
+              })}
+            </select>
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-600">
+              <Compass size={18} />
+            </div>
+            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+              <ChevronDown size={19} className="stroke-[2.5]" />
+            </div>
+          </div>
+        </div>
+
+        {/* Versión Desktop: Píldoras horizontales */}
+        <div className="hidden md:flex gap-2 flex-wrap pb-2 pt-1">
           <button
             onClick={() => handleSelectProvince('ALL')}
             className={`rounded-full px-4 py-2 text-xs md:text-sm font-bold transition-all shadow-sm border flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
