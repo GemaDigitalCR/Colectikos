@@ -869,7 +869,7 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
 
         {/* LISTA DE PALABRAS POR ENCONTRAR */}
         <div className="lg:col-span-4 flex flex-col gap-3">
-          <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-lg border border-stone-200 flex flex-col h-full">
+          <div className="bg-white rounded-3xl p-3 sm:p-5 shadow-lg border border-stone-200 flex flex-col h-full">
             <div className="flex items-center justify-between border-b border-stone-100 pb-2 mb-3">
               <h2 className="font-black text-sm uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
                 <span>📍</span>
@@ -887,37 +887,55 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
                 return (
                   <div
                     key={item.id}
-                    className={`p-2.5 rounded-2xl border transition-all flex items-center justify-between gap-2 ${
+                    className={`p-2.5 sm:p-3 rounded-2xl border transition-all flex flex-col justify-between gap-1.5 ${
                       isFound
-                        ? `${item.color.badge} line-through shadow-sm scale-98 opacity-90`
-                        : "bg-stone-50 hover:bg-stone-100/80 border-stone-200 text-stone-800"
+                        ? `${item.color.badge} border-2 shadow-xs scale-[0.99] opacity-95`
+                        : "bg-stone-50/90 hover:bg-stone-100/90 border-stone-200/90 text-stone-850 shadow-2xs"
                     }`}
                   >
-                    <div className="min-w-0 flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isFound ? item.color.dot : "bg-stone-300"}`} />
-                      <div className="truncate">
-                        <div className="font-black text-xs sm:text-sm tracking-wide text-stone-800 truncate">
+                    {/* Fila 1: Indicador de estado + Nombre completo del Lugar + Badge de longitud / Checkmark */}
+                    <div className="flex items-start justify-between gap-1.5">
+                      <div className="flex items-start gap-1.5 min-w-0 flex-1">
+                        <span
+                          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 mt-0.5 transition-transform ${
+                            isFound ? `${item.color.dot} scale-110 ring-2 ring-white` : "bg-stone-300 ring-1 ring-stone-200"
+                          }`}
+                        />
+                        <span
+                          className={`font-black text-xs sm:text-sm tracking-tight leading-tight transition-all break-words ${
+                            isFound ? "text-stone-500 line-through" : "text-stone-900"
+                          }`}
+                        >
                           {isEn ? item.nombre_en : item.nombre}
-                        </div>
-                        <div className="text-[11px] font-mono font-bold text-emerald-800 flex items-center gap-1.5 truncate">
-                          <span className={`px-1.5 py-0.5 rounded border text-[10px] sm:text-[11px] font-black ${isFound ? "bg-white/80 border-emerald-300 text-emerald-900" : "bg-white border-stone-200 text-stone-700"}`}>
-                            {item.word}
-                          </span>
-                          <span className="text-[10px] text-stone-500 font-sans font-medium truncate flex items-center gap-0.5">
-                            <MapPin size={9} className="shrink-0" />
-                            {item.ubicacion}
-                          </span>
-                        </div>
+                        </span>
                       </div>
+
+                      {isFound ? (
+                        <CheckCircle2 size={16} className="shrink-0 text-emerald-600 animate-in zoom-in-50 duration-300 mt-0.5" />
+                      ) : (
+                        <span className="text-[9px] font-black text-stone-500 bg-white/90 px-1.5 py-0.5 rounded-md border border-stone-200/90 shrink-0 shadow-2xs">
+                          {item.word.length} ltrs
+                        </span>
+                      )}
                     </div>
 
-                    {isFound ? (
-                      <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
-                    ) : (
-                      <span className="text-[10px] font-bold text-stone-400 bg-white px-1.5 py-0.5 rounded border border-stone-200 shrink-0">
-                        {item.word.length} ltrs
+                    {/* Fila 2: La Palabra a Buscar (Gamificada como ficha de juego) + Ubicación */}
+                    <div className="flex items-center justify-between gap-1 pt-1 border-t border-stone-200/50 mt-auto">
+                      <span
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-mono font-black tracking-wider transition-all shadow-2xs ${
+                          isFound
+                            ? "bg-white/80 border border-emerald-300 text-emerald-900 line-through"
+                            : "bg-white border border-emerald-200/80 text-emerald-900"
+                        }`}
+                      >
+                        {item.word}
                       </span>
-                    )}
+
+                      <span className="text-[10px] text-stone-500 font-medium flex items-center gap-0.5 shrink-0 max-w-[85px] truncate">
+                        <MapPin size={9} className="shrink-0 text-stone-400" />
+                        <span className="truncate">{item.ubicacion}</span>
+                      </span>
+                    </div>
                   </div>
                 );
               })}
