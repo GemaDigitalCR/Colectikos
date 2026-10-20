@@ -186,6 +186,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
           src={heroImage} 
           alt="" 
           fill 
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover blur-md opacity-35 scale-110 pointer-events-none" 
         />
         {/* Imagen principal nítida, 100% contenida: NUNCA se recorta ningún texto ni gráfico */}
@@ -193,6 +194,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
           src={heroImage} 
           alt={sponsor.nombre}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-contain relative z-10 p-1 sm:p-2"
         />
         <div className={`absolute top-3 left-3 z-20 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full ${isCompact ? 'text-[10px]' : 'text-xs'} font-bold text-stone-800 shadow-sm flex items-center gap-1.5`}>
@@ -272,6 +274,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
                     src={(sponsor.imagen2 || sponsor.fotoExtra1)!} 
                     alt="" 
                     fill 
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover blur-md opacity-35 scale-110 pointer-events-none" 
                   />
                   {/* Imagen nítida 100% contenida sin recorte */}
@@ -279,6 +282,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
                     src={(sponsor.imagen2 || sponsor.fotoExtra1)!} 
                     alt={`Galería 1`} 
                     fill 
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-contain relative z-10 p-1 group-hover:scale-[1.02] transition-transform duration-300" 
                   />
                 </div>
@@ -290,6 +294,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
                     src={(sponsor.imagen3 || sponsor.fotoExtra2)!} 
                     alt="" 
                     fill 
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover blur-md opacity-35 scale-110 pointer-events-none" 
                   />
                   {/* Imagen nítida 100% contenida sin recorte */}
@@ -297,6 +302,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
                     src={(sponsor.imagen3 || sponsor.fotoExtra2)!} 
                     alt={`Galería 2`} 
                     fill 
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-contain relative z-10 p-1 group-hover:scale-[1.02] transition-transform duration-300" 
                   />
                 </div>
@@ -308,12 +314,14 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
                     src={img} 
                     alt="" 
                     fill 
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover blur-md opacity-35 scale-110 pointer-events-none" 
                   />
                   <Image 
                     src={img} 
                     alt={`Galería ${index + 1}`} 
                     fill 
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-contain relative z-10 p-1 group-hover:scale-[1.02] transition-transform duration-300" 
                   />
                 </div>
@@ -352,7 +360,6 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
                             fill
                             sizes="32px"
                             className="object-cover"
-                            unoptimized
                           />
                         );
                       })()}
