@@ -33,7 +33,7 @@ import {
   AwardPreguntikasXPResult,
 } from "../../../../actions/preguntikas";
 import { TriviaQuestion } from "../../../../data/preguntikasBank";
-import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound } from "../../../../lib/soundUtils";
+import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound, playHtmlAudioClick } from "../../../../lib/soundUtils";
 
 const CATEGORY_STYLES: Record<
   TriviaQuestion["category"],
@@ -119,7 +119,16 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
     localStorage.setItem("preguntikas_sound", String(nextVal));
     if (nextVal) {
       unlockAudio();
+      playHtmlAudioClick();
       playSound("click");
+      toast.success(isEn ? "Sound ON 🔊" : "Sonido activado 🔊", {
+        description: isEn 
+          ? "Check that your device media volume is up" 
+          : "Verifica que el volumen multimedia de tu teléfono esté arriba",
+        duration: 2500,
+      });
+    } else {
+      toast.info(isEn ? "Sound OFF 🔇" : "Sonido desactivado 🔇", { duration: 1500 });
     }
   };
 
@@ -130,51 +139,51 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sine";
-        osc.frequency.setValueAtTime(540, t0);
-        osc.frequency.exponentialRampToValueAtTime(700, t0 + 0.04);
-        gain.gain.setValueAtTime(0.08, t0);
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.04);
+        osc.frequency.setValueAtTime(580, t0);
+        osc.frequency.exponentialRampToValueAtTime(760, t0 + 0.08);
+        gain.gain.setValueAtTime(0.35, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.04);
+        osc.stop(t0 + 0.08);
       } else if (type === "correct") {
         // Arpegio mayor alegre y brillante (C5 -> E5 -> G5 -> C6)
         [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = "triangle";
-          const start = t0 + idx * 0.06;
+          const start = t0 + idx * 0.07;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.18, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
+          gain.gain.setValueAtTime(0.42, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.32);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(start);
-          osc.stop(start + 0.28);
+          osc.stop(start + 0.32);
         });
       } else if (type === "wrong") {
         // Tono suave descendente tipo error amigable
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(260, t0);
-        osc.frequency.exponentialRampToValueAtTime(160, t0 + 0.22);
-        gain.gain.setValueAtTime(0.09, t0);
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+        osc.frequency.setValueAtTime(380, t0);
+        osc.frequency.exponentialRampToValueAtTime(220, t0 + 0.2);
+        gain.gain.setValueAtTime(0.35, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.2);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.22);
+        osc.stop(t0 + 0.2);
       } else if (type === "victory") {
         // Fanfarria triunfal
         [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = "triangle";
-          const start = t0 + idx * 0.09;
+          const start = t0 + idx * 0.1;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.22, start);
+          gain.gain.setValueAtTime(0.48, start);
           gain.gain.exponentialRampToValueAtTime(0.001, start + 0.45);
           osc.connect(gain);
           gain.connect(ctx.destination);

@@ -30,7 +30,7 @@ import {
   DailySopitikaStatus, 
   AwardSopitikaXPResult 
 } from "../../../../actions/sopitika";
-import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound } from "../../../../lib/soundUtils";
+import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound, playHtmlAudioClick } from "../../../../lib/soundUtils";
 
 const GRID_SIZE = 11;
 const TARGET_WORDS_COUNT = 6;
@@ -171,7 +171,16 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
     localStorage.setItem("sopitika_sound", String(next));
     if (next) {
       unlockAudio();
+      playHtmlAudioClick();
       playSound("click");
+      toast.success(isEn ? "Sound ON 🔊" : "Sonido activado 🔊", {
+        description: isEn 
+          ? "Check that your device media volume is up" 
+          : "Verifica que el volumen multimedia de tu teléfono esté arriba",
+        duration: 2500,
+      });
+    } else {
+      toast.info(isEn ? "Sound OFF 🔇" : "Sonido desactivado 🔇", { duration: 1500 });
     }
   };
 
@@ -182,47 +191,47 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sine";
-        osc.frequency.setValueAtTime(580, t0);
-        osc.frequency.exponentialRampToValueAtTime(720, t0 + 0.05);
-        gain.gain.setValueAtTime(0.08, t0);
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.05);
+        osc.frequency.setValueAtTime(600, t0);
+        osc.frequency.exponentialRampToValueAtTime(780, t0 + 0.08);
+        gain.gain.setValueAtTime(0.35, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.05);
+        osc.stop(t0 + 0.08);
       } else if (type === "found") {
         // Acorde arpegiado brillante y gratificante (E5, G#5, B5, E6)
         [659.25, 830.61, 987.77, 1318.51].forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = "triangle";
-          const start = t0 + idx * 0.06;
+          const start = t0 + idx * 0.07;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.18, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
+          gain.gain.setValueAtTime(0.42, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.32);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(start);
-          osc.stop(start + 0.28);
+          osc.stop(start + 0.32);
         });
       } else if (type === "error") {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(240, t0);
-        osc.frequency.exponentialRampToValueAtTime(150, t0 + 0.15);
-        gain.gain.setValueAtTime(0.06, t0);
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.15);
+        osc.frequency.setValueAtTime(380, t0);
+        osc.frequency.exponentialRampToValueAtTime(220, t0 + 0.18);
+        gain.gain.setValueAtTime(0.35, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.15);
+        osc.stop(t0 + 0.18);
       } else if (type === "hint") {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sine";
         osc.frequency.setValueAtTime(1046.5, t0);
-        gain.gain.setValueAtTime(0.15, t0);
+        gain.gain.setValueAtTime(0.38, t0);
         gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.35);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -233,14 +242,14 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = "triangle";
-          const start = t0 + idx * 0.09;
+          const start = t0 + idx * 0.1;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.22, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+          gain.gain.setValueAtTime(0.48, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.45);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(start);
-          osc.stop(start + 0.4);
+          osc.stop(start + 0.45);
         });
       }
     });

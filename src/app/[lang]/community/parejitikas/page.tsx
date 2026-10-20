@@ -33,7 +33,7 @@ import {
 } from "../../../../actions/parejitikas";
 import { useProgress } from "../../../../context/ProgressContext";
 import { useUser } from "@clerk/nextjs";
-import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound } from "../../../../lib/soundUtils";
+import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound, playHtmlAudioClick } from "../../../../lib/soundUtils";
 
 const MAX_DAILY_GAMES = 2;
 const MAX_DAILY_XP = 100;
@@ -251,35 +251,35 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(320, t0);
-        osc.frequency.exponentialRampToValueAtTime(540, t0 + 0.1);
-        gain.gain.setValueAtTime(0.12, t0);
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.1);
+        osc.frequency.setValueAtTime(440, t0);
+        osc.frequency.exponentialRampToValueAtTime(660, t0 + 0.09);
+        gain.gain.setValueAtTime(0.35, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.1);
+        osc.stop(t0 + 0.09);
       } else if (type === 'match') {
         [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          const start = t0 + idx * 0.06;
+          const start = t0 + idx * 0.07;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.15, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
+          gain.gain.setValueAtTime(0.42, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.32);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(start);
-          osc.stop(start + 0.28);
+          osc.stop(start + 0.32);
         });
       } else if (type === 'mismatch') {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(260, t0);
-        osc.frequency.exponentialRampToValueAtTime(180, t0 + 0.18);
-        gain.gain.setValueAtTime(0.08, t0);
+        osc.frequency.setValueAtTime(380, t0);
+        osc.frequency.exponentialRampToValueAtTime(220, t0 + 0.18);
+        gain.gain.setValueAtTime(0.35, t0);
         gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -292,12 +292,12 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
           osc.type = 'triangle';
           const start = t0 + idx * 0.1;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.2, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+          gain.gain.setValueAtTime(0.48, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.45);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(start);
-          osc.stop(start + 0.4);
+          osc.stop(start + 0.45);
         });
       }
     });
@@ -311,7 +311,16 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
     }
     if (nextVal) {
       unlockAudio();
+      playHtmlAudioClick();
       playSound('flip');
+      toast.success(isEn ? "Sound ON 🔊" : "Sonido activado 🔊", {
+        description: isEn 
+          ? "Check that your device media volume is up" 
+          : "Verifica que el volumen multimedia de tu teléfono esté arriba",
+        duration: 2500,
+      });
+    } else {
+      toast.info(isEn ? "Sound OFF 🔇" : "Sonido desactivado 🔇", { duration: 1500 });
     }
   };
 

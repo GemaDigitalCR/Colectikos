@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ZoomIn, ZoomOut, Move, Coins, RotateCcw, X, Volume2, VolumeX, ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import { loadBeachState, saveBeachState, saveBeachName } from "../../../../actions/playa";
-import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound } from "../../../../lib/soundUtils";
+import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound, playHtmlAudioClick } from "../../../../lib/soundUtils";
 
 const GRID_SIZE = 25;
 
@@ -93,7 +93,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
         popOsc.type = 'triangle';
         popOsc.frequency.setValueAtTime(320, t0);
         popOsc.frequency.exponentialRampToValueAtTime(80, t0 + 0.1);
-        popGain.gain.setValueAtTime(0.22, t0);
+        popGain.gain.setValueAtTime(0.38, t0);
         popGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.1);
         popOsc.connect(popGain);
         popGain.connect(ctx.destination);
@@ -106,21 +106,21 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           osc.type = 'sine';
           const start = t0 + 0.04 + idx * 0.04;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.12, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.24);
+          gain.gain.setValueAtTime(0.35, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.26);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(start);
-          osc.stop(start + 0.24);
+          osc.stop(start + 0.26);
         });
       } else if (type === 'relocate') {
         // Sonido suave de colocar al reubicar estructura
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(260, t0);
-        osc.frequency.exponentialRampToValueAtTime(520, t0 + 0.12);
-        gain.gain.setValueAtTime(0.18, t0);
+        osc.frequency.setValueAtTime(300, t0);
+        osc.frequency.exponentialRampToValueAtTime(560, t0 + 0.12);
+        gain.gain.setValueAtTime(0.35, t0);
         gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.12);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -131,26 +131,26 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, t0);
-        gain.gain.setValueAtTime(0.1, t0);
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
+        osc.frequency.setValueAtTime(620, t0);
+        gain.gain.setValueAtTime(0.35, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.08);
+        osc.stop(t0 + 0.09);
       } else if (type === 'select_placed') {
         // Toque sutil sobre edificio en la arena
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, t0);
-        osc.frequency.exponentialRampToValueAtTime(587.33, t0 + 0.07);
-        gain.gain.setValueAtTime(0.1, t0);
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.07);
+        osc.frequency.setValueAtTime(480, t0);
+        osc.frequency.exponentialRampToValueAtTime(640, t0 + 0.08);
+        gain.gain.setValueAtTime(0.35, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.07);
+        osc.stop(t0 + 0.08);
       } else if (type === 'sell') {
         // Tintineo metálico de monedas al vender o reciclar
         [1318.51, 1975.53, 2637.02].forEach((freq, idx) => {
@@ -159,21 +159,21 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           osc.type = 'sine';
           const start = t0 + idx * 0.07;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.16, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+          gain.gain.setValueAtTime(0.35, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(start);
-          osc.stop(start + 0.25);
+          osc.stop(start + 0.28);
         });
       } else if (type === 'error') {
         // Sonido suave de bloqueo o fondos insuficientes
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(260, t0);
-        osc.frequency.exponentialRampToValueAtTime(170, t0 + 0.16);
-        gain.gain.setValueAtTime(0.08, t0);
+        osc.frequency.setValueAtTime(360, t0);
+        osc.frequency.exponentialRampToValueAtTime(220, t0 + 0.16);
+        gain.gain.setValueAtTime(0.35, t0);
         gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -187,12 +187,12 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           osc.type = 'triangle';
           const start = t0 + idx * 0.08;
           osc.frequency.setValueAtTime(freq, start);
-          gain.gain.setValueAtTime(0.2, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+          gain.gain.setValueAtTime(0.45, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(start);
-          osc.stop(start + 0.35);
+          osc.stop(start + 0.4);
         });
       }
     });
@@ -204,7 +204,16 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
     localStorage.setItem('tiko_playa_sound', String(nextVal));
     if (nextVal) {
       unlockAudio();
+      playHtmlAudioClick();
       playSound('select_tool');
+      toast.success(isEn ? 'Sound ON 🔊' : 'Sonido activado 🔊', {
+        description: isEn 
+          ? 'Check that your device media volume is up' 
+          : 'Verifica que el volumen multimedia de tu teléfono esté arriba',
+        duration: 2500,
+      });
+    } else {
+      toast.info(isEn ? 'Sound OFF 🔇' : 'Sonido desactivado 🔇', { duration: 1500 });
     }
   };
 
