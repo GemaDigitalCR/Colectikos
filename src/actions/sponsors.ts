@@ -3,6 +3,7 @@
 import prisma from '../lib/prisma';
 import { put } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
+import { resolveLugarImageUrl } from '../utils/postcardImages';
 
 // Haversine formula to calculate distance between two coordinates in kilometers
 function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -117,14 +118,9 @@ export async function getNearbyPostcards(sponsorLat: number | null, sponsorLng: 
     // Luego, agregamos o sobreescribimos las manuales asignándoles distancia -1
     for (const manual of manualDestinations) {
       if (!manual) continue;
-      let img = manual.imagenUrl;
-      if (img && img.includes('/images/Postales_Provincias/')) {
-        const parts = img.split('/');
-        img = `/images/Postales_Provincias/${parts[parts.length - 1].toLowerCase()}`;
-      }
       combinedMap.set(manual.id, {
         ...manual,
-        imagenUrl: img,
+        imagenUrl: resolveLugarImageUrl(manual),
         distance: -1 // -1 significa "en ruta"
       });
     }

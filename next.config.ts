@@ -29,6 +29,14 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: '/images/postales_provincias/:path*',
+        destination: '/images/Postales_Provincias/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

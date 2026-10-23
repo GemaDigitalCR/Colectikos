@@ -34,8 +34,10 @@ const isPublicRoute = createRouteMatcher([
   '/:lang/sign-up(.*)',
   '/:lang/terminos',
   '/:lang/contact',
-  '/:lang/provincias',
-  '/:lang/proximos-destinos',
+  '/provincias(.*)',
+  '/:lang/provincias(.*)',
+  '/proximos-destinos(.*)',
+  '/:lang/proximos-destinos(.*)',
   '/destinos/complementos(.*)',
   '/:lang/destinos/complementos(.*)',
   '/nuestra-app(.*)',
@@ -45,6 +47,14 @@ const isPublicRoute = createRouteMatcher([
 
 const middleware = clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl;
+
+  // Resiliencia de mayúsculas/minúsculas para postales de provincias
+  if (pathname.includes('/postales_provincias/') || pathname.includes('/postales-provincias-')) {
+    const canonical = pathname
+      .replace('/postales_provincias/', '/Postales_Provincias/')
+      .replace('/postales-provincias-', '/Postales-provincias-');
+    return NextResponse.rewrite(new URL(canonical, request.url));
+  }
   
   // Excluir archivos estáticos y rutas de API
   if (

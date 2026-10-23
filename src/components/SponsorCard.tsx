@@ -6,6 +6,7 @@ import { MapPin, Phone, Mail, Image as ImageIcon, ChevronDown, ChevronUp } from 
 import { useProgress } from '../context/ProgressContext';
 import { useLugaresData } from '../context/LugaresContext';
 import { getProvincesForLugar } from '../utils/getLugares';
+import { isProvinceLugar, getProvinceSlugFromText, getProvincePostcardUrl, resolveLugarImageUrl } from '../utils/postcardImages';
 
 export interface SponsorType {
   id: string;
@@ -90,32 +91,16 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
   };
 
   const resolvePostcardImage = (pc: any) => {
-    const isProv = pc.categoria === 'PROVINCIA' || (pc.imagenUrl && pc.imagenUrl.includes('Postales_Provincias'));
-    if (isProv) {
-      const provSlug = getProvinceSlug(pc.nombre || pc.nombre_en || '');
+    if (isProvinceLugar(pc)) {
+      const provSlug = getProvinceSlugFromText(pc.nombre || pc.nombre_en || '');
       const pct = getProvinceProgressPercentage(provSlug);
-      if (pct >= 75) {
-        return `/images/Postales_Provincias/Postales-provincias-${provSlug}-golden.png`;
-      }
-      if (pct >= 50) {
-        return `/images/Postales_Provincias/Postales-provincias-${provSlug}-silver.png`;
-      }
-      if (pct >= 25) {
-        return `/images/Postales_Provincias/Postales-provincias-${provSlug}-bronze.png`;
-      }
-      return `/images/Postales_Provincias/Postales-provincias-${provSlug}.png`;
+      let tier: 'base' | 'bronze' | 'silver' | 'golden' = 'base';
+      if (pct >= 75) tier = 'golden';
+      else if (pct >= 50) tier = 'silver';
+      else if (pct >= 25) tier = 'bronze';
+      return getProvincePostcardUrl(provSlug, tier);
     }
-
-    if (pc.imagenUrl) {
-      if (pc.imagenUrl.includes('/images/Postales_Provincias/')) {
-        const parts = pc.imagenUrl.split('/');
-        const filename = parts[parts.length - 1];
-        return `/images/Postales_Provincias/${filename.toLowerCase()}`;
-      }
-      return pc.imagenUrl;
-    }
-
-    return null;
+    return resolveLugarImageUrl(pc);
   };
 
   const cleanImageUrl = (url?: string | null) => {
@@ -360,6 +345,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
                             fill
                             sizes="32px"
                             className="object-cover"
+                            unoptimized
                           />
                         );
                       })()}

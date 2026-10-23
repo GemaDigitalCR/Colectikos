@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Plus, Edit2, Trash2, ExternalLink, Image as ImageIcon, MapPin, Phone, Mail, Building2, Check, Compass } from 'lucide-react';
 import SponsorForm from '../../../../components/SponsorForm';
 import { deleteSponsor } from '../../../../actions/sponsors';
+import { resolveLugarImageUrl } from '../../../../utils/postcardImages';
 
 interface SponsorsAdminClientProps {
   initialSponsors: any[];
@@ -297,7 +298,7 @@ export default function SponsorsAdminClient({ initialSponsors, availableLugares 
                                   >
                                     {lugar.imagenUrl && (
                                       <img
-                                        src={lugar.imagenUrl.includes('/images/Postales_Provincias/') ? lugar.imagenUrl.toLowerCase() : lugar.imagenUrl}
+                                        src={resolveLugarImageUrl(lugar)}
                                         alt=""
                                         className="w-3.5 h-3.5 rounded-full object-cover shrink-0"
                                       />
