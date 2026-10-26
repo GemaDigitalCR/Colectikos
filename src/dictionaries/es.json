@@ -35,7 +35,12 @@
     "removeFromBucketList": "Quitar de Próximos Destinos",
     "emptyBucketList": "Aún no tienes próximos destinos... Usa la banderita en las postales bloqueadas para añadirlos.",
     "visitedDestinationsTitle": "Mis Destinos Visitados",
-    "emptyVisitedDestinations": "Aún no has visitado destinos... Sal a explorar y desbloquea postales."
+    "emptyVisitedDestinations": "Aún no has visitado destinos... Sal a explorar y desbloquea postales.",
+    "filterAll": "Todas",
+    "filterToCollect": "Por Coleccionar",
+    "allCollectedTitle": "¡Todo coleccionado aquí!",
+    "allCollectedDesc": "Ya desbloqueaste todos los destinos de esta sección. ¡Excelente explorador!",
+    "viewAllStickers": "Ver todas las postales"
   },
   "categories": {
     "ALL": "Todas",

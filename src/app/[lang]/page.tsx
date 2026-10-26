@@ -15,6 +15,7 @@ import { mapLugaresByLocale, getProvincesForLugar } from '../../utils/getLugares
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [activeProvince, setActiveProvince] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'LOCKED'>('ALL');
   const [isMessyView, setIsMessyView] = useState(false);
   
   const galleryRef = useRef<HTMLElement>(null);
@@ -32,6 +33,7 @@ export default function Home() {
       if (!lugarId) return;
       setActiveCategory('ALL');
       setActiveProvince(null);
+      setStatusFilter('ALL');
       setTimeout(() => {
         const element = document.getElementById(`lugar-${lugarId}`);
         if (element) {
@@ -52,6 +54,7 @@ export default function Home() {
       const hashLugarId = window.location.hash.replace('#lugar-', '');
       setActiveCategory('ALL');
       setActiveProvince(null);
+      setStatusFilter('ALL');
       setTimeout(() => {
         const element = document.getElementById(`lugar-${hashLugarId}`);
         if (element) {
@@ -70,12 +73,23 @@ export default function Home() {
     };
   }, []);
 
-  // Filter places
-  const filteredLugares = localizedLugares.filter(l => {
+  // Lugares contextuales (filtrados por Categoría y Provincia)
+  const contextLugares = localizedLugares.filter(l => {
     if (l.categoria === 'PROVINCIA') return false;
     const matchCategory = activeCategory === 'ALL' || l.categoria === activeCategory;
     const matchProvince = !activeProvince || getProvincesForLugar(l.id, dbLugares).includes(activeProvince);
     return matchCategory && matchProvince;
+  });
+
+  const totalInContext = contextLugares.length;
+  const lockedInContext = contextLugares.filter(l => !completedPlaces.includes(l.id)).length;
+
+  // Filtrado final aplicando estado: Todas o Por Coleccionar
+  const filteredLugares = contextLugares.filter(l => {
+    if (statusFilter === 'LOCKED') {
+      return !completedPlaces.includes(l.id);
+    }
+    return true;
   });
 
   // Calcular el progreso por provincia para el mapa
@@ -134,9 +148,49 @@ export default function Home() {
         <UpcomingRideWidget />
 
         <div id="seccion-logros" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 md:mt-4 mb-4 scroll-mt-32">
-          <h2 className="text-2xl md:text-3xl font-extrabold text-stone-900 tracking-tight">
-            {dict?.home?.yourStickers || 'Tus Postales'}
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-stone-900 tracking-tight">
+              {dict?.home?.yourStickers || 'Tus Postales'}
+            </h2>
+
+            {/* Selector de Estado: Todas vs Por Coleccionar */}
+            <div className="inline-flex self-start sm:self-auto p-1 bg-stone-200/80 backdrop-blur-sm rounded-2xl border border-stone-300/80 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setStatusFilter('ALL')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                  statusFilter === 'ALL'
+                    ? 'bg-white text-emerald-800 shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <span>{dict?.home?.filterAll || (lang === 'en' ? 'All' : 'Todas')}</span>
+                <span className={`text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded-full font-extrabold transition-colors ${
+                  statusFilter === 'ALL' ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-300/70 text-stone-600'
+                }`}>
+                  {totalInContext}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatusFilter('LOCKED')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                  statusFilter === 'LOCKED'
+                    ? 'bg-white text-amber-800 shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <span className="text-xs">🔒</span>
+                <span>{dict?.home?.filterToCollect || (lang === 'en' ? 'To Collect' : 'Por Coleccionar')}</span>
+                <span className={`text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded-full font-extrabold transition-colors ${
+                  statusFilter === 'LOCKED' ? 'bg-amber-100 text-amber-800' : 'bg-stone-300/70 text-stone-600'
+                }`}>
+                  {lockedInContext}
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
 
 
@@ -176,7 +230,7 @@ export default function Home() {
             />
           </div>
           <div 
-            key={`${activeCategory}-${activeProvince || 'all'}`}
+            key={`${activeCategory}-${activeProvince || 'all'}-${statusFilter}`}
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8"
           >
             {filteredLugares.map((lugar, index) => {
@@ -208,9 +262,31 @@ export default function Home() {
           </div>
 
           {filteredLugares.length === 0 && (
-            <div className="text-center py-20">
-              <span className="text-5xl mb-4 block opacity-50">🔍</span>
-              <h3 className="text-lg font-semibold text-stone-500">{dict?.home?.noPlaces || 'No hay lugares en esta categoría'}</h3>
+            <div className="text-center py-16 px-6 bg-white/70 backdrop-blur-md rounded-3xl border border-stone-200/80 max-w-md mx-auto my-8 shadow-sm">
+              {statusFilter === 'LOCKED' ? (
+                <>
+                  <span className="text-5xl mb-3 block">🎉</span>
+                  <h3 className="text-xl font-bold text-stone-800 mb-1.5">
+                    {dict?.home?.allCollectedTitle || (lang === 'en' ? 'All collected here!' : '¡Todo coleccionado aquí!')}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-stone-600 mb-4">
+                    {dict?.home?.allCollectedDesc || (lang === 'en'
+                      ? 'You have unlocked every destination in this section. Outstanding explorer!'
+                      : 'Ya desbloqueaste todos los destinos de esta sección. ¡Excelente explorador!')}
+                  </p>
+                  <button
+                    onClick={() => setStatusFilter('ALL')}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+                  >
+                    {dict?.home?.viewAllStickers || (lang === 'en' ? 'View all postcards' : 'Ver todas las postales')}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-5xl mb-4 block opacity-50">🔍</span>
+                  <h3 className="text-lg font-semibold text-stone-500">{dict?.home?.noPlaces || 'No hay lugares en esta categoría'}</h3>
+                </>
+              )}
             </div>
           )}
         </section>

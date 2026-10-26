@@ -35,7 +35,12 @@
     "removeFromBucketList": "Remove from Upcoming Destinations",
     "emptyBucketList": "You don't have upcoming destinations yet... Use the flag on locked postcards to add them.",
     "visitedDestinationsTitle": "My Visited Destinations",
-    "emptyVisitedDestinations": "You haven't visited any destinations yet... Go explore and unlock postcards."
+    "emptyVisitedDestinations": "You haven't visited any destinations yet... Go explore and unlock postcards.",
+    "filterAll": "All",
+    "filterToCollect": "To Collect",
+    "allCollectedTitle": "All collected here!",
+    "allCollectedDesc": "You have unlocked every destination in this section. Outstanding explorer!",
+    "viewAllStickers": "View all postcards"
   },
   "categories": {
     "ALL": "All",
