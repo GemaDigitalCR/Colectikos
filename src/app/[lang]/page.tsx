@@ -44,6 +44,7 @@ export default function Home() {
       }, 150);
     };
 
+    window.addEventListener('colectikos-select-lugar', handleSelectLugar);
     window.addEventListener('tico-select-lugar', handleSelectLugar);
 
     // Revisar hash al cargar la página (ej: #lugar-123)
@@ -64,6 +65,7 @@ export default function Home() {
     }
 
     return () => {
+      window.removeEventListener('colectikos-select-lugar', handleSelectLugar);
       window.removeEventListener('tico-select-lugar', handleSelectLugar);
     };
   }, []);

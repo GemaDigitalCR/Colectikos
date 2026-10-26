@@ -112,6 +112,7 @@ export default function SearchBar({
     if (!found) {
       // Disparar evento para resetear filtros en la página principal si está en Home
       if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('colectikos-select-lugar', { detail: { lugarId } }));
         window.dispatchEvent(new CustomEvent('tico-select-lugar', { detail: { lugarId } }));
         
         // Reintentar tras dar tiempo a la vista para renderizar todas las postales

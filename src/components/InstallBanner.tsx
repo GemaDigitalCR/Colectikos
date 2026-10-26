@@ -11,7 +11,7 @@ export default function InstallBanner() {
 
   useEffect(() => {
     // Verificar si el banner fue cerrado antes
-    const dismissed = sessionStorage.getItem('ticos100_install_banner_dismissed');
+    const dismissed = sessionStorage.getItem('colectikos_install_banner_dismissed') || sessionStorage.getItem('ticos100_install_banner_dismissed');
     
     // Verificar modo standalone (PWA ya instalada)
     const standaloneMedia = window.matchMedia('(display-mode: standalone)').matches;
@@ -44,7 +44,7 @@ export default function InstallBanner() {
 
   const handleDismiss = () => {
     setIsDismissed(true);
-    sessionStorage.setItem('ticos100_install_banner_dismissed', 'true');
+    sessionStorage.setItem('colectikos_install_banner_dismissed', 'true');
   };
 
   const handleInstallClick = async () => {

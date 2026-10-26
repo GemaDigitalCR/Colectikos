@@ -82,20 +82,32 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       if (user?.id) {
         if (lastUserId && lastUserId !== user.id) {
           // El usuario cambió (ej. de iCloud a Hotmail) usando UserButton
+          localStorage.removeItem('colectikos_progress');
+          localStorage.removeItem('colectikos_place_details');
+          localStorage.removeItem('colectikos_bucket_list');
+          localStorage.removeItem('colectikos_unlock_modes');
+          localStorage.removeItem('colectikos_user_ratings');
           localStorage.removeItem('tico100_progress');
           localStorage.removeItem('tico100_place_details');
           localStorage.removeItem('tico100_bucket_list');
           localStorage.removeItem('tico100_unlock_modes');
           localStorage.removeItem('userProfileData');
+          localStorage.removeItem('hasSeenColectikosTour');
           localStorage.removeItem('hasSeenTicos100Tour');
         }
         localStorage.setItem('lastClerkUserId', user.id);
       } else if (!user && lastUserId) {
         // La sesión expiró o se eliminó la cuenta
+        localStorage.removeItem('colectikos_progress');
+        localStorage.removeItem('colectikos_place_details');
+        localStorage.removeItem('colectikos_bucket_list');
+        localStorage.removeItem('colectikos_unlock_modes');
+        localStorage.removeItem('colectikos_user_ratings');
         localStorage.removeItem('tico100_progress');
         localStorage.removeItem('tico100_place_details');
         localStorage.removeItem('tico100_bucket_list');
         localStorage.removeItem('tico100_unlock_modes');
+        localStorage.removeItem('hasSeenColectikosTour');
         localStorage.removeItem('hasSeenTicos100Tour');
         localStorage.removeItem('userProfileData');
         localStorage.removeItem('lastClerkUserId');
@@ -145,23 +157,23 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     const loadProgress = async () => {
       // 1. Cargar rápido de localStorage (UI instantánea)
       try {
-        const saved = localStorage.getItem('tico100_progress');
+        const saved = localStorage.getItem('colectikos_progress') || localStorage.getItem('tico100_progress');
         if (saved) {
           setCompletedPlaces(JSON.parse(saved));
         }
-        const savedDetails = localStorage.getItem('tico100_place_details');
+        const savedDetails = localStorage.getItem('colectikos_place_details') || localStorage.getItem('tico100_place_details');
         if (savedDetails) {
           setPlaceDetails(JSON.parse(savedDetails));
         }
-        const savedBucketList = localStorage.getItem('tico100_bucket_list');
+        const savedBucketList = localStorage.getItem('colectikos_bucket_list') || localStorage.getItem('tico100_bucket_list');
         if (savedBucketList) {
           setBucketList(JSON.parse(savedBucketList));
         }
-        const savedUnlockModes = localStorage.getItem('tico100_unlock_modes');
+        const savedUnlockModes = localStorage.getItem('colectikos_unlock_modes') || localStorage.getItem('tico100_unlock_modes');
         if (savedUnlockModes) {
           setUnlockModes(JSON.parse(savedUnlockModes));
         }
-        const savedUserRatings = localStorage.getItem('tico100_user_ratings');
+        const savedUserRatings = localStorage.getItem('colectikos_user_ratings') || localStorage.getItem('tico100_user_ratings');
         if (savedUserRatings) {
           setUserRatings(JSON.parse(savedUserRatings));
         }
@@ -251,7 +263,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
               }
             });
             try {
-              localStorage.setItem('tico100_place_details', JSON.stringify(merged));
+              localStorage.setItem('colectikos_place_details', JSON.stringify(merged));
             } catch (e) {}
             return merged;
           });
@@ -344,11 +356,11 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Guardar en localStorage cuando cambie, solo después de cargar
     if (isLoaded) {
-      localStorage.setItem('tico100_progress', JSON.stringify(completedPlaces));
-      localStorage.setItem('tico100_place_details', JSON.stringify(placeDetails));
-      localStorage.setItem('tico100_bucket_list', JSON.stringify(bucketList));
-      localStorage.setItem('tico100_unlock_modes', JSON.stringify(unlockModes));
-      localStorage.setItem('tico100_user_ratings', JSON.stringify(userRatings));
+      localStorage.setItem('colectikos_progress', JSON.stringify(completedPlaces));
+      localStorage.setItem('colectikos_place_details', JSON.stringify(placeDetails));
+      localStorage.setItem('colectikos_bucket_list', JSON.stringify(bucketList));
+      localStorage.setItem('colectikos_unlock_modes', JSON.stringify(unlockModes));
+      localStorage.setItem('colectikos_user_ratings', JSON.stringify(userRatings));
     }
   }, [completedPlaces, placeDetails, bucketList, unlockModes, userRatings, isLoaded]);
 
@@ -656,7 +668,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         [id]: { date, note, isPublic: finalIsPublic }
       };
       try {
-        localStorage.setItem('tico100_place_details', JSON.stringify(updated));
+        localStorage.setItem('colectikos_place_details', JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });

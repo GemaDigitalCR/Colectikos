@@ -101,7 +101,7 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
     if (e) e.preventDefault();
     try {
       // Guardar el flag del tour
-      const hasSeenTour = localStorage.getItem('hasSeenTicos100Tour');
+      const hasSeenTour = localStorage.getItem('hasSeenColectikosTour') || localStorage.getItem('hasSeenTicos100Tour');
       
       // Limpiar toda la memoria local (sesión y perfil)
       localStorage.clear();
@@ -109,7 +109,7 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
       
       // Restaurar el flag del tour para que no lo vuelva a ver
       if (hasSeenTour) {
-        localStorage.setItem('hasSeenTicos100Tour', hasSeenTour);
+        localStorage.setItem('hasSeenColectikosTour', hasSeenTour);
       }
 
       toast.success(isEn ? 'Logging out...' : 'Cerrando sesión...');
@@ -588,7 +588,7 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
                     )}
                     <div>
                       <p className="text-base font-bold text-stone-800">{username}</p>
-                      <p className="text-sm font-semibold text-emerald-600">{globalTitle} - {porcentajeGlobal}% Tico</p>
+                      <p className="text-sm font-semibold text-emerald-600">{globalTitle} - {xp} XP ({porcentajeGlobal}%)</p>
                     </div>
                   </Link>
                   <a

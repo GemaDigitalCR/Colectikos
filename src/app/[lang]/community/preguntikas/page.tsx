@@ -357,8 +357,8 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
     const squares = userAnswers.map((a) => (a.isCorrect ? "🟩" : "🟥")).join("");
 
     const shareText = isEn
-      ? `🇨🇷 Preguntikas Tico100 (${dateStr})\nScore: ${correctCount}/${questions.length} correct ${correctCount === 3 ? "🎯" : "⭐"}\n⏱️ ${formatTime(timerSeconds)}\n${squares}\n\nTest your knowledge of Costa Rica!\nhttps://tico100.com/en/community/preguntikas`
-      : `🇨🇷 Preguntikas Tico100 (${dateStr})\nPuntaje: ${correctCount}/${questions.length} aciertos ${correctCount === 3 ? "🎯" : "⭐"}\n⏱️ ${formatTime(timerSeconds)}\n${squares}\n\n¿Cuánto sabes de Costa Rica? ¡Pruébalo aquí!\nhttps://tico100.com/es/community/preguntikas`;
+      ? `🇨🇷 Preguntikas Colectikos (${dateStr})\nScore: ${correctCount}/${questions.length} correct ${correctCount === 3 ? "🎯" : "⭐"}\n⏱️ ${formatTime(timerSeconds)}\n${squares}\n\nTest your knowledge of Costa Rica!\nhttps://colectikos.com/en/community/preguntikas`
+      : `🇨🇷 Preguntikas Colectikos (${dateStr})\nPuntaje: ${correctCount}/${questions.length} aciertos ${correctCount === 3 ? "🎯" : "⭐"}\n⏱️ ${formatTime(timerSeconds)}\n${squares}\n\n¿Cuánto sabes de Costa Rica? ¡Pruébalo aquí!\nhttps://colectikos.com/es/community/preguntikas`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareText);
