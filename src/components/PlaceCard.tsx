@@ -437,6 +437,8 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
     );
   }
 
+  const isShowingBonusPrompt = !isDerivedState && estampillas === 0 && !hasReceivedBonusToday;
+
   // Estado No Completado (Postal Pendiente)
   return (
     <div ref={cardRef} id={`lugar-${lugar.id}`} className={`bg-white p-1.5 sm:p-2.5 pb-1 sm:pb-2 rounded-sm shadow-lg border border-gray-100 flex flex-col group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl relative ${rotationClass} hover:rotate-0 hover:scale-105 hover:z-10`}>
@@ -506,13 +508,13 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
         )}
 
         {/* Metadata at the bottom */}
-        <div className="absolute bottom-0 inset-x-0 p-2 sm:p-5 bg-gradient-to-t from-stone-950 via-stone-900/95 to-transparent z-20">
-          <span className="inline-block px-1.5 sm:px-2.5 py-0.5 bg-stone-700/50 border border-stone-500/30 text-stone-300 text-[7px] sm:text-[9px] font-bold uppercase tracking-wider rounded mb-1 sm:mb-2">
+        <div className={`absolute bottom-0 inset-x-0 ${isShowingBonusPrompt ? 'p-1.5 sm:p-4' : 'p-2 sm:p-5'} bg-gradient-to-t from-stone-950 via-stone-900/95 to-transparent z-20`}>
+          <span className={`${isShowingBonusPrompt ? 'hidden sm:inline-block' : 'inline-block'} px-1.5 sm:px-2.5 py-0.5 bg-stone-700/50 border border-stone-500/30 text-stone-300 text-[7px] sm:text-[9px] font-bold uppercase tracking-wider rounded mb-1 sm:mb-2`}>
             {categoryLabel}
           </span>
-          <h3 className="font-bold text-stone-100 text-[11px] sm:text-lg leading-tight line-clamp-2">{cleanName}</h3>
+          <h3 className={`font-bold text-stone-100 leading-tight ${isShowingBonusPrompt ? 'text-[10px] sm:text-lg truncate sm:line-clamp-2 mb-0.5 sm:mb-0' : 'text-[11px] sm:text-lg line-clamp-2'}`}>{cleanName}</h3>
           
-          <p className="text-stone-400 text-[8px] sm:text-xs font-medium mt-0.5 sm:mt-2 flex items-center gap-1 sm:gap-1.5 truncate">
+          <p className={`text-stone-400 text-[8px] sm:text-xs font-medium mt-0.5 sm:mt-2 items-center gap-1 sm:gap-1.5 truncate ${isShowingBonusPrompt ? 'hidden sm:flex' : 'flex'}`}>
             <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-stone-500 shrink-0" /> <span className="truncate">{ubicacionToUse}</span>
           </p>
           
@@ -534,20 +536,20 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
             </button>
           )}
 
-          {!isDerivedState && estampillas === 0 && !hasReceivedBonusToday && (
-            <div className="mt-2 sm:mt-3 bg-stone-800/80 p-2.5 sm:p-3 rounded-lg border border-stone-600/50 backdrop-blur-md flex flex-col items-center text-center shadow-lg">
-              <p className="text-stone-200 text-[9px] sm:text-xs leading-snug mb-2 font-medium">
+          {isShowingBonusPrompt && (
+            <div className="mt-1 sm:mt-2.5 bg-stone-900/90 sm:bg-stone-800/80 p-2 sm:p-3 rounded-lg border border-stone-600/50 backdrop-blur-md flex flex-col items-center text-center shadow-lg">
+              <p className="text-stone-200 text-[8.5px] min-[360px]:text-[9px] sm:text-xs leading-tight sm:leading-snug mb-1.5 sm:mb-2 font-medium">
                 {dict?.categories?.ALL === 'All' 
                   ? "We know your collector hunger wants more! 🦥 You've used your 3 daily tickets, but you'll get 3 new ones tomorrow. Rate the places you discovered today and Otico will give you 1 extra ticket to keep playing!" 
                   : "¡Sabemos que tu hambre de coleccionista quiere más! 🦥 Ya usaste tus 3 tiquetes de hoy, pero mañana tendrás 3 nuevos. ¡Califica los sitios que descubriste hoy y Otico te regalará 1 tiquete extra para seguir jugando!"}
               </p>
               <Link 
                 href={dict?.categories?.ALL === 'All' ? "/en/destinos-visitados" : "/es/destinos-visitados"} 
-                className="w-full py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-400 text-stone-900 text-[10px] sm:text-sm font-black rounded transition-colors shadow-sm flex items-center justify-center gap-2"
+                className="w-full py-1.5 sm:py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 text-[9.5px] min-[360px]:text-[10px] sm:text-sm font-bold sm:font-extrabold rounded transition-colors shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Award size={14} className="sm:w-4 sm:h-4" />
-                {dict?.categories?.ALL === 'All' ? "Rate a destination" : "Calificar un destino"}
+                <Award size={13} className="sm:w-4 sm:h-4 shrink-0" />
+                <span className="truncate">{dict?.categories?.ALL === 'All' ? "Rate a destination" : "Calificar un destino"}</span>
               </Link>
             </div>
           )}
