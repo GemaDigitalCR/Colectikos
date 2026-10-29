@@ -13,19 +13,19 @@ const GRID_SIZE = 25;
 
 
 const ITEM_TYPES = {
-  sombrilla: { id: "sombrilla", name: "Sombrilla", name_en: "Umbrella", w: 1, h: 1, cost: 100, attract: 2, cat: "entretenimiento", cat_en: "entertainment", cap: 15, pollution: 1, image: "/assets/playa/sombrilla.png?v=20261011_v3" },
-  palmera: { id: "palmera", name: "Palmera", name_en: "Palm Tree", w: 1, h: 1, cost: 50, attract: 3, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -5, image: "/assets/playa/palmera.png?v=20261011_v3" },
-  pipas: { id: "pipas", name: "Pipas y Copos", name_en: "Coconut Water", w: 2, h: 1, cost: 150, attract: 5, cat: "alimentacion", cat_en: "food", cap: 20, pollution: 4, image: "/assets/playa/pipas.png?v=20261011_v3" },
-  soda: { id: "soda", name: "Soda", name_en: "Diner", w: 2, h: 2, cost: 300, attract: 10, cat: "alimentacion", cat_en: "food", cap: 60, pollution: 10, image: "/assets/playa/soda.png?v=20261011_v3" },
-  restaurante: { id: "restaurante", name: "Restaurante", name_en: "Restaurant", w: 3, h: 3, cost: 1200, attract: 50, cat: "alimentacion", cat_en: "food", cap: 250, pollution: 25, image: "/assets/playa/restaurante.png?v=20261011_v3" },
-  cabanas: { id: "cabanas", name: "Cabañas", name_en: "Cabins", w: 2, h: 2, cost: 1500, attract: 60, cat: "hospedaje", cat_en: "lodging", cap: 120, pollution: 12, image: "/assets/playa/cabanas.png?v=20261011_v3" },
-  hotel: { id: "hotel", name: "Hotel Boutique", name_en: "Boutique Hotel", w: 3, h: 3, cost: 6000, attract: 300, cat: "hospedaje", cat_en: "lodging", cap: 600, pollution: 35, image: "/assets/playa/hotel.png?v=20261011_v3" },
-  deportes: { id: "deportes", name: "Alquiler Deportes", name_en: "Sports Rental", w: 2, h: 2, cost: 400, attract: 20, cat: "entretenimiento", cat_en: "entertainment", cap: 40, pollution: 10, image: "/assets/playa/deportes.png?v=20261011_v3" },
+  sombrilla: { id: "sombrilla", name: "Sombrilla", name_en: "Umbrella", w: 1, h: 1, cost: 100, attract: 2, cat: "entretenimiento", cat_en: "entertainment", cap: 15, pollution: 1, image: "/assets/playa/sombrilla.png?v=20261029_v1", offsetX: 4, offsetY: -8 },
+  palmera: { id: "palmera", name: "Palmera", name_en: "Palm Tree", w: 1, h: 1, cost: 50, attract: 3, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -5, image: "/assets/playa/palmera.png?v=20261029_v1", offsetX: 0, offsetY: -16 },
+  pipas: { id: "pipas", name: "Pipas y Copos", name_en: "Coconut Water", w: 2, h: 1, cost: 150, attract: 5, cat: "alimentacion", cat_en: "food", cap: 20, pollution: 4, image: "/assets/playa/pipas.png?v=20261029_v1" },
+  soda: { id: "soda", name: "Soda", name_en: "Diner", w: 2, h: 2, cost: 300, attract: 10, cat: "alimentacion", cat_en: "food", cap: 60, pollution: 10, image: "/assets/playa/soda.png?v=20261029_v1" },
+  restaurante: { id: "restaurante", name: "Restaurante", name_en: "Restaurant", w: 3, h: 3, cost: 1200, attract: 50, cat: "alimentacion", cat_en: "food", cap: 250, pollution: 25, image: "/assets/playa/restaurante.png?v=20261029_v1" },
+  cabanas: { id: "cabanas", name: "Cabañas", name_en: "Cabins", w: 2, h: 2, cost: 1500, attract: 60, cat: "hospedaje", cat_en: "lodging", cap: 120, pollution: 12, image: "/assets/playa/cabanas.png?v=20261029_v1" },
+  hotel: { id: "hotel", name: "Hotel Boutique", name_en: "Boutique Hotel", w: 3, h: 3, cost: 6000, attract: 300, cat: "hospedaje", cat_en: "lodging", cap: 600, pollution: 35, image: "/assets/playa/hotel.png?v=20261029_v1" },
+  deportes: { id: "deportes", name: "Alquiler Deportes", name_en: "Sports Rental", w: 2, h: 2, cost: 400, attract: 20, cat: "entretenimiento", cat_en: "entertainment", cap: 40, pollution: 10, image: "/assets/playa/deportes.png?v=20261029_v1" },
   surf: { 
     id: "surf", 
     name: "Lecciones Surf", 
     name_en: "Surf Lessons", 
-    w: 1, 
+    w: 2, 
     h: 2, 
     cost: 350, 
     attract: 15, 
@@ -33,18 +33,13 @@ const ITEM_TYPES = {
     cat_en: "entertainment", 
     cap: 30, 
     pollution: 5, 
-    image: "/assets/playa/surf2.png?v=20261013_v6",
-    renderWidth: "298%",
-    transformOrigin: "63.8% 99.8%",
-    anchor: "bottom-left",
-    anchorLeft: "-211%",
-    anchorBottom: "21%",
+    image: "/assets/playa/surf.png?v=20261029_v1",
   },
-  artesanias: { id: "artesanias", name: "Artesanías", name_en: "Crafts", w: 2, h: 1, cost: 200, attract: 8, cat: "entretenimiento", cat_en: "entertainment", cap: 20, pollution: 5, image: "/assets/playa/artesanias.png?v=20261011_v3" },
-  trampolin: { id: "trampolin", name: "Trampolín Acuático", name_en: "Water Trampoline", w: 1, h: 1, cost: 500, attract: 25, cat: "entretenimiento", cat_en: "entertainment", cap: 50, pollution: 2, image: "/assets/playa/trampolin.png?v=20261011_v3" },
-  inflable: { id: "inflable", name: "Parque Inflable", name_en: "Inflatable Park", w: 2, h: 2, cost: 1000, attract: 45, cat: "entretenimiento", cat_en: "entertainment", cap: 120, pollution: 8, image: "/assets/playa/inflable.png?v=20261011_v3" },
-  reciclaje1: { id: "reciclaje1", name: "Punto Ecológico", name_en: "Eco Point", w: 1, h: 1, cost: 150, attract: 5, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -15, image: "/assets/playa/reciclaje1.png?v=20261011_v3" },
-  reciclaje2: { id: "reciclaje2", name: "Centro Reciclaje", name_en: "Recycling Center", w: 1, h: 1, cost: 150, attract: 10, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -35, image: "/assets/playa/reciclaje2.png?v=20261011_v3" },
+  artesanias: { id: "artesanias", name: "Artesanías", name_en: "Crafts", w: 2, h: 1, cost: 200, attract: 8, cat: "entretenimiento", cat_en: "entertainment", cap: 20, pollution: 5, image: "/assets/playa/artesanias.png?v=20261029_v1" },
+  trampolin: { id: "trampolin", name: "Trampolín Acuático", name_en: "Water Trampoline", w: 1, h: 1, cost: 500, attract: 25, cat: "entretenimiento", cat_en: "entertainment", cap: 50, pollution: 2, image: "/assets/playa/trampolin.png?v=20261011_v3", hidden: true },
+  inflable: { id: "inflable", name: "Parque Inflable", name_en: "Inflatable Park", w: 2, h: 2, cost: 1000, attract: 45, cat: "entretenimiento", cat_en: "entertainment", cap: 120, pollution: 8, image: "/assets/playa/inflable.png?v=20261029_v1" },
+  reciclaje1: { id: "reciclaje1", name: "Punto Ecológico", name_en: "Eco Point", w: 1, h: 1, cost: 150, attract: 5, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -15, image: "/assets/playa/reciclaje1.png?v=20261029_v1", offsetX: 0, offsetY: -10 },
+  reciclaje2: { id: "reciclaje2", name: "Centro Reciclaje", name_en: "Recycling Center", w: 1, h: 1, cost: 150, attract: 10, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -35, image: "/assets/playa/reciclaje2.png?v=20261029_v1", offsetX: 0, offsetY: -10 },
 };
 
 type PlacedItem = {
@@ -425,8 +420,8 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
 
   const isOverCapacity = isHospedajeFull || isAlimentacionFull || isEntretenimientoFull;
 
-  const baseAttractiveness = placedItems.reduce((acc, item) => acc + ITEM_TYPES[item.type as keyof typeof ITEM_TYPES].attract, 0);
-  const currentPollution = Math.max(0, placedItems.reduce((acc, item) => acc + ITEM_TYPES[item.type as keyof typeof ITEM_TYPES].pollution, 0));
+  const baseAttractiveness = placedItems.reduce((acc, item) => acc + (ITEM_TYPES[item.type as keyof typeof ITEM_TYPES]?.attract || 0), 0);
+  const currentPollution = Math.max(0, placedItems.reduce((acc, item) => acc + (ITEM_TYPES[item.type as keyof typeof ITEM_TYPES]?.pollution || 0), 0));
   
   // Penalidad extra por sobrecapacidad y contaminación
   const capacityPenalty = isOverCapacity ? 0.1 : 1; 
@@ -446,7 +441,10 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
       const currentTikolones = tikolonesRef.current;
       const currentVisitors = visitorsRef.current;
       
-      const currentOccupied = currentItems.reduce((acc, item) => acc + (ITEM_TYPES[item.type as keyof typeof ITEM_TYPES].w * ITEM_TYPES[item.type as keyof typeof ITEM_TYPES].h), 0);
+      const currentOccupied = currentItems.reduce((acc, item) => {
+        const def = ITEM_TYPES[item.type as keyof typeof ITEM_TYPES];
+        return acc + (def ? def.w * def.h : 0);
+      }, 0);
       const currentDensity = currentOccupied / totalCells;
       
       let curDensityPenalty = 1;
@@ -457,6 +455,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
       
       const curCaps = currentItems.reduce((acc, item) => {
         const def = ITEM_TYPES[item.type as keyof typeof ITEM_TYPES];
+        if (!def) return acc;
         if (def.cat === 'hospedaje') acc.hospedaje += def.cap;
         if (def.cat === 'alimentacion') acc.alimentacion += def.cap;
         if (def.cat === 'entretenimiento') acc.entretenimiento += def.cap;
@@ -488,8 +487,8 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
         }
       }
 
-      const curBaseAttr = currentItems.reduce((acc, item) => acc + ITEM_TYPES[item.type as keyof typeof ITEM_TYPES].attract, 0);
-      const curPollution = Math.max(0, currentItems.reduce((acc, item) => acc + ITEM_TYPES[item.type as keyof typeof ITEM_TYPES].pollution, 0));
+      const curBaseAttr = currentItems.reduce((acc, item) => acc + (ITEM_TYPES[item.type as keyof typeof ITEM_TYPES]?.attract || 0), 0);
+      const curPollution = Math.max(0, currentItems.reduce((acc, item) => acc + (ITEM_TYPES[item.type as keyof typeof ITEM_TYPES]?.pollution || 0), 0));
       const curCapPenalty = curIsOverCapacity ? 0.1 : 1;
       const curPollutionPenalty = Math.max(0.1, 1 - (curPollution * 0.005));
       const curEffAttr = Math.floor(curBaseAttr * curDensityPenalty * curCapPenalty * curPollutionPenalty);
@@ -980,7 +979,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           })()}
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-col gap-2">
-            {Object.values(ITEM_TYPES).map((item) => (
+            {Object.values(ITEM_TYPES).filter((item) => !(item as any).hidden).map((item) => (
               <button
                 key={item.id}
                 onClick={() => {
@@ -1278,158 +1277,182 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
               }}
             >
               
-              {/* The 3D Isometric Board */}
+              {/* Contenedor relativo que envuelve el tablero */}
+              <div className="relative">
+                {/* The 3D Ground (Sand + Sea) */}
+                <div 
+                  className="relative" 
+                  style={{ 
+                    transform: `scale(${zoom}) rotateX(60deg) rotateZ(-45deg)`,
+                    transformOrigin: 'center center',
+                    backgroundColor: '#edbe59',
+                    border: '4px solid #8c5625',
+                    boxShadow: '-12px 24px 30px 0px rgba(0,0,0,0.25)',
+                    borderRadius: '6px',
+                    transition: isPinching ? 'none' : 'transform 0.15s ease-out'
+                  }}
+                >
+                
+                {/* Layer 0: El Mar (Costa recta colindando solo con el borde derecho) */}
+                <div 
+                  className="absolute pointer-events-none"
+                  style={{
+                     background: '#0284c7',
+                     backgroundImage: 'linear-gradient(to right, #38bdf8 0%, #0284c7 20%)',
+                     top: '-3000px',
+                     left: '100%',
+                     width: '3000px',
+                     height: '6000px',
+                     transform: 'translateZ(-2px)',
+                     boxShadow: '-10px 0 20px rgba(0,0,0,0.1)'
+                  }}
+                ></div>
+
+                {/* Layer 1: The ground grid (clickable) - Estilo y ángulo según propuesta diseñadores */}
+                <div 
+                  className="grid"
+                  style={{ 
+                    gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
+                    gridTemplateRows: `repeat(${GRID_SIZE}, minmax(0, 1fr))`
+                  }}
+                >
+                  {backgroundGrid.map((_, idx) => {
+                    const row = Math.floor(idx / GRID_SIZE);
+                    const col = idx % GRID_SIZE;
+
+                    let isSelectedCell = false;
+                    if (selectedPlacedItem) {
+                      const selDef = ITEM_TYPES[selectedPlacedItem.type as keyof typeof ITEM_TYPES];
+                      if (selDef) {
+                        isSelectedCell = col >= selectedPlacedItem.col && 
+                                         col < selectedPlacedItem.col + selDef.w &&
+                                         row >= selectedPlacedItem.row &&
+                                         row < selectedPlacedItem.row + selDef.h;
+                      }
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => handleCellClick(row, col)}
+                        className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-colors border-r border-b border-[#a68d68]/60 ${
+                          isSelectedCell
+                            ? 'bg-amber-300 border-amber-600 ring-2 ring-amber-500 ring-inset animate-pulse z-10'
+                            : movingItem
+                            ? 'bg-[#edbe59] hover:bg-emerald-300 cursor-move'
+                            : 'bg-[#edbe59] hover:bg-[#e2af46] cursor-pointer'
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+
+              </div>
+
+              {/* Layer 2: The Placed Items - Capa 3D independiente sobre la arena para evitar cortes (clipping) */}
               <div 
-                className="relative" 
+                className="absolute inset-0 pointer-events-none"
                 style={{ 
                   transform: `scale(${zoom}) rotateX(60deg) rotateZ(-45deg)`,
                   transformOrigin: 'center center',
                   transformStyle: 'preserve-3d',
-                  backgroundColor: '#edbe59',
-                  border: '4px solid #8c5625',
-                  boxShadow: '-12px 24px 30px 0px rgba(0,0,0,0.25)',
-                  borderRadius: '6px',
+                  border: '4px solid transparent',
                   transition: isPinching ? 'none' : 'transform 0.15s ease-out'
                 }}
               >
-              
-              {/* Layer 0: El Mar (Costa recta colindando solo con el borde derecho) */}
-              <div 
-                className="absolute pointer-events-none"
-                style={{
-                   background: '#0284c7',
-                   backgroundImage: 'linear-gradient(to right, #38bdf8 0%, #0284c7 20%)',
-                   top: '-3000px',
-                   left: '100%',
-                   width: '3000px',
-                   height: '6000px',
-                   transform: 'translateZ(-2px)',
-                   boxShadow: '-10px 0 20px rgba(0,0,0,0.1)'
-                }}
-              ></div>
+                <div 
+                  className="w-full h-full grid pointer-events-none"
+                  style={{ 
+                    gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
+                    gridTemplateRows: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
+                    transformStyle: 'preserve-3d'
+                  }}
+                >
+                  {placedItems.map((item) => {
+                    const def = ITEM_TYPES[item.type as keyof typeof ITEM_TYPES];
+                    if (!def) return null;
+                    const is1x1 = def.w === 1 && def.h === 1;
+                    const isSelected = selectedPlacedItem?.id === item.id;
+                    const itemRenderWidth = (def as any).renderWidth || '100%';
+                    const itemTransformOrigin = (def as any).transformOrigin || 'bottom center';
+                    const itemAnchor = (def as any).anchor || 'bottom-center';
+                    const isBottomLeftAnchor = itemAnchor === 'bottom-left';
+                    const itemAnchorLeft = (def as any).anchorLeft ?? (isBottomLeftAnchor ? '0' : undefined);
+                    const itemAnchorBottom = (def as any).anchorBottom ?? (isBottomLeftAnchor ? '0' : undefined);
+                    const offsetX = (def as any).offsetX || 0;
+                    const offsetY = (def as any).offsetY || 0;
 
-              {/* Layer 1: The ground grid (clickable) - Estilo y ángulo según propuesta diseñadores */}
-              <div 
-                className="grid"
-                style={{ 
-                  gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
-                  gridTemplateRows: `repeat(${GRID_SIZE}, minmax(0, 1fr))`
-                }}
-              >
-                {backgroundGrid.map((_, idx) => {
-                  const row = Math.floor(idx / GRID_SIZE);
-                  const col = idx % GRID_SIZE;
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          gridColumn: `${item.col + 1} / span ${def.w}`,
+                          gridRow: `${item.row + 1} / span ${def.h}`,
+                          transformStyle: 'preserve-3d'
+                        }}
+                        className={`pointer-events-auto relative ${
+                          isBottomLeftAnchor 
+                            ? '' 
+                            : is1x1 
+                            ? 'flex items-center justify-center' 
+                            : 'flex items-end justify-center'
+                        }`}
+                      >
+                         <div 
+                            onClick={(e) => {
+                               e.stopPropagation();
+                               if (movingItem) return;
+                               setSelectedTool(null);
+                               setSelectedPlacedItem(item);
+                               setIsManageMode(false);
+                               playSound('select_placed');
+                            }}
+                            className={`relative drop-shadow-xl flex ${
+                              is1x1 ? 'items-center' : 'items-end'
+                            } justify-center group cursor-pointer transition-all ${
+                              isBottomLeftAnchor ? 'absolute' : ''
+                            } ${
+                              isSelected 
+                                ? '-translate-y-2 scale-105 z-30' 
+                                : isManageMode
+                                ? 'hover:-translate-y-2 hover:scale-105 ring-2 ring-amber-400/80 rounded-xl z-20'
+                                : 'hover:-translate-y-1 z-20'
+                            }`}
+                            style={{ 
+                              transform: `translateZ(${is1x1 ? 0 : 10}px) rotateZ(45deg) rotateX(-60deg) translate(${offsetX}px, ${offsetY}px) scale(${isSelected ? 1.05 : 1})`, 
+                              transformOrigin: is1x1 ? 'center center' : itemTransformOrigin,
+                              width: itemRenderWidth,
+                              height: isBottomLeftAnchor ? 'auto' : '100%',
+                              ...(isBottomLeftAnchor ? { left: itemAnchorLeft, bottom: itemAnchorBottom } : {})
+                            }}
+                         >
+                           {/* Resplandor sutil cuando la estructura está seleccionada */}
+                           {isSelected && (
+                             <div className="absolute inset-0 -m-1 rounded-2xl bg-amber-400/30 border-2 border-amber-400 animate-pulse pointer-events-none z-10" />
+                           )}
 
-                  let isSelectedCell = false;
-                  if (selectedPlacedItem) {
-                    const selDef = ITEM_TYPES[selectedPlacedItem.type as keyof typeof ITEM_TYPES];
-                    if (selDef) {
-                      isSelectedCell = col >= selectedPlacedItem.col && 
-                                       col < selectedPlacedItem.col + selDef.w &&
-                                       row >= selectedPlacedItem.row &&
-                                       row < selectedPlacedItem.row + selDef.h;
-                    }
-                  }
-
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => handleCellClick(row, col)}
-                      className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-colors border-r border-b border-[#a68d68]/60 ${
-                        isSelectedCell
-                          ? 'bg-amber-300 border-amber-600 ring-2 ring-amber-500 ring-inset animate-pulse z-10'
-                          : movingItem
-                          ? 'bg-[#edbe59] hover:bg-emerald-300 cursor-move'
-                          : 'bg-[#edbe59] hover:bg-[#e2af46] cursor-pointer'
-                      }`}
-                    />
-                  );
-                })}
+                           {def.image ? (
+                              <img 
+                                src={def.image} 
+                                alt={def.name} 
+                                className={`w-full h-auto max-w-none transition-transform pointer-events-none ${
+                                  isSelected ? 'drop-shadow-[0_12px_12px_rgba(245,158,11,0.6)] scale-105' : 'group-hover:scale-105'
+                                }`} 
+                                style={{ marginBottom: '0' }} 
+                              />
+                           ) : (
+                              <div className="bg-white/90 px-4 py-2 rounded-xl border-2 border-stone-300 font-black text-stone-600 shadow-xl group-hover:scale-105 transition-transform whitespace-nowrap">
+                                 {def.name}
+                              </div>
+                           )}
+                         </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-
-              {/* Layer 2: The Placed Items - Alineado 1:1 con la cuadrícula */}
-              <div 
-                className="absolute inset-0 grid pointer-events-none"
-                style={{ 
-                  gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
-                  gridTemplateRows: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
-                  transformStyle: 'preserve-3d'
-                }}
-              >
-                {placedItems.map((item) => {
-                  const def = ITEM_TYPES[item.type as keyof typeof ITEM_TYPES];
-                  const isSelected = selectedPlacedItem?.id === item.id;
-                  const itemRenderWidth = (def as any).renderWidth || '100%';
-                  const itemTransformOrigin = (def as any).transformOrigin || 'bottom center';
-                  const itemAnchor = (def as any).anchor || 'bottom-center';
-                  const isBottomLeftAnchor = itemAnchor === 'bottom-left';
-                  const itemAnchorLeft = (def as any).anchorLeft ?? (isBottomLeftAnchor ? '0' : undefined);
-                  const itemAnchorBottom = (def as any).anchorBottom ?? (isBottomLeftAnchor ? '0' : undefined);
-
-                  return (
-                    <div
-                      key={item.id}
-                      style={{
-                        gridColumn: `${item.col + 1} / span ${def.w}`,
-                        gridRow: `${item.row + 1} / span ${def.h}`,
-                        transformStyle: 'preserve-3d'
-                      }}
-                      className={`pointer-events-auto relative ${
-                        isBottomLeftAnchor ? '' : 'flex items-end justify-center'
-                      }`}
-                    >
-                       <div 
-                          onClick={(e) => {
-                             e.stopPropagation();
-                             if (movingItem) return;
-                             setSelectedTool(null);
-                             setSelectedPlacedItem(item);
-                             setIsManageMode(false);
-                             playSound('select_placed');
-                          }}
-                          className={`relative drop-shadow-xl flex items-end justify-center group cursor-pointer transition-all ${
-                            isBottomLeftAnchor ? 'absolute' : ''
-                          } ${
-                            isSelected 
-                              ? '-translate-y-2 scale-105 z-30' 
-                              : isManageMode
-                              ? 'hover:-translate-y-2 hover:scale-105 ring-2 ring-amber-400/80 rounded-xl z-20'
-                              : 'hover:-translate-y-1 z-20'
-                          }`}
-                          style={{ 
-                            transform: `translateZ(10px) rotateZ(45deg) rotateX(-60deg) scale(${isSelected ? 1.05 : 1})`, 
-                            transformOrigin: itemTransformOrigin,
-                            width: itemRenderWidth,
-                            height: isBottomLeftAnchor ? 'auto' : '100%',
-                            ...(isBottomLeftAnchor ? { left: itemAnchorLeft, bottom: itemAnchorBottom } : {})
-                          }}
-                       >
-                         {/* Resplandor sutil cuando la estructura está seleccionada */}
-                         {isSelected && (
-                           <div className="absolute inset-0 -m-1 rounded-2xl bg-amber-400/30 border-2 border-amber-400 animate-pulse pointer-events-none z-10" />
-                         )}
-
-                         {def.image ? (
-                            <img 
-                              src={def.image} 
-                              alt={def.name} 
-                              className={`w-full h-auto max-w-none transition-transform pointer-events-none ${
-                                isSelected ? 'drop-shadow-[0_12px_12px_rgba(245,158,11,0.6)] scale-105' : 'group-hover:scale-105'
-                              }`} 
-                              style={{ marginBottom: '0' }} 
-                            />
-                         ) : (
-                            <div className="bg-white/90 px-4 py-2 rounded-xl border-2 border-stone-300 font-black text-stone-600 shadow-xl group-hover:scale-105 transition-transform whitespace-nowrap">
-                               {def.name}
-                            </div>
-                         )}
-                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-
             </div>
+
           </div>
         </div>
       </div>
