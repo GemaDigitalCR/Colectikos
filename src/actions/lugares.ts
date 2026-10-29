@@ -19,11 +19,15 @@ export async function getDbLugares() {
       }
     });
 
-    const orderMap = new Map(mockLugares.map((l, index) => [l.id, index]));
+    const orderMap = new Map<string, number>();
+    mockLugares.forEach((l, index) => {
+      orderMap.set(l.id, index);
+      orderMap.set(l.nombre, index);
+    });
 
     const sortedLugares = lugares.sort((a, b) => {
-      const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : 9999;
-      const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : 9999;
+      const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : (orderMap.has(a.nombre) ? orderMap.get(a.nombre)! : 9999);
+      const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : (orderMap.has(b.nombre) ? orderMap.get(b.nombre)! : 9999);
       return orderA - orderB;
     });
 

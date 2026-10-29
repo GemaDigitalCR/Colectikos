@@ -907,14 +907,14 @@ export const mockLugares: Lugar[] = [
   },
   {
     "id": "82",
-    "nombre": "Laguna Río Cuarto",
-    "nombre_en": "Rio Cuarto Lagoon",
+    "nombre": "Laguna Don Manuel",
+    "nombre_en": "Don Manuel Lagoon",
     "categoria": "LAGUNAS",
-    "descripcion": "La laguna natural más profunda de Costa Rica.",
-    "descripcion_en": "The deepest natural lagoon in Costa Rica.",
-    "ubicacion": "Río Cuarto, Alajuela",
-    "ubicacion_en": "Rio Cuarto, Alajuela",
-    "imagenUrl": "/images/Postales_Generales/Lagunas/Postales-lagunas-rio-cuarto.png"
+    "descripcion": "Serena laguna de montaña rodeada de senderos y bosques de cipreses.",
+    "descripcion_en": "Serene mountain lagoon surrounded by trails and cypress forests.",
+    "ubicacion": "Dota, San José",
+    "ubicacion_en": "Dota, San Jose",
+    "imagenUrl": "/images/Postales_Generales/Lagunas/Postales-lagunas-don-manuel.png"
   },
   {
     "id": "83",
@@ -929,14 +929,14 @@ export const mockLugares: Lugar[] = [
   },
   {
     "id": "84",
-    "nombre": "Laguna Cerro Chato",
-    "nombre_en": "Cerro Chato Lagoon",
-    "categoria": "LAGUNAS",
-    "descripcion": "Laguna verde en el cráter de un volcán inactivo.",
-    "descripcion_en": "Green lagoon in the crater of a dormant volcano.",
-    "ubicacion": "San Carlos, Alajuela",
-    "ubicacion_en": "San Carlos, Alajuela",
-    "imagenUrl": "/images/Postales_Generales/Lagunas/Postales-lagunas-cerro-chato.png"
+    "nombre": "Parque Metropolitano La Sabana",
+    "nombre_en": "La Sabana Metropolitan Park",
+    "categoria": "CIUDAD_Y_CULTURA",
+    "descripcion": "El pulmón verde de la capital, corazón deportivo y cultural costarricense.",
+    "descripcion_en": "The green lung of the capital, heart of Costa Rican sports and culture.",
+    "ubicacion": "Mata Redonda, San José",
+    "ubicacion_en": "Mata Redonda, San Jose",
+    "imagenUrl": "/images/Postales_Generales/Cultura/Postales-cultura-parque-la-sabana.png"
   },
   {
     "id": "85",
