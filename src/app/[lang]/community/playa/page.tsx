@@ -119,42 +119,42 @@ const DECORATIVE_SIGNS = [
     top: "86%",
   },
 
-  // Lado Inferior (4 rótulos - totalmente fuera, con pata colindando con el borde inferior)
+  // Lado Inferior (4 rótulos - totalmente fuera del área jugable)
   {
     id: "rotulo-bottom-1",
-    image: "/assets/playa/rotulo3.png?v=20261029_v2",
+    image: "/assets/playa/rotulo3.png?v=20261029_v3",
     text: "Protege a las tortugas marinas",
     text_en: "Protect sea turtles",
     side: "bottom",
     left: "14%",
-    top: "102%",
+    top: "112%",
   },
   {
     id: "rotulo-bottom-2",
-    image: "/assets/playa/rotulo4.png?v=20261029_v2",
+    image: "/assets/playa/rotulo4.png?v=20261029_v3",
     text: "Disfruta la playa y ayúdanos a cuidarla",
     text_en: "Enjoy the beach and help us care for it",
     side: "bottom",
     left: "38%",
-    top: "102%",
+    top: "112%",
   },
   {
     id: "rotulo-bottom-3",
-    image: "/assets/playa/rotulo5.png?v=20261029_v2",
+    image: "/assets/playa/rotulo5.png?v=20261029_v3",
     text: "Respeta la fauna silvestre",
     text_en: "Respect wildlife",
     side: "bottom",
     left: "62%",
-    top: "102%",
+    top: "112%",
   },
   {
     id: "rotulo-bottom-4",
-    image: "/assets/playa/rotulo6.png?v=20261029_v2",
+    image: "/assets/playa/rotulo6.png?v=20261029_v3",
     text: "Usa bloqueador amigable con corales",
     text_en: "Use reef-friendly sunscreen",
     side: "bottom",
     left: "86%",
-    top: "102%",
+    top: "112%",
   },
 ];
 
