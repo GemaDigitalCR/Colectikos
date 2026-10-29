@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, useRef, useCallback, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -357,6 +357,24 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
     init();
   }, []);
 
+  // Centrar la cámara directamente en la cuadrícula de arena (omitiendo el mar lateral)
+  const centerOnBoard = useCallback((smooth = false) => {
+    const board = document.getElementById('tiko-playa-board');
+    const container = scrollContainerRef.current || document.getElementById('grid-scroll-container');
+    if (board && container) {
+      const bRect = board.getBoundingClientRect();
+      const cRect = container.getBoundingClientRect();
+      const deltaX = (bRect.left + bRect.width / 2) - (cRect.left + cRect.width / 2);
+      const deltaY = (bRect.top + bRect.height / 2) - (cRect.top + cRect.height / 2);
+      if (smooth) {
+        container.scrollBy({ left: deltaX, top: deltaY, behavior: 'smooth' });
+      } else {
+        container.scrollLeft += deltaX;
+        container.scrollTop += deltaY;
+      }
+    }
+  }, []);
+
   // Centrar la cámara en la arena y ajustar zoom óptimo en móviles al cargar
   useEffect(() => {
     if (!isLoaded) return;
@@ -365,26 +383,19 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
       setZoom(0.65);
     }
 
-    const centerGrid = () => {
-      const container = document.getElementById('grid-scroll-container');
-      if (container) {
-        container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-        container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
-      }
-    };
+    const timer1 = setTimeout(() => centerOnBoard(false), 50);
+    const timer2 = setTimeout(() => centerOnBoard(false), 150);
+    const timer3 = setTimeout(() => centerOnBoard(false), 400);
 
-    const timer1 = setTimeout(centerGrid, 40);
-    const timer2 = setTimeout(centerGrid, 200);
-    const timer3 = setTimeout(centerGrid, 500);
-
-    window.addEventListener('resize', centerGrid);
+    const handleResize = () => centerOnBoard(false);
+    window.addEventListener('resize', handleResize);
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
-      window.removeEventListener('resize', centerGrid);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [isLoaded]);
+  }, [isLoaded, centerOnBoard]);
 
   // Lógica de Atractivo y Densidad
   const occupiedCells = placedItems.reduce((acc, item) => {
@@ -1227,14 +1238,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
               onClick={() => {
                 const defaultZoom = typeof window !== 'undefined' && window.innerWidth < 768 ? 0.65 : 1;
                 setZoom(defaultZoom);
-                const container = scrollContainerRef.current;
-                if (container) {
-                  container.scrollTo({
-                    top: (container.scrollHeight - container.clientHeight) / 2,
-                    left: (container.scrollWidth - container.clientWidth) / 2,
-                    behavior: 'smooth'
-                  });
-                }
+                setTimeout(() => centerOnBoard(true), 60);
               }}
               className="px-2 h-8 rounded-xl hover:bg-stone-100 active:scale-95 text-xs font-black text-stone-700 transition-all select-none"
               title={isEn ? "Reset Zoom" : "Restablecer Zoom"}
@@ -1278,7 +1282,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
             >
               
               {/* Contenedor relativo que envuelve el tablero */}
-              <div className="relative">
+              <div id="tiko-playa-board" className="relative">
                 {/* The 3D Ground (Sand + Sea) */}
                 <div 
                   className="relative" 
