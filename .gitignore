@@ -42,3 +42,5 @@ next-env.d.ts
 
 # backups
 public/images/Avatars_backup/
+public/assets/playa/Disenos nuevos playa/
+public/assets/playa/disenos_anteriores_*/
