@@ -42,6 +42,66 @@ const ITEM_TYPES = {
   reciclaje2: { id: "reciclaje2", name: "Centro Reciclaje", name_en: "Recycling Center", w: 1, h: 1, cost: 150, attract: 10, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -35, image: "/assets/playa/reciclaje2.png?v=20261029_v1", offsetX: 0, offsetY: -10 },
 };
 
+const DECORATIVE_SIGNS = [
+  // Lado Superior (borde superior del cuadrado de arena)
+  {
+    id: "rotulo1",
+    image: "/assets/playa/rotulo1.png?v=20261029_v1",
+    text: "Recicla cada material en su respectivo recipiente",
+    text_en: "Recycle each material in its respective bin",
+    side: "top",
+    left: "28%",
+    top: "1.5%",
+  },
+  {
+    id: "rotulo2",
+    image: "/assets/playa/rotulo2.png?v=20261029_v1",
+    text: "Mantén la playa limpia, llévate tu basura",
+    text_en: "Keep the beach clean, take your trash with you",
+    side: "top",
+    left: "72%",
+    top: "1.5%",
+  },
+  // Lado Derecho (borde derecho del cuadrado de arena)
+  {
+    id: "rotulo3",
+    image: "/assets/playa/rotulo3.png?v=20261029_v1",
+    text: "Protege a las tortugas marinas",
+    text_en: "Protect sea turtles",
+    side: "right",
+    left: "98.5%",
+    top: "28%",
+  },
+  {
+    id: "rotulo4",
+    image: "/assets/playa/rotulo4.png?v=20261029_v1",
+    text: "Disfruta la playa y ayúdanos a cuidarla",
+    text_en: "Enjoy the beach and help us care for it",
+    side: "right",
+    left: "98.5%",
+    top: "72%",
+  },
+  // Lado Inferior (borde inferior del cuadrado de arena)
+  {
+    id: "rotulo5",
+    image: "/assets/playa/rotulo5.png?v=20261029_v1",
+    text: "Respeta la fauna silvestre",
+    text_en: "Respect wildlife",
+    side: "bottom",
+    left: "28%",
+    top: "98.5%",
+  },
+  {
+    id: "rotulo6",
+    image: "/assets/playa/rotulo6.png?v=20261029_v1",
+    text: "Usa bloqueador amigable con corales",
+    text_en: "Use reef-friendly sunscreen",
+    side: "bottom",
+    left: "72%",
+    top: "98.5%",
+  },
+];
+
 type PlacedItem = {
   id: string;
   type: string;
@@ -1411,6 +1471,44 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                   transition: isPinching ? 'none' : 'transform 0.15s ease-out'
                 }}
               >
+                {/* Rótulos Decorativos Ambientales en los bordes Superior, Derecho e Inferior */}
+                {DECORATIVE_SIGNS.map((sign) => (
+                  <div
+                    key={sign.id}
+                    style={{
+                      position: 'absolute',
+                      left: sign.left,
+                      top: sign.top,
+                      width: '8.5%',
+                      transformStyle: 'preserve-3d',
+                      transform: 'translate(-50%, -100%)',
+                    }}
+                    className="pointer-events-auto cursor-pointer group z-20"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      playSound('select_placed');
+                      toast.info(`🪧 ${isEn ? sign.text_en : sign.text}`, { duration: 4500 });
+                    }}
+                    title={isEn ? sign.text_en : sign.text}
+                  >
+                    <div
+                      style={{
+                        transform: 'translateZ(10px) rotateZ(45deg) rotateX(-60deg)',
+                        transformOrigin: 'bottom center',
+                        transformStyle: 'preserve-3d',
+                      }}
+                      className="w-full flex items-end justify-center"
+                    >
+                      <img
+                        src={sign.image}
+                        alt={isEn ? sign.text_en : sign.text}
+                        className="w-full h-auto drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)] group-hover:scale-105 active:scale-95 transition-transform pointer-events-none"
+                        style={{ marginBottom: 0 }}
+                      />
+                    </div>
+                  </div>
+                ))}
+
                 <div 
                   className="w-full h-full grid pointer-events-none"
                   style={{ 
