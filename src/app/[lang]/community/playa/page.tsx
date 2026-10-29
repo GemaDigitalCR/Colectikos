@@ -1297,18 +1297,18 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                   }}
                 >
                 
-                {/* Layer 0: El Mar (Costa recta colindando solo con el borde derecho) */}
+                {/* Layer 0: El Mar (Costa recta colindando con el borde izquierdo hacia donde miran los edificios) */}
                 <div 
                   className="absolute pointer-events-none"
                   style={{
                      background: '#0284c7',
-                     backgroundImage: 'linear-gradient(to right, #38bdf8 0%, #0284c7 20%)',
+                     backgroundImage: 'linear-gradient(to left, #38bdf8 0%, #0284c7 20%)',
                      top: '-3000px',
-                     left: '100%',
+                     right: '100%',
                      width: '3000px',
                      height: '6000px',
                      transform: 'translateZ(-2px)',
-                     boxShadow: '-10px 0 20px rgba(0,0,0,0.1)'
+                     boxShadow: '10px 0 20px rgba(0,0,0,0.1)'
                   }}
                 ></div>
 
