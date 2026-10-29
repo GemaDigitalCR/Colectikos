@@ -711,6 +711,26 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
 
   return (
     <div className="w-full min-h-screen bg-sky-100 p-4 font-sans text-stone-800">
+      <style>{`
+        @keyframes seaFoamPulse {
+          0%, 100% {
+            transform: translateX(0px) scaleX(1);
+            opacity: 0.75;
+          }
+          50% {
+            transform: translateX(12px) scaleX(1.35);
+            opacity: 0.98;
+          }
+        }
+        @keyframes causticsDrift {
+          0% {
+            background-position: 0px 0px;
+          }
+          100% {
+            background-position: 180px 180px;
+          }
+        }
+      `}</style>
       
       {/* Barra superior de navegación y sonido */}
       <div className="max-w-5xl mx-auto flex items-center justify-between gap-2 mb-3">
@@ -1290,6 +1310,9 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                     transform: `scale(${zoom}) rotateX(60deg) rotateZ(-45deg)`,
                     transformOrigin: 'center center',
                     backgroundColor: '#edbe59',
+                    backgroundImage: 'url(/assets/playa/sand_pattern.png)',
+                    backgroundRepeat: 'repeat',
+                    backgroundSize: '192px 192px',
                     border: '4px solid #8c5625',
                     boxShadow: '-12px 24px 30px 0px rgba(0,0,0,0.25)',
                     borderRadius: '6px',
@@ -1297,20 +1320,44 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                   }}
                 >
                 
-                {/* Layer 0: El Mar (Costa recta colindando con el borde izquierdo hacia donde miran los edificios) */}
+                {/* Layer 0: El Mar Caribeño vivo con cáusticas de sol y espuma animada */}
                 <div 
-                  className="absolute pointer-events-none"
+                  className="absolute pointer-events-none overflow-hidden"
                   style={{
                      background: '#0284c7',
-                     backgroundImage: 'linear-gradient(to left, #38bdf8 0%, #0284c7 20%)',
+                     backgroundImage: 'linear-gradient(to left, #22d3ee 0%, #0284c7 35%, #0369a1 75%, #0c4a6e 100%)',
                      top: '-3000px',
                      right: '100%',
                      width: '3000px',
                      height: '6000px',
                      transform: 'translateZ(-2px)',
-                     boxShadow: '10px 0 20px rgba(0,0,0,0.1)'
+                     boxShadow: '10px 0 25px rgba(0,0,0,0.15)'
                   }}
-                ></div>
+                >
+                  {/* Reflejos de sol en el agua (Cáusticas animadas) */}
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: 'url(/assets/playa/water_caustics.png)',
+                      backgroundRepeat: 'repeat',
+                      backgroundSize: '180px 180px',
+                      opacity: 0.35,
+                      mixBlendMode: 'screen',
+                      animation: 'causticsDrift 22s linear infinite'
+                    }}
+                  />
+
+                  {/* Espuma marina en la orilla (Oleaje rítmico que baña la arena) */}
+                  <div 
+                    className="absolute top-0 bottom-0 right-0 w-12 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(to left, rgba(255, 255, 255, 0.95) 0%, rgba(186, 230, 253, 0.7) 12px, rgba(56, 189, 248, 0.25) 30px, transparent 100%)',
+                      boxShadow: '2px 0 10px rgba(255, 255, 255, 0.6)',
+                      transformOrigin: 'right center',
+                      animation: 'seaFoamPulse 3.8s ease-in-out infinite'
+                    }}
+                  />
+                </div>
 
                 {/* Layer 1: The ground grid (clickable) - Estilo y ángulo según propuesta diseñadores */}
                 <div 
@@ -1339,12 +1386,12 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                       <div
                         key={idx}
                         onClick={() => handleCellClick(row, col)}
-                        className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-colors border-r border-b border-[#a68d68]/60 ${
+                        className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-colors border-r border-b border-[#a68d68]/45 ${
                           isSelectedCell
-                            ? 'bg-amber-300 border-amber-600 ring-2 ring-amber-500 ring-inset animate-pulse z-10'
+                            ? 'bg-amber-300/85 border-amber-600 ring-2 ring-amber-500 ring-inset animate-pulse z-10'
                             : movingItem
-                            ? 'bg-[#edbe59] hover:bg-emerald-300 cursor-move'
-                            : 'bg-[#edbe59] hover:bg-[#e2af46] cursor-pointer'
+                            ? 'hover:bg-emerald-300/60 cursor-move'
+                            : 'hover:bg-amber-100/30 cursor-pointer'
                         }`}
                       />
                     );
