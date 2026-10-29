@@ -186,7 +186,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
 
   useEffect(() => {
-    document.title = isEn ? "Tiko Beach (Beta) | Colectikos" : "Tiko Playa (Beta) | Colectikos";
+    document.title = isEn ? "Tiko Beach | Colectikos" : "Tiko Playa | Colectikos";
     const savedSound = localStorage.getItem('tiko_playa_sound');
     if (savedSound !== null) {
       setIsSoundEnabled(savedSound === 'true');
@@ -454,7 +454,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           
           if (res.alerts?.dailyXp) {
             playSound('reward');
-            toast.success(isEn ? `Daily Reward! You earned ${res.alerts.dailyXp} XP for playing Tiko Beach (Beta) today.` : `¡Recompensa Diaria! Has ganado ${res.alerts.dailyXp} XP por jugar Tiko Playa (Beta) hoy.`, { icon: '🎁', duration: 6000 });
+            toast.success(isEn ? `Daily Reward! You earned ${res.alerts.dailyXp} XP for playing Tiko Beach today.` : `¡Recompensa Diaria! Has ganado ${res.alerts.dailyXp} XP por jugar Tiko Playa hoy.`, { icon: '🎁', duration: 6000 });
           }
           if (res.alerts?.newTikolonesFromXp) {
             playSound('sell');
@@ -823,7 +823,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
     playSound('build');
   };
 
-  if (!isLoaded) return <div className="p-10 text-center font-bold text-stone-600">{isEn ? "Loading Tiko Beach (Beta)..." : "Cargando Tiko Playa (Beta)..."}</div>;
+  if (!isLoaded) return <div className="p-10 text-center font-bold text-stone-600">{isEn ? "Loading Tiko Beach..." : "Cargando Tiko Playa..."}</div>;
 
   return (
     <div className="w-full min-h-screen bg-sky-100 p-4 font-sans text-stone-800">
@@ -860,7 +860,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           </Link>
           <span className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-300 text-amber-800 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            {isEn ? "Tiko Beach (Beta)" : "Tiko Playa (Beta)"}
+            {isEn ? "Tiko Beach" : "Tiko Playa"}
           </span>
         </div>
 
@@ -949,7 +949,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
               <div className="flex items-center gap-2 group flex-wrap">
                 <h1 className="text-2xl font-black text-amber-600">🏖️ {isEn ? "Beach" : "Playa"} {beachName}</h1>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                  {isEn ? "Tiko Beach (Beta)" : "Tiko Playa (Beta)"}
+                  {isEn ? "Tiko Beach" : "Tiko Playa"}
                 </span>
                 <button 
                   onClick={() => {

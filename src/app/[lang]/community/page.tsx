@@ -132,15 +132,12 @@ export default async function CommunityHubPage({ params }: { params: Promise<{ l
                 {/* Tiko Playa Card */}
                 <Link href={`/${lang}/community/playa`} className="group">
                     <div className="bg-white rounded-2xl shadow-lg border-2 border-amber-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-amber-300 relative overflow-hidden">
-                        <div className="absolute top-4 right-4 bg-amber-500/15 border border-amber-300 text-amber-700 text-xs font-black px-2.5 py-0.5 rounded-full shadow-sm tracking-wide z-20">
-                            BETA
-                        </div>
                         <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div className="bg-amber-100 text-amber-600 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
                             <span className="text-4xl leading-none block pt-1">🏖️</span>
                         </div>
                         <h2 className="text-2xl font-bold text-amber-800 mb-3 relative z-10">
-                            {isEn ? "Tiko Beach (Beta)" : "Tiko Playa (Beta)"}
+                            {isEn ? "Tiko Beach" : "Tiko Playa"}
                         </h2>
                         <p className="text-stone-600 relative z-10">
                             {isEn 

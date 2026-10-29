@@ -815,7 +815,7 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
                 className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <span>🏖️</span>
-                <span>{isEn ? "Go to Tiko Beach (Beta)" : "Ir a Tiko Playa (Beta)"}</span>
+                <span>{isEn ? "Go to Tiko Beach" : "Ir a Tiko Playa"}</span>
               </Link>
             </div>
           </div>
@@ -1167,7 +1167,7 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
                   className="w-full py-3 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-sm transition-all flex items-center justify-center gap-2"
                 >
                   <span>🏖️</span>
-                  <span>{isEn ? "Play Tiko Beach (Beta)" : "Jugar Tiko Playa (Beta)"}</span>
+                  <span>{isEn ? "Play Tiko Beach" : "Jugar Tiko Playa"}</span>
                 </Link>
 
                 <Link

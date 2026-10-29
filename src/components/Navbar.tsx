@@ -319,7 +319,7 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
                       href={`/${currentLang}/community/playa`}
                       className="px-4 py-2 text-left w-full transition-colors hover:bg-stone-50 hover:text-emerald-700 text-stone-700 font-medium border-b border-stone-50"
                     >
-                      {isEn ? "Tiko Beach (Beta) 🏖️" : "Tiko Playa (Beta) 🏖️"}
+                      {isEn ? "Tiko Beach 🏖️" : "Tiko Playa 🏖️"}
                     </Link>
                     <Link
                       href={`/${currentLang}/community/parejitikas`}
@@ -495,7 +495,7 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
                     {dict?.rankings || 'Rankings'}
                   </Link>
                   <Link href={`/${currentLang}/community/playa`} onClick={() => setIsMobileMenuOpen(false)} className="text-stone-600 font-medium hover:text-amber-600 block text-base">
-                    {isEn ? "Tiko Beach (Beta) 🏖️" : "Tiko Playa (Beta) 🏖️"}
+                    {isEn ? "Tiko Beach 🏖️" : "Tiko Playa 🏖️"}
                   </Link>
                   <Link href={`/${currentLang}/community/parejitikas`} onClick={() => setIsMobileMenuOpen(false)} className="text-stone-600 font-medium hover:text-emerald-700 block text-base">
                     Parejitikas 🧩
