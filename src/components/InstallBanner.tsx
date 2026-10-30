@@ -98,7 +98,7 @@ export default function InstallBanner() {
                 1
               </div>
               <p className="text-sm font-medium text-stone-700">
-                Toca el botón <Share size={16} className="inline mx-1 text-emerald-600" /> <strong className="text-stone-900">Compartir</strong> en la barra inferior.
+                Toca el botón <Share size={16} className="inline mx-1 text-emerald-600" /> <strong className="text-stone-900">Compartir</strong> en la barra superior.
               </p>
             </div>
             <div className="flex items-center gap-4">
