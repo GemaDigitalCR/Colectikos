@@ -5,8 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
 import { UserCircle, Award, Trophy, Medal, Star, Edit3, BookOpen, Loader2, HelpCircle, LogIn } from 'lucide-react';
-import { Categoria } from '../../../data/mockData';
+import { Categoria, mockLugares } from '../../../data/mockData';
 import { useLugaresData } from '../../../context/LugaresContext';
+import { getPlaceUnlockMode } from '../../../utils/modeHelper';
 import { toPng } from 'html-to-image';
 import toast from 'react-hot-toast';
 import { calcularNivel } from '../../../utils/gamification';
@@ -274,10 +275,15 @@ export default function Profile() {
   };
 
   completedPlaces.forEach(id => {
-    const rawMode = unlockModes?.[id];
-    const norm = (rawMode || 'Curioso').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (norm === 'nomada') modeStats.Nómada++;
-    else if (norm === 'conquistador') modeStats.Conquistador++;
+    const placeObj = dbLugares.find(l => l.id === id) || mockLugares.find(m => m.id === id);
+    const resolvedMode = getPlaceUnlockMode(
+      placeObj ? { id, nombre: placeObj.nombre } : { id },
+      unlockModes,
+      playMode,
+      dbLugares
+    );
+    if (resolvedMode === 'Nómada') modeStats.Nómada++;
+    else if (resolvedMode === 'Conquistador') modeStats.Conquistador++;
     else modeStats.Curioso++;
   });
 

@@ -17,6 +17,7 @@ import ConfirmRemoveModal from './ConfirmRemoveModal';
 import { solvePuzzleAndAwardXP } from '../actions/gamification';
 import { useLugaresData } from '../context/LugaresContext';
 import { getProvincesForLugar } from '../utils/getLugares';
+import { getPlaceUnlockMode } from '../utils/modeHelper';
 
 interface PlaceCardProps {
   lugar: Lugar;
@@ -42,7 +43,7 @@ const getProvinceImage = (provinceId: string, progressPercentage: number) => {
 
 export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedState, progressPercentage, rotationClass = '' }: PlaceCardProps) {
   const dict = useDictionary();
-  const { placeDetails, updatePlaceDetails, bucketList, toggleBucketList, unlockModes, handleCheckInWithMode, handleRate, estampillas, hasReceivedBonusToday, hasRefundedTicketToday } = (useProgress() as any);
+  const { placeDetails, updatePlaceDetails, bucketList, toggleBucketList, unlockModes, handleCheckInWithMode, handleRate, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, userProfile } = (useProgress() as any);
 
   const currentDetails = placeDetails[lugar.id] || { date: '', note: '', isPublic: false };
   const isInBucketList = bucketList?.includes(lugar.id);
@@ -135,11 +136,8 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
     ? getProvinceImage(provSlug, progressPercentage)
     : lugar.imagenUrl;
 
-  const rawMode = unlockModes?.[lugar.id];
-  const normalizedMode = (rawMode || (isCompleted && !isProv ? 'Curioso' : ''))
-    ?.toLowerCase()
-    ?.normalize("NFD")
-    ?.replace(/[\u0300-\u036f]/g, "");
+  const userPlayMode = userProfile?.playMode || (typeof window !== 'undefined' ? (()=>{ try { return JSON.parse(localStorage.getItem('userProfileData') || '{}').playMode; } catch(e){ return null; } })() : null);
+  const resolvedMode = isCompleted && !isProv ? getPlaceUnlockMode(lugar, unlockModes, userPlayMode, dbLugares) : null;
 
   let borderClass = 'border-gray-100';
   let badgeColor = 'border-white bg-white/20 text-white';
@@ -159,19 +157,19 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
       borderClass = 'border-[#cd7f32] shadow-[#cd7f32]/25';
       badgeColor = 'border-[#cd7f32] bg-[#cd7f32]/80 text-white';
     }
-  } else if (normalizedMode === 'curioso') {
+  } else if (resolvedMode === 'Curioso') {
     borderClass = 'border-[#cd7f32]/40 shadow-[#cd7f32]/15';
     badgeColor = 'border-[#cd7f32] bg-[#cd7f32]/80 text-white';
     ModeIcon = Eye;
     modeLabel = (dict?.unlockModal?.curioso || 'Curioso').replace(/^Modo\s+/i, '').replace(/\s+Mode$/i, '');
     modeBadgeClass = 'bg-stone-950/80 border-[#cd7f32]/60 text-amber-200';
-  } else if (normalizedMode === 'nomada') {
+  } else if (resolvedMode === 'Nómada') {
     borderClass = 'border-[#c0c0c0] shadow-[#c0c0c0]/20';
     badgeColor = 'border-[#c0c0c0] bg-[#c0c0c0]/80 text-stone-800';
     ModeIcon = Navigation;
     modeLabel = (dict?.unlockModal?.nomada || 'Nómada').replace(/^Modo\s+/i, '').replace(/\s+Mode$/i, '');
     modeBadgeClass = 'bg-stone-950/80 border-stone-300/60 text-stone-200';
-  } else if (normalizedMode === 'conquistador') {
+  } else if (resolvedMode === 'Conquistador') {
     borderClass = 'border-[#ffd700] shadow-[#ffd700]/30';
     badgeColor = 'border-[#ffd700] bg-[#ffd700]/90 text-stone-900';
     ModeIcon = Award;

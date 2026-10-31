@@ -8,6 +8,7 @@ import NudgeToast from '../components/NudgeToast';
 import OnboardingModal from '../components/OnboardingModal';
 import { calcularNivel } from '../utils/gamification';
 import { useLugaresData } from './LugaresContext';
+import { mockLugares } from '../data/mockData';
 import { getAllCommunityRatings } from '../actions/ratings';
 import { checkInAndAwardXP, rateAndAwardXP, getUserGamification, recordDailyLogin, toggleBucketListAndAwardXP } from '../actions/gamification';
 import { toast as sonnerToast } from 'sonner';
@@ -419,7 +420,17 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleCheckInWithMode = async (id: string, mode: string) => {
-    setUnlockModes(prev => ({ ...prev, [id]: mode }));
+    const newModes: Record<string, string> = { [id]: mode };
+    const foundPlace = dbLugares.find(l => l.id === id);
+    if (foundPlace) {
+      newModes[foundPlace.nombre] = mode;
+      const cleanNombre = foundPlace.nombre.toLowerCase().trim();
+      const mockMatch = mockLugares.find(m => m.nombre.toLowerCase().trim() === cleanNombre);
+      if (mockMatch) {
+        newModes[mockMatch.id] = mode;
+      }
+    }
+    setUnlockModes(prev => ({ ...prev, ...newModes }));
     return await handleCheckIn(id, mode);
   };
 
