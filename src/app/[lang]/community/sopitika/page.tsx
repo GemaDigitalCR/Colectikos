@@ -863,7 +863,7 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
 
             {/* Ayuda de control móvil / desktop */}
             <div className="mt-2.5 text-center text-[11px] text-stone-500 font-medium">
-              <span>📱 {isEn ? "Drag over letters or tap start & end" : "Arrastra el dedo o toca la primera y última letra"}</span>
+              <span>📱 {isEn ? "Slide your finger from the first to the last letter" : "Desliza el dedo desde la primera a la última letra"}</span>
             </div>
           </div>
         </div>
