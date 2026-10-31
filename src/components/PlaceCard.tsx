@@ -135,7 +135,12 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
     ? getProvinceImage(provSlug, progressPercentage)
     : lugar.imagenUrl;
 
-  const mode = unlockModes?.[lugar.id];
+  const rawMode = unlockModes?.[lugar.id];
+  const normalizedMode = (rawMode || (isCompleted && !isProv ? 'Curioso' : ''))
+    ?.toLowerCase()
+    ?.normalize("NFD")
+    ?.replace(/[\u0300-\u036f]/g, "");
+
   let borderClass = 'border-gray-100';
   let badgeColor = 'border-white bg-white/20 text-white';
   
@@ -154,24 +159,24 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
       borderClass = 'border-[#cd7f32] shadow-[#cd7f32]/25';
       badgeColor = 'border-[#cd7f32] bg-[#cd7f32]/80 text-white';
     }
-  } else if (mode === 'Curioso') {
-    borderClass = 'border-[#cd7f32] shadow-[#cd7f32]/20';
+  } else if (normalizedMode === 'curioso') {
+    borderClass = 'border-[#cd7f32]/40 shadow-[#cd7f32]/15';
     badgeColor = 'border-[#cd7f32] bg-[#cd7f32]/80 text-white';
     ModeIcon = Eye;
     modeLabel = (dict?.unlockModal?.curioso || 'Curioso').replace(/^Modo\s+/i, '').replace(/\s+Mode$/i, '');
-    modeBadgeClass = 'text-[#cd7f32] bg-[#cd7f32]/10 border-[#cd7f32]/20';
-  } else if (mode === 'Nómada') {
+    modeBadgeClass = 'bg-stone-950/80 border-[#cd7f32]/60 text-amber-200';
+  } else if (normalizedMode === 'nomada') {
     borderClass = 'border-[#c0c0c0] shadow-[#c0c0c0]/20';
     badgeColor = 'border-[#c0c0c0] bg-[#c0c0c0]/80 text-stone-800';
     ModeIcon = Navigation;
     modeLabel = (dict?.unlockModal?.nomada || 'Nómada').replace(/^Modo\s+/i, '').replace(/\s+Mode$/i, '');
-    modeBadgeClass = 'text-stone-500 bg-stone-100 border-stone-200';
-  } else if (mode === 'Conquistador') {
-    borderClass = 'border-[#ffd700] shadow-[#ffd700]/40';
+    modeBadgeClass = 'bg-stone-950/80 border-stone-300/60 text-stone-200';
+  } else if (normalizedMode === 'conquistador') {
+    borderClass = 'border-[#ffd700] shadow-[#ffd700]/30';
     badgeColor = 'border-[#ffd700] bg-[#ffd700]/90 text-stone-900';
     ModeIcon = Award;
     modeLabel = (dict?.unlockModal?.conquistador || 'Conquistador').replace(/^Modo\s+/i, '').replace(/\s+Mode$/i, '');
-    modeBadgeClass = 'text-amber-600 bg-amber-50 border-amber-200/60';
+    modeBadgeClass = 'bg-stone-950/85 border-[#ffd700]/70 text-amber-300';
   }
 
   const provinceFooterBlock = (
@@ -215,26 +220,16 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
   );
 
   const communityRatingBlock = (
-    <div className="pt-1 sm:pt-2 pb-0.5 px-0.5 sm:px-1 flex justify-between items-center w-full mt-0.5 overflow-hidden gap-1">
-      <span className="text-[7px] sm:text-[9px] font-extrabold uppercase tracking-widest text-stone-400 truncate">
+    <div className="pt-1.5 sm:pt-2 pb-0.5 px-0.5 sm:px-1 flex justify-between items-center w-full mt-0.5 overflow-hidden gap-1">
+      <span className="text-[7.5px] sm:text-[9px] font-extrabold uppercase tracking-widest text-stone-400 truncate">
         {dict?.placeCard?.community_rating || 'Comunidad:'}
       </span>
-      
-      {/* Distintivo Visual de Modo */}
-      {isCompleted && mode && ModeIcon && (
-        <div className="flex-1 flex justify-center items-center shrink-0">
-          <div className={`flex items-center gap-0.5 sm:gap-1 px-1 sm:px-2 py-0.5 rounded-full border border-b-2 shadow-sm ${modeBadgeClass} transform -rotate-2 hover:rotate-0 transition-transform`}>
-            <ModeIcon size={8} className="sm:w-2.5 sm:h-2.5" strokeWidth={2.5} />
-            <span className="text-[6.5px] sm:text-[8px] font-black uppercase tracking-wider truncate max-w-[45px] sm:max-w-none">{modeLabel}</span>
-          </div>
-        </div>
-      )}
 
-      <div className="flex items-center gap-1 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200 shadow-inner">
-        <span className="text-[11px] font-bold text-stone-600">
+      <div className="flex items-center gap-1 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200 shadow-inner shrink-0 whitespace-nowrap">
+        <span className="text-[10px] sm:text-[11px] font-bold text-stone-600">
           {communityRating === null ? '--' : communityRating.toFixed(1)}
         </span>
-        <PawPrint size={10} className="text-emerald-500 fill-emerald-500" />
+        <PawPrint size={10} className="text-emerald-500 fill-emerald-500 shrink-0" />
       </div>
     </div>
   );
@@ -293,11 +288,22 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover object-top text-transparent transition-transform duration-700 group-hover:scale-105" 
           />
-          
+
+          {/* Sello de Modo de Conquista en esquina inferior derecha */}
+          {isCompleted && !isProv && ModeIcon && (
+            <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 z-20 pointer-events-none">
+              <div className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full border ${modeBadgeClass} shadow-md backdrop-blur-md`}>
+                <ModeIcon size={9} className="sm:w-2.5 sm:h-2.5 shrink-0" strokeWidth={2.5} />
+                <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-wider whitespace-nowrap leading-none">
+                  {modeLabel}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Information Overlay on Hover/Tap */}
           <div 
-            className={`absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/95 to-stone-900/40 transition-all duration-500 z-10 flex flex-col justify-end sm:pointer-events-auto sm:group-hover:opacity-100 ${isMobileExpanded ? 'opacity-100 pointer-events-auto cursor-pointer' : 'opacity-0 pointer-events-none'}`}
+            className={`absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/95 to-stone-900/40 transition-all duration-500 z-30 flex flex-col justify-end sm:pointer-events-auto sm:group-hover:opacity-100 ${isMobileExpanded ? 'opacity-100 pointer-events-auto cursor-pointer' : 'opacity-0 pointer-events-none'}`}
             onClick={(e) => {
               e.stopPropagation();
               setIsMemoriesOpen(true);

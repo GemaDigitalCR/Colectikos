@@ -274,10 +274,11 @@ export default function Profile() {
   };
 
   completedPlaces.forEach(id => {
-    const mode = unlockModes?.[id];
-    if (mode === 'Curioso') modeStats.Curioso++;
-    else if (mode === 'Nómada') modeStats.Nómada++;
-    else if (mode === 'Conquistador') modeStats.Conquistador++;
+    const rawMode = unlockModes?.[id];
+    const norm = (rawMode || 'Curioso').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (norm === 'nomada') modeStats.Nómada++;
+    else if (norm === 'conquistador') modeStats.Conquistador++;
+    else modeStats.Curioso++;
   });
 
   return (
