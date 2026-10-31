@@ -1085,12 +1085,24 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
                     className="p-2 rounded-xl bg-stone-50 hover:bg-emerald-50 border border-stone-200 hover:border-emerald-300 transition-all flex items-center gap-2 group text-left"
                   >
                     {tw.imagenUrl ? (
-                      <img src={tw.imagenUrl} alt={tw.nombre} className="w-10 h-10 rounded-lg object-cover shrink-0" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm font-black shrink-0">
-                        🇨🇷
-                      </div>
-                    )}
+                      <img 
+                        src={tw.imagenUrl} 
+                        alt={tw.nombre} 
+                        className="w-10 h-10 rounded-lg object-cover shrink-0" 
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.onerror = null;
+                          target.style.display = 'none';
+                          const fallback = target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm font-black shrink-0 ${tw.imagenUrl ? 'hidden' : ''}`}
+                    >
+                      🇨🇷
+                    </div>
                     <div className="min-w-0 flex-1">
                       <div className="font-bold text-xs text-stone-800 group-hover:text-emerald-700 truncate">
                         {isEn ? tw.nombre_en : tw.nombre}

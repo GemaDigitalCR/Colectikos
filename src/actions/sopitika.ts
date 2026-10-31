@@ -20,31 +20,31 @@ const MAX_DAILY_XP = 100;
 
 // Lista garantizada de destinos emblemáticos de Costa Rica con longitudes entre 4 y 10 letras
 const FALLBACK_SOPITIKA_PLACES: GameWordPlace[] = [
-  { id: "p-arenal", word: "ARENAL", nombre: "Volcán Arenal", nombre_en: "Arenal Volcano", categoria: "VOLCAN", ubicacion: "Alajuela", imagenUrl: "/images/Postales_Volcanes/Postales-volcanes-Arenal.png" },
-  { id: "p-poas", word: "POAS", nombre: "Volcán Poás", nombre_en: "Poás Volcano", categoria: "VOLCAN", ubicacion: "Alajuela", imagenUrl: "/images/Postales_Volcanes/Postales-volcanes-Poas.png" },
-  { id: "p-irazu", word: "IRAZU", nombre: "Volcán Irazú", nombre_en: "Irazú Volcano", categoria: "VOLCAN", ubicacion: "Cartago", imagenUrl: "/images/Postales_Volcanes/Postales-volcanes-Irazu.png" },
-  { id: "p-turrialba", word: "TURRIALBA", nombre: "Volcán Turrialba", nombre_en: "Turrialba Volcano", categoria: "VOLCAN", ubicacion: "Cartago", imagenUrl: "/images/Postales_Volcanes/Postales-volcanes-Turrialba.png" },
-  { id: "p-corcovado", word: "CORCOVADO", nombre: "Parque Corcovado", nombre_en: "Corcovado Park", categoria: "PARQUE_NACIONAL", ubicacion: "Puntarenas", imagenUrl: "/images/Postales_Parques/Postales-parques-Corcovado.png" },
-  { id: "p-tortuguero", word: "TORTUGUERO", nombre: "Tortuguero", nombre_en: "Tortuguero", categoria: "PARQUE_NACIONAL", ubicacion: "Limón", imagenUrl: "/images/Postales_Parques/Postales-parques-Tortuguero.png" },
-  { id: "p-cahuita", word: "CAHUITA", nombre: "Cahuita", nombre_en: "Cahuita", categoria: "PARQUE_NACIONAL", ubicacion: "Limón", imagenUrl: "/images/Postales_Parques/Postales-parques-Cahuita.png" },
-  { id: "p-chirripo", word: "CHIRRIPO", nombre: "Cerro Chirripó", nombre_en: "Mount Chirripó", categoria: "PARQUE_NACIONAL", ubicacion: "Pérez Zeledón", imagenUrl: "/images/Postales_Parques/Postales-parques-Chirripo.png" },
-  { id: "p-conchal", word: "CONCHAL", nombre: "Playa Conchal", nombre_en: "Conchal Beach", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Playas/Postales-playas-Conchal.png" },
-  { id: "p-tamarindo", word: "TAMARINDO", nombre: "Tamarindo", nombre_en: "Tamarindo", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Playas/Postales-playas-Tamarindo.png" },
-  { id: "p-samara", word: "SAMARA", nombre: "Sámara", nombre_en: "Sámara", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Playas/Postales-playas-Samara.png" },
-  { id: "p-flamingo", word: "FLAMINGO", nombre: "Playa Flamingo", nombre_en: "Flamingo Beach", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Playas/Postales-playas-Flamingo.png" },
-  { id: "p-monteverde", word: "MONTEVERDE", nombre: "Monteverde", nombre_en: "Monteverde", categoria: "BOSQUES_RESERVAS", ubicacion: "Puntarenas", imagenUrl: "/images/Postales_Reservas/Postales-reservas-Monteverde.png" },
-  { id: "p-uvita", word: "UVITA", nombre: "Playa Uvita", nombre_en: "Uvita Beach", categoria: "PLAYA", ubicacion: "Puntarenas", imagenUrl: "/images/Postales_Playas/Postales-playas-Uvita.png" },
-  { id: "p-dominical", word: "DOMINICAL", nombre: "Dominical", nombre_en: "Dominical", categoria: "PLAYA", ubicacion: "Puntarenas", imagenUrl: "/images/Postales_Playas/Postales-playas-Dominical.png" },
-  { id: "p-nosara", word: "NOSARA", nombre: "Nosara", nombre_en: "Nosara", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Playas/Postales-playas-Nosara.png" },
-  { id: "p-barva", word: "BARVA", nombre: "Volcán Barva", nombre_en: "Barva Volcano", categoria: "VOLCAN", ubicacion: "Heredia", imagenUrl: "/images/Postales_Volcanes/Postales-volcanes-Barva.png" },
-  { id: "p-tenorio", word: "TENORIO", nombre: "Volcán Tenorio", nombre_en: "Tenorio Volcano", categoria: "VOLCAN", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Volcanes/Postales-volcanes-Tenorio.png" },
-  { id: "p-rincon", word: "RINCON", nombre: "Rincón de la Vieja", nombre_en: "Rincón de la Vieja", categoria: "PARQUE_NACIONAL", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Parques/Postales-parques-Rincon.png" },
-  { id: "p-canonegro", word: "CAÑONEGRO", nombre: "Caño Negro", nombre_en: "Caño Negro", categoria: "PARQUE_NACIONAL", ubicacion: "Alajuela", imagenUrl: "/images/Postales_Parques/Postales-parques-Tortuguero.png" },
+  { id: "p-arenal", word: "ARENAL", nombre: "Volcán Arenal", nombre_en: "Arenal Volcano", categoria: "VOLCAN", ubicacion: "Alajuela", imagenUrl: "/images/Postales_Generales/Volcanes/Postales-volcanes-Arenal.png" },
+  { id: "p-poas", word: "POAS", nombre: "Volcán Poás", nombre_en: "Poás Volcano", categoria: "VOLCAN", ubicacion: "Alajuela", imagenUrl: "/images/Postales_Generales/Volcanes/Postales-volcanes-Poas.png" },
+  { id: "p-irazu", word: "IRAZU", nombre: "Volcán Irazú", nombre_en: "Irazú Volcano", categoria: "VOLCAN", ubicacion: "Cartago", imagenUrl: "/images/Postales_Generales/Volcanes/Postales-volcanes-Irazu.png" },
+  { id: "p-turrialba", word: "TURRIALBA", nombre: "Volcán Turrialba", nombre_en: "Turrialba Volcano", categoria: "VOLCAN", ubicacion: "Cartago", imagenUrl: "/images/Postales_Generales/Volcanes/Postales-volcanes-Turrialba.png" },
+  { id: "p-corcovado", word: "CORCOVADO", nombre: "Parque Corcovado", nombre_en: "Corcovado Park", categoria: "PARQUE_NACIONAL", ubicacion: "Puntarenas", imagenUrl: "/images/Postales_Generales/Parques Nacionales/Postales-parques-nacionales-corcovado.png" },
+  { id: "p-tortuguero", word: "TORTUGUERO", nombre: "Tortuguero", nombre_en: "Tortuguero", categoria: "PARQUE_NACIONAL", ubicacion: "Limón", imagenUrl: "/images/Postales_Generales/Parques Nacionales/Postales-parques-nacionales-tortuguero.png" },
+  { id: "p-cahuita", word: "CAHUITA", nombre: "Cahuita", nombre_en: "Cahuita", categoria: "PARQUE_NACIONAL", ubicacion: "Limón", imagenUrl: "/images/Postales_Generales/Parques Nacionales/Postales-parques-nacionales-cahuita.png" },
+  { id: "p-chirripo", word: "CHIRRIPO", nombre: "Cerro Chirripó", nombre_en: "Mount Chirripó", categoria: "PARQUE_NACIONAL", ubicacion: "Pérez Zeledón", imagenUrl: "/images/Postales_Generales/Parques Nacionales/Postales-parques-nacionales-chirripo.png" },
+  { id: "p-conchal", word: "CONCHAL", nombre: "Playa Conchal", nombre_en: "Conchal Beach", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Generales/Playas/Postales-playas-Conchal.png" },
+  { id: "p-tamarindo", word: "TAMARINDO", nombre: "Tamarindo", nombre_en: "Tamarindo", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Generales/Playas/Postales-playas-Tamarindo.png" },
+  { id: "p-samara", word: "SAMARA", nombre: "Sámara", nombre_en: "Sámara", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Generales/Playas/Postales-playas-Samara.png" },
+  { id: "p-flamingo", word: "FLAMINGO", nombre: "Playa Flamingo", nombre_en: "Flamingo Beach", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Generales/Playas/Postales-playas-Flamingo.png" },
+  { id: "p-monteverde", word: "MONTEVERDE", nombre: "Monteverde", nombre_en: "Monteverde", categoria: "BOSQUES_RESERVAS", ubicacion: "Puntarenas", imagenUrl: "/images/Postales_Generales/Bosques y Reservas/postales-bosques-y-reservas-monteverde.png" },
+  { id: "p-uvita", word: "UVITA", nombre: "Playa Uvita", nombre_en: "Uvita Beach", categoria: "PLAYA", ubicacion: "Puntarenas", imagenUrl: "/images/Postales_Generales/Playas/Postales-playas-Uvita.png" },
+  { id: "p-dominical", word: "DOMINICAL", nombre: "Dominical", nombre_en: "Dominical", categoria: "PLAYA", ubicacion: "Puntarenas", imagenUrl: "/images/Postales_Generales/Playas/Postales-playas-Dominical.png" },
+  { id: "p-nosara", word: "NOSARA", nombre: "Nosara", nombre_en: "Nosara", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Generales/Playas/Postales-playas-nosara-guiones.png" },
+  { id: "p-barva", word: "BARVA", nombre: "Volcán Barva", nombre_en: "Barva Volcano", categoria: "VOLCAN", ubicacion: "Heredia", imagenUrl: "/images/Postales_Generales/Volcanes/Postales-volcanes-Barva.png" },
+  { id: "p-tenorio", word: "TENORIO", nombre: "Volcán Tenorio", nombre_en: "Tenorio Volcano", categoria: "VOLCAN", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Generales/Volcanes/Postales-volcanes-Tenorio.png" },
+  { id: "p-rincon", word: "RINCON", nombre: "Rincón de la Vieja", nombre_en: "Rincón de la Vieja", categoria: "PARQUE_NACIONAL", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Generales/Parques Nacionales/Postales-parques-nacionales-rincon-de-la-vieja.png" },
+  { id: "p-canonegro", word: "CAÑONEGRO", nombre: "Caño Negro", nombre_en: "Caño Negro", categoria: "PARQUE_NACIONAL", ubicacion: "Alajuela", imagenUrl: "/images/Postales_Generales/Bosques y Reservas/postales-bosques-y-reservas-cano-negro.png" },
   { id: "p-cartago", word: "CARTAGO", nombre: "Cartago", nombre_en: "Cartago", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-cartago.png" },
   { id: "p-heredia", word: "HEREDIA", nombre: "Heredia", nombre_en: "Heredia", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-heredia.png" },
   { id: "p-alajuela", word: "ALAJUELA", nombre: "Alajuela", nombre_en: "Alajuela", categoria: "PROVINCIA", ubicacion: "Valle Central", imagenUrl: "/images/Postales_Provincias/Postales-provincias-alajuela.png" },
   { id: "p-limon", word: "LIMON", nombre: "Limón", nombre_en: "Limón", categoria: "PROVINCIA", ubicacion: "Caribe", imagenUrl: "/images/Postales_Provincias/Postales-provincias-limon.png" },
-  { id: "p-hermosa", word: "HERMOSA", nombre: "Playa Hermosa", nombre_en: "Hermosa Beach", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Playas/Postales-playas-Hermosa.png" },
+  { id: "p-hermosa", word: "HERMOSA", nombre: "Playa Hermosa", nombre_en: "Hermosa Beach", categoria: "PLAYA", ubicacion: "Guanacaste", imagenUrl: "/images/Postales_Generales/Playas/Postales-playas-hermosa-guanacaste.png" },
 ];
 
 /**
@@ -130,6 +130,22 @@ export async function getPlacesForSopitika(): Promise<GameWordPlace[]> {
           }
         }
         clean = cleanWordForGrid(strippedName);
+      }
+
+      // Si aún es largo (>10) pero tiene partes compuestas (ej. "Playa Nosara / Playa Guiones")
+      if (clean.length > 10 && (p.nombre.includes('/') || p.nombre.includes('-'))) {
+        const primaryPart = p.nombre.split(/[\/-]/)[0].trim();
+        let strippedPart = primaryPart;
+        for (const prefix of GENERIC_PREFIXES) {
+          if (prefix.test(strippedPart)) {
+            strippedPart = strippedPart.replace(prefix, "").trim();
+            break;
+          }
+        }
+        const candidateClean = cleanWordForGrid(strippedPart);
+        if (candidateClean.length >= 4 && candidateClean.length <= 10) {
+          clean = candidateClean;
+        }
       }
 
       // Validar que la palabra tenga entre 4 y 10 letras y no sea huérfana
