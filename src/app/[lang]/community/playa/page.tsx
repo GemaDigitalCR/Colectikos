@@ -13,14 +13,14 @@ const GRID_SIZE = 25;
 
 
 const ITEM_TYPES = {
-  sombrilla: { id: "sombrilla", name: "Sombrilla", name_en: "Umbrella", w: 1, h: 1, cost: 100, attract: 2, cat: "entretenimiento", cat_en: "entertainment", cap: 15, pollution: 1, image: "/assets/playa/sombrilla.png?v=20261029_v1", offsetX: 4, offsetY: -8 },
-  palmera: { id: "palmera", name: "Palmera", name_en: "Palm Tree", w: 1, h: 1, cost: 50, attract: 3, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -5, image: "/assets/playa/palmera.png?v=20261029_v1", offsetX: 0, offsetY: -16 },
-  pipas: { id: "pipas", name: "Pipas y Copos", name_en: "Coconut Water", w: 2, h: 1, cost: 150, attract: 5, cat: "alimentacion", cat_en: "food", cap: 20, pollution: 4, image: "/assets/playa/pipas.png?v=20261029_v1" },
-  soda: { id: "soda", name: "Soda", name_en: "Diner", w: 2, h: 2, cost: 300, attract: 10, cat: "alimentacion", cat_en: "food", cap: 60, pollution: 10, image: "/assets/playa/soda.png?v=20261029_v1" },
-  restaurante: { id: "restaurante", name: "Restaurante", name_en: "Restaurant", w: 3, h: 3, cost: 1200, attract: 50, cat: "alimentacion", cat_en: "food", cap: 250, pollution: 25, image: "/assets/playa/restaurante.png?v=20261029_v1" },
-  cabanas: { id: "cabanas", name: "Cabañas", name_en: "Cabins", w: 2, h: 2, cost: 1500, attract: 60, cat: "hospedaje", cat_en: "lodging", cap: 120, pollution: 12, image: "/assets/playa/cabanas.png?v=20261029_v1" },
-  hotel: { id: "hotel", name: "Hotel Boutique", name_en: "Boutique Hotel", w: 3, h: 3, cost: 6000, attract: 300, cat: "hospedaje", cat_en: "lodging", cap: 600, pollution: 35, image: "/assets/playa/hotel.png?v=20261029_v1" },
-  deportes: { id: "deportes", name: "Alquiler Deportes", name_en: "Sports Rental", w: 2, h: 2, cost: 400, attract: 20, cat: "entretenimiento", cat_en: "entertainment", cap: 40, pollution: 10, image: "/assets/playa/deportes.png?v=20261029_v1" },
+  sombrilla: { id: "sombrilla", name: "Sombrilla", name_en: "Umbrella", w: 1, h: 1, cost: 100, attract: 2, cat: "entretenimiento", cat_en: "entertainment", cap: 15, pollution: 1, image: "/assets/playa/sombrilla.png?v=20261029_v1", renderScale: 1.8, offsetX: 2, offsetY: -12 },
+  palmera: { id: "palmera", name: "Palmera", name_en: "Palm Tree", w: 1, h: 1, cost: 50, attract: 3, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -5, image: "/assets/playa/palmera.png?v=20261029_v1", renderScale: 2.3, offsetX: 0, offsetY: -28 },
+  pipas: { id: "pipas", name: "Pipas y Copos", name_en: "Coconut Water", w: 2, h: 1, cost: 150, attract: 5, cat: "alimentacion", cat_en: "food", cap: 20, pollution: 4, image: "/assets/playa/pipas.png?v=20261029_v1", renderScale: 1.55, offsetX: 0, offsetY: -14 },
+  soda: { id: "soda", name: "Soda", name_en: "Diner", w: 2, h: 2, cost: 300, attract: 10, cat: "alimentacion", cat_en: "food", cap: 60, pollution: 10, image: "/assets/playa/soda.png?v=20261029_v1", renderScale: 1.45, offsetX: 0, offsetY: -18 },
+  restaurante: { id: "restaurante", name: "Restaurante", name_en: "Restaurant", w: 3, h: 3, cost: 1200, attract: 50, cat: "alimentacion", cat_en: "food", cap: 250, pollution: 25, image: "/assets/playa/restaurante.png?v=20261029_v1", renderScale: 1.35, offsetX: 0, offsetY: -22 },
+  cabanas: { id: "cabanas", name: "Cabañas", name_en: "Cabins", w: 2, h: 2, cost: 1500, attract: 60, cat: "hospedaje", cat_en: "lodging", cap: 120, pollution: 12, image: "/assets/playa/cabanas.png?v=20261029_v1", renderScale: 1.45, offsetX: 0, offsetY: -18 },
+  hotel: { id: "hotel", name: "Hotel Boutique", name_en: "Boutique Hotel", w: 3, h: 3, cost: 6000, attract: 300, cat: "hospedaje", cat_en: "lodging", cap: 600, pollution: 35, image: "/assets/playa/hotel.png?v=20261029_v1", renderScale: 1.35, offsetX: 0, offsetY: -26 },
+  deportes: { id: "deportes", name: "Alquiler Deportes", name_en: "Sports Rental", w: 2, h: 2, cost: 400, attract: 20, cat: "entretenimiento", cat_en: "entertainment", cap: 40, pollution: 10, image: "/assets/playa/deportes.png?v=20261029_v1", renderScale: 1.45, offsetX: 0, offsetY: -18 },
   surf: { 
     id: "surf", 
     name: "Lecciones Surf", 
@@ -34,16 +34,19 @@ const ITEM_TYPES = {
     cap: 30, 
     pollution: 5, 
     image: "/assets/playa/surf.png?v=20261029_v1",
+    renderScale: 1.45,
+    offsetX: 0,
+    offsetY: -18
   },
-  artesanias: { id: "artesanias", name: "Artesanías", name_en: "Crafts", w: 2, h: 1, cost: 200, attract: 8, cat: "entretenimiento", cat_en: "entertainment", cap: 20, pollution: 5, image: "/assets/playa/artesanias.png?v=20261029_v1" },
-  trampolin: { id: "trampolin", name: "Trampolín Acuático", name_en: "Water Trampoline", w: 1, h: 1, cost: 500, attract: 25, cat: "entretenimiento", cat_en: "entertainment", cap: 50, pollution: 2, image: "/assets/playa/trampolin.png?v=20261011_v3", hidden: true },
-  inflable: { id: "inflable", name: "Parque Inflable", name_en: "Inflatable Park", w: 2, h: 2, cost: 1000, attract: 45, cat: "entretenimiento", cat_en: "entertainment", cap: 120, pollution: 8, image: "/assets/playa/inflable.png?v=20261029_v1" },
-  reciclaje1: { id: "reciclaje1", name: "Punto Ecológico", name_en: "Eco Point", w: 1, h: 1, cost: 150, attract: 5, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -15, image: "/assets/playa/reciclaje1.png?v=20261029_v1", offsetX: 0, offsetY: -10 },
-  reciclaje2: { id: "reciclaje2", name: "Centro Reciclaje", name_en: "Recycling Center", w: 1, h: 1, cost: 150, attract: 10, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -35, image: "/assets/playa/reciclaje2.png?v=20261029_v1", offsetX: 0, offsetY: -10 },
+  artesanias: { id: "artesanias", name: "Artesanías", name_en: "Crafts", w: 2, h: 1, cost: 200, attract: 8, cat: "entretenimiento", cat_en: "entertainment", cap: 20, pollution: 5, image: "/assets/playa/artesanias.png?v=20261029_v1", renderScale: 1.55, offsetX: 0, offsetY: -14 },
+  trampolin: { id: "trampolin", name: "Trampolín Acuático", name_en: "Water Trampoline", w: 1, h: 1, cost: 500, attract: 25, cat: "entretenimiento", cat_en: "entertainment", cap: 50, pollution: 2, image: "/assets/playa/trampolin.png?v=20261011_v3", hidden: true, renderScale: 1.5, offsetX: 0, offsetY: -12 },
+  inflable: { id: "inflable", name: "Parque Inflable", name_en: "Inflatable Park", w: 2, h: 2, cost: 1000, attract: 45, cat: "entretenimiento", cat_en: "entertainment", cap: 120, pollution: 8, image: "/assets/playa/inflable.png?v=20261029_v1", renderScale: 1.45, offsetX: 0, offsetY: -18 },
+  reciclaje1: { id: "reciclaje1", name: "Punto Ecológico", name_en: "Eco Point", w: 1, h: 1, cost: 150, attract: 5, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -15, image: "/assets/playa/reciclaje1.png?v=20261029_v1", renderScale: 1.7, offsetX: 0, offsetY: -12 },
+  reciclaje2: { id: "reciclaje2", name: "Centro Reciclaje", name_en: "Recycling Center", w: 1, h: 1, cost: 150, attract: 10, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -35, image: "/assets/playa/reciclaje2.png?v=20261029_v1", renderScale: 1.7, offsetX: 0, offsetY: -12 },
 };
 
 const DECORATIVE_SIGNS = [
-  // Lado Superior (4 rótulos - totalmente fuera, con pata colindando con el borde superior)
+  // Lado Superior (4 rótulos - ubicados en la arena a lo largo del borde superior)
   {
     id: "rotulo-top-1",
     image: "/assets/playa/rotulo1.png?v=20261029_v2",
@@ -51,7 +54,7 @@ const DECORATIVE_SIGNS = [
     text_en: "Recycle each material in its respective bin",
     side: "top",
     left: "14%",
-    top: "-2%",
+    top: "1.5%",
   },
   {
     id: "rotulo-top-2",
@@ -60,7 +63,7 @@ const DECORATIVE_SIGNS = [
     text_en: "Keep the beach clean, take your trash with you",
     side: "top",
     left: "38%",
-    top: "-2%",
+    top: "1.5%",
   },
   {
     id: "rotulo-top-3",
@@ -69,7 +72,7 @@ const DECORATIVE_SIGNS = [
     text_en: "Protect sea turtles",
     side: "top",
     left: "62%",
-    top: "-2%",
+    top: "1.5%",
   },
   {
     id: "rotulo-top-4",
@@ -78,17 +81,17 @@ const DECORATIVE_SIGNS = [
     text_en: "Enjoy the beach and help us care for it",
     side: "top",
     left: "86%",
-    top: "-2%",
+    top: "1.5%",
   },
 
-  // Lado Derecho (4 rótulos - paralelos a la cuadrícula, totalmente fuera del borde derecho)
+  // Lado Derecho (4 rótulos - ubicados a lo largo del borde derecho)
   {
     id: "rotulo-right-1",
     image: "/assets/playa/rotulo5.png?v=20261029_v2",
     text: "Respeta la fauna silvestre",
     text_en: "Respect wildlife",
     side: "right",
-    left: "100.5%",
+    left: "98%",
     top: "14%",
   },
   {
@@ -97,7 +100,7 @@ const DECORATIVE_SIGNS = [
     text: "Usa bloqueador amigable con corales",
     text_en: "Use reef-friendly sunscreen",
     side: "right",
-    left: "100.5%",
+    left: "98%",
     top: "38%",
   },
   {
@@ -106,7 +109,7 @@ const DECORATIVE_SIGNS = [
     text: "Recicla cada material en su respectivo recipiente",
     text_en: "Recycle each material in its respective bin",
     side: "right",
-    left: "100.5%",
+    left: "98%",
     top: "62%",
   },
   {
@@ -115,11 +118,11 @@ const DECORATIVE_SIGNS = [
     text: "Mantén la playa limpia, llévate tu basura",
     text_en: "Keep the beach clean, take your trash with you",
     side: "right",
-    left: "100.5%",
+    left: "98%",
     top: "86%",
   },
 
-  // Lado Inferior (4 rótulos - totalmente fuera del área jugable)
+  // Lado Inferior (4 rótulos - ubicados a lo largo del borde inferior)
   {
     id: "rotulo-bottom-1",
     image: "/assets/playa/rotulo3.png?v=20261029_v3",
@@ -127,7 +130,7 @@ const DECORATIVE_SIGNS = [
     text_en: "Protect sea turtles",
     side: "bottom",
     left: "14%",
-    top: "112%",
+    top: "98%",
   },
   {
     id: "rotulo-bottom-2",
@@ -136,7 +139,7 @@ const DECORATIVE_SIGNS = [
     text_en: "Enjoy the beach and help us care for it",
     side: "bottom",
     left: "38%",
-    top: "112%",
+    top: "98%",
   },
   {
     id: "rotulo-bottom-3",
@@ -145,7 +148,7 @@ const DECORATIVE_SIGNS = [
     text_en: "Respect wildlife",
     side: "bottom",
     left: "62%",
-    top: "112%",
+    top: "98%",
   },
   {
     id: "rotulo-bottom-4",
@@ -154,7 +157,7 @@ const DECORATIVE_SIGNS = [
     text_en: "Use reef-friendly sunscreen",
     side: "bottom",
     left: "86%",
-    top: "112%",
+    top: "98%",
   },
 ];
 
@@ -473,35 +476,32 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
     init();
   }, []);
 
-  // Centrar la cámara directamente en la cuadrícula de arena (omitiendo el mar lateral)
+  // Centrar la cámara directamente en el centro de la playa
   const centerOnBoard = useCallback((smooth = false) => {
-    const board = document.getElementById('tiko-playa-board');
     const container = scrollContainerRef.current || document.getElementById('grid-scroll-container');
-    if (board && container) {
-      const bRect = board.getBoundingClientRect();
-      const cRect = container.getBoundingClientRect();
-      const deltaX = (bRect.left + bRect.width / 2) - (cRect.left + cRect.width / 2);
-      const deltaY = (bRect.top + bRect.height / 2) - (cRect.top + cRect.height / 2);
+    if (container) {
+      const targetLeft = Math.max(0, (container.scrollWidth - container.clientWidth) / 2);
+      const targetTop = Math.max(0, (container.scrollHeight - container.clientHeight) / 2);
       if (smooth) {
-        container.scrollBy({ left: deltaX, top: deltaY, behavior: 'smooth' });
+        container.scrollTo({ left: targetLeft, top: targetTop, behavior: 'smooth' });
       } else {
-        container.scrollLeft += deltaX;
-        container.scrollTop += deltaY;
+        container.scrollLeft = targetLeft;
+        container.scrollTop = targetTop;
       }
     }
   }, []);
 
-  // Centrar la cámara en la arena y ajustar zoom óptimo en móviles al cargar
+  // Centrar la cámara en la arena y ajustar zoom óptimo al cargar
   useEffect(() => {
     if (!isLoaded) return;
 
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setZoom(0.65);
+      setZoom(1.0);
     }
 
-    const timer1 = setTimeout(() => centerOnBoard(false), 50);
-    const timer2 = setTimeout(() => centerOnBoard(false), 150);
-    const timer3 = setTimeout(() => centerOnBoard(false), 400);
+    const timer1 = setTimeout(() => centerOnBoard(false), 60);
+    const timer2 = setTimeout(() => centerOnBoard(false), 200);
+    const timer3 = setTimeout(() => centerOnBoard(false), 500);
 
     const handleResize = () => centerOnBoard(false);
     window.addEventListener('resize', handleResize);
@@ -1198,7 +1198,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
         </div>
 
         {/* Game Grid Wrapper */}
-        <div className="order-1 md:order-2 flex-1 relative flex flex-col min-w-0 w-full h-[58vh] sm:h-[65vh] md:h-full min-h-[380px] overflow-hidden rounded-2xl shadow-inner border-4 border-[#8B5A2B] bg-[#c2913f]">
+        <div className="order-1 md:order-2 flex-1 relative flex flex-col min-w-0 w-full h-[52vh] sm:h-[62vh] md:h-full min-h-[350px] overflow-hidden rounded-2xl shadow-xl border-4 border-[#0369a1] bg-gradient-to-b from-[#0284c7] via-[#0369a1] to-[#075985]">
           
           {/* Card Flotante de Gestión / Inspector de Estructura Seleccionada */}
           {selectedPlacedItem && (() => {
@@ -1372,8 +1372,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
             <button
               type="button"
               onClick={() => {
-                const defaultZoom = typeof window !== 'undefined' && window.innerWidth < 768 ? 0.65 : 1;
-                setZoom(defaultZoom);
+                setZoom(1.0);
                 setTimeout(() => centerOnBoard(true), 60);
               }}
               className="px-2 h-8 rounded-xl hover:bg-stone-100 active:scale-95 text-xs font-black text-stone-700 transition-all select-none"
@@ -1410,10 +1409,10 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
             style={{ touchAction: 'pan-x pan-y' }}
           >
             <div 
-              className="w-full h-full flex items-center justify-center py-20 px-20"
+              className="w-full h-full flex items-center justify-center py-10 px-10 sm:py-20 sm:px-20"
               style={{
-                minWidth: `${Math.max(1600, Math.round(1600 * Math.max(1, zoom)))}px`,
-                minHeight: `${Math.max(1200, Math.round(1200 * Math.max(1, zoom)))}px`
+                minWidth: `${Math.max(1400, Math.round(1400 * Math.max(1, zoom)))}px`,
+                minHeight: `${Math.max(1100, Math.round(1100 * Math.max(1, zoom)))}px`
               }}
             >
               
@@ -1429,9 +1428,9 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                     backgroundImage: 'url(/assets/playa/sand_pattern.png)',
                     backgroundRepeat: 'repeat',
                     backgroundSize: '192px 192px',
-                    border: '4px solid #8c5625',
-                    boxShadow: '-12px 24px 30px 0px rgba(0,0,0,0.25)',
-                    borderRadius: '6px',
+                    border: '4px solid #b47a3e',
+                    boxShadow: '-16px 28px 40px 0px rgba(0,0,0,0.3)',
+                    borderRadius: '8px',
                     transition: isPinching ? 'none' : 'transform 0.15s ease-out'
                   }}
                 >
@@ -1441,11 +1440,11 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                   className="absolute pointer-events-none overflow-hidden"
                   style={{
                      background: '#0284c7',
-                     backgroundImage: 'linear-gradient(to left, #22d3ee 0%, #0284c7 35%, #0369a1 75%, #0c4a6e 100%)',
-                     top: '-3000px',
+                     backgroundImage: 'linear-gradient(to left, #38bdf8 0%, #0284c7 35%, #0369a1 75%, #0c4a6e 100%)',
+                     top: '-4000px',
                      right: '100%',
-                     width: '3000px',
-                     height: '6000px',
+                     width: '4000px',
+                     height: '8000px',
                      transform: 'translateZ(-2px)',
                      boxShadow: '10px 0 25px rgba(0,0,0,0.15)'
                   }}
@@ -1535,7 +1534,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                       position: 'absolute',
                       left: sign.left,
                       top: sign.top,
-                      width: '8.5%',
+                      width: '6.5%',
                       transformStyle: 'preserve-3d',
                       transform: 'translate(-50%, -100%)',
                     }}
@@ -1586,6 +1585,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                     const itemAnchorBottom = (def as any).anchorBottom ?? (isBottomLeftAnchor ? '0' : undefined);
                     const offsetX = (def as any).offsetX || 0;
                     const offsetY = (def as any).offsetY || 0;
+                    const renderScale = (def as any).renderScale || (is1x1 ? 1.6 : 1.4);
 
                     return (
                       <div
@@ -1598,8 +1598,6 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                         className={`pointer-events-auto relative ${
                           isBottomLeftAnchor 
                             ? '' 
-                            : is1x1 
-                            ? 'flex items-center justify-center' 
                             : 'flex items-end justify-center'
                         }`}
                       >
@@ -1612,9 +1610,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                                setIsManageMode(false);
                                playSound('select_placed');
                             }}
-                            className={`relative drop-shadow-xl flex ${
-                              is1x1 ? 'items-center' : 'items-end'
-                            } justify-center group cursor-pointer transition-all ${
+                            className={`relative drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)] flex items-end justify-center group cursor-pointer transition-all ${
                               isBottomLeftAnchor ? 'absolute' : ''
                             } ${
                               isSelected 
@@ -1624,10 +1620,10 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                                 : 'hover:-translate-y-1 z-20'
                             }`}
                             style={{ 
-                              transform: `translateZ(${is1x1 ? 0 : 10}px) rotateZ(45deg) rotateX(-60deg) translate(${offsetX}px, ${offsetY}px) scale(${isSelected ? 1.05 : 1})`, 
-                              transformOrigin: is1x1 ? 'center center' : itemTransformOrigin,
+                              transform: `translateZ(${is1x1 ? 6 : 14}px) rotateZ(45deg) rotateX(-60deg) translate(${offsetX}px, ${offsetY}px) scale(${renderScale * (isSelected ? 1.05 : 1)})`, 
+                              transformOrigin: itemTransformOrigin,
                               width: itemRenderWidth,
-                              height: isBottomLeftAnchor ? 'auto' : '100%',
+                              height: 'auto',
                               ...(isBottomLeftAnchor ? { left: itemAnchorLeft, bottom: itemAnchorBottom } : {})
                             }}
                          >
