@@ -152,3 +152,4 @@ export default function DailyLimitModal({ isOpen, onClose, lang: propLang }: Dai
     document.body
   );
 }
+

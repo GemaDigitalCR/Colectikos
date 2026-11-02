@@ -213,6 +213,28 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
         [deck[i], deck[j]] = [deck[j], deck[i]];
       }
 
+      // Pre-cargar en memoria las 10 imágenes para que al voltear cartas en celular aparezcan de inmediato
+      if (typeof window !== 'undefined') {
+        const preloadPromises = fetchedPlaces.map((place) => {
+          return new Promise<void>((resolve) => {
+            if (!place.imagenUrl) {
+              resolve();
+              return;
+            }
+            const img = new window.Image();
+            img.src = place.imagenUrl;
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          });
+        });
+
+        // Esperar a que se almacenen en caché mientras la pantalla muestra "Barajando postales..." (máx 1.2s)
+        await Promise.race([
+          Promise.all(preloadPromises),
+          new Promise((resolve) => setTimeout(resolve, 1200))
+        ]);
+      }
+
       setCards(deck);
     } catch (e) {
       console.error(e);
@@ -882,7 +904,8 @@ export default function ParejitikasPage({ params }: { params: Promise<{ lang: st
                             src={card.imagenUrl}
                             alt={isEn ? card.nombre_en : card.nombre}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            loading="lazy"
+                            loading="eager"
+                            decoding="async"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-emerald-100 text-emerald-700 font-bold text-xs">
