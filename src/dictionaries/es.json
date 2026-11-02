@@ -236,6 +236,7 @@
   },
   "nuestraApp": {
     "title": "Nuestra App",
+    "gemaAttribution": "Un producto orgullosamente diseñado y producido por",
     "tabRules": "Reglas del Juego",
     "tabInstructions": "Instrucciones",
     "tabSecrets": "Secretos",

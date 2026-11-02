@@ -92,8 +92,23 @@ function NuestraAppContent() {
     <div className="min-h-screen bg-[#FAF6EE] text-stone-800 pb-20 pt-24 px-4 sm:px-6">
       
       {/* HEADER / NAVIGATION */}
-      <div className="max-w-5xl mx-auto mb-12">
-        <h1 className="text-4xl font-serif italic text-center mb-8 text-stone-900">
+      <div className="max-w-5xl mx-auto mb-10 sm:mb-12 relative">
+        {/* Sello de Atribución Gema Digital */}
+        <div className="flex justify-center sm:justify-end mb-4 sm:mb-0 sm:absolute sm:top-1 sm:right-0 z-10">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white backdrop-blur-xs border border-stone-200/80 hover:border-stone-300 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-xs transition-all duration-300 group">
+            <span className="text-[11px] sm:text-xs text-stone-500 font-medium tracking-tight">
+              {t.gemaAttribution || (lang === 'en' ? 'A product proudly designed and produced by' : 'Un producto orgullosamente diseñado y producido por')}{' '}
+              <span className="font-bold text-stone-800">Gema Digital</span>
+            </span>
+            <img 
+              src="/images/Imagenes_Pagina/logo_gema_digital.png" 
+              alt="Gema Digital" 
+              className="h-5 sm:h-6 w-auto object-contain drop-shadow-xs transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        </div>
+
+        <h1 className="text-4xl font-serif italic text-center mb-8 text-stone-900 pt-1">
           {t.title}
         </h1>
         
