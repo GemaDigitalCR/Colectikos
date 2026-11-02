@@ -83,3 +83,4 @@ export function getPlaceUnlockMode(
   // 7. Fallback por defecto si no hay ningún registro
   return 'Curioso';
 }
+

@@ -59,12 +59,12 @@ export default function RegisterForm() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="username">Alias</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="username">Alias de Explorador</label>
                 <input
                   id="username"
                   name="username"
                   type="text"
-                  placeholder="Ej. Coleccionista19"
+                  placeholder="Ej. Explorador19"
                   value={formData.username}
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"

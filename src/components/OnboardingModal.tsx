@@ -25,11 +25,11 @@ export default function OnboardingModal({ onCompleted }: OnboardingModalProps) {
     subtitle: lang === 'en' 
       ? "You're about to start your collection. How do you want other explorers to know you?" 
       : "Estás a punto de iniciar tu colección. ¿Cómo quieres que te conozcan los demás exploradores?",
-    usernameLabel: lang === 'en' ? "Collector Name" : "Nombre de Coleccionista",
+    usernameLabel: lang === 'en' ? "Explorer's Nickname" : "Alias de Explorador",
     usernamePlaceholder: lang === 'en' ? "E.g. JuanExplores" : "Ej. JuanExplora",
     usernameHint: lang === 'en' 
-      ? "This name will be public and appear in community rankings." 
-      : "Este nombre será público y aparecerá en los rankings de comunidad.",
+      ? "This nickname will be public and appear in community rankings." 
+      : "Este alias será público y aparecerá en los rankings de comunidad.",
     genderLabel: lang === 'en' ? "How do you prefer to be called?" : "¿Cómo preferís que te llamen?",
     genderHint: lang === 'en' 
       ? "This will adjust your level titles (e.g. \"Tico Beginner\" vs \"Tica Beginner\")." 
@@ -38,8 +38,8 @@ export default function OnboardingModal({ onCompleted }: OnboardingModalProps) {
     female: lang === 'en' ? "Female" : "Femenino",
     neutral: lang === 'en' ? "Neutral" : "Neutro",
     start: lang === 'en' ? "Start Adventure" : "Comenzar Aventura",
-    errEmpty: lang === 'en' ? "Please enter a collector name." : "Por favor ingresa un nombre de coleccionista.",
-    errShort: lang === 'en' ? "Name must be at least 3 characters." : "El nombre debe tener al menos 3 caracteres.",
+    errEmpty: lang === 'en' ? "Please enter an explorer's nickname." : "Por favor ingresa un alias de explorador.",
+    errShort: lang === 'en' ? "Nickname must be at least 3 characters." : "El alias debe tener al menos 3 caracteres.",
     welcome: lang === 'en' ? "Welcome" : "¡Bienvenido/a",
     errSave: lang === 'en' ? "Error saving profile." : "Error al guardar el perfil.",
     errUnexp: lang === 'en' ? "An unexpected error occurred." : "Ocurrió un error inesperado."

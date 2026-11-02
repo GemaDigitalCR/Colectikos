@@ -253,7 +253,7 @@ export default function MemoriesModal({
                   <span>
                     {isEn ? 'Visible on the ' : 'Visible en el '}
                     <strong>{isEn ? 'Explorers Wall' : 'Muro de Exploradores'}</strong>
-                    {isEn ? ' with your username. Inspire other travelers!' : ' con tu alias. ¡Inspirarás a otros viajeros!'}
+                    {isEn ? " with your explorer's nickname. Inspire other travelers!" : " con tu alias de explorador. ¡Inspirarás a otros viajeros!"}
                   </span>
                 </p>
               ) : (

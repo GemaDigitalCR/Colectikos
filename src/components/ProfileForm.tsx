@@ -108,7 +108,7 @@ export default function ProfileForm({ initialData = {} }: ProfileFormProps) {
   const handleNext = async () => {
     if (step === 1 && !hasMedal) {
       if (!formData.username.trim()) {
-        setUsernameError(formDict?.usernameErrorEmpty || 'Falta el Nombre de Coleccionista.');
+        setUsernameError(formDict?.usernameErrorEmpty || 'Falta el Alias de Explorador.');
         return;
       }
       // Ya no verificamos disponibilidad porque Clerk garantiza unicidad y el campo es de solo lectura.
@@ -229,22 +229,22 @@ export default function ProfileForm({ initialData = {} }: ProfileFormProps) {
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
               <h3 className="text-lg font-bold text-stone-700 border-b pb-2">{formDict?.step1 || 'Paso 1: Tu Identidad'}</h3>
               
-              {/* Nombre de Coleccionista */}
+              {/* Alias de Explorador */}
               <div className="space-y-4">
                 <div className="flex justify-between items-end">
-                  <label className="block text-sm font-semibold text-stone-700">{formDict?.usernameLabel || 'Tu Nombre de Coleccionista'}</label>
+                  <label className="block text-sm font-semibold text-stone-700">{formDict?.usernameLabel || 'Tu Alias de Explorador'}</label>
                   <span className="text-xs text-amber-600 font-medium">{formDict?.permanentData || 'Dato permanente'}</span>
                 </div>
                 <input 
                   type="text"
-                  placeholder={formDict?.usernamePlaceholder || 'Ej. Coleccionista19'}
+                  placeholder={formDict?.usernamePlaceholder || 'Ej. Explorador19'}
                   value={formData.username}
                   onChange={(e) => updateForm('username', e.target.value)}
                   disabled={true}
                   className="w-full p-3 border rounded-xl focus:outline-none transition-shadow bg-stone-100 text-stone-500 cursor-not-allowed border-stone-200"
                 />
                 {usernameError && <p className="text-sm font-medium text-red-600 mt-1">{usernameError}</p>}
-                <p className="text-xs text-stone-500">{formDict?.usernameHelp || 'El Nombre de Coleccionista es tu identidad única en Colectikos y fue asignado durante tu registro. No puede ser modificado.'}</p>
+                <p className="text-xs text-stone-500">{formDict?.usernameHelp || 'El Alias de Explorador es tu identidad única en Colectikos y fue asignado durante tu registro. No puede ser modificado.'}</p>
               </div>
 
               {/* Selección de Avatar */}

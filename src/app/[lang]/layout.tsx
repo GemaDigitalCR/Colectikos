@@ -71,10 +71,21 @@ export default async function RootLayout({
         actionLink: 'Ingresá',
       }
     },
+    formFieldLabel__username: 'Alias de Explorador',
+    formFieldInputPlaceholder__username: 'Elegí tu alias (ej. JuanExplora)',
+    formFieldLabel__emailAddress_username: 'Correo electrónico o Alias de Explorador',
+    formFieldInputPlaceholder__emailAddress_username: 'Ingresá tu correo o alias de explorador',
     formFieldLabel__password: 'Contraseña (mínimo 10 caracteres)',
     formFieldLabel__newPassword: 'Nueva contraseña (mínimo 10 caracteres)',
     formFieldInputPlaceholder__signUpPassword: 'Mínimo 10 caracteres',
     formFieldInputPlaceholder__password: 'Mínimo 10 caracteres',
+    'unstable__errors.form_identifier_exists__username': 'Ya existe una cuenta con este alias de explorador.',
+    'unstable__errors.form_username_invalid_character': 'El alias de explorador contiene caracteres inválidos.',
+    'unstable__errors.form_username_invalid_length': 'El alias de explorador debe tener entre 3 y 20 caracteres.',
+    'unstable__errors.form_username_needs_non_number_char': 'Tu alias de explorador debe contener al menos un carácter no numérico.',
+    'signIn.start.actionLink__use_email_username': 'Usar correo electrónico o alias de explorador',
+    'signIn.start.actionLink__use_username': 'Usar alias de explorador',
+    'userProfile.start.usernameSection.title': 'Alias de Explorador',
   } : {
     ...enUS,
     signIn: {
@@ -84,10 +95,21 @@ export default async function RootLayout({
         subtitle: 'Welcome! Please sign in to continue',
       }
     },
+    formFieldLabel__username: "Explorer's Nickname",
+    formFieldInputPlaceholder__username: "Choose your nickname (e.g. JuanExplores)",
+    formFieldLabel__emailAddress_username: "Email address or Explorer's Nickname",
+    formFieldInputPlaceholder__emailAddress_username: "Enter your email or explorer's nickname",
     formFieldLabel__password: 'Password (minimum 10 characters)',
     formFieldLabel__newPassword: 'New password (minimum 10 characters)',
     formFieldInputPlaceholder__signUpPassword: 'Minimum 10 characters',
     formFieldInputPlaceholder__password: 'Minimum 10 characters',
+    'unstable__errors.form_identifier_exists__username': "An account with this explorer's nickname already exists.",
+    'unstable__errors.form_username_invalid_character': "Your explorer's nickname contains invalid characters.",
+    'unstable__errors.form_username_invalid_length': "Your explorer's nickname must be between 3 and 20 characters.",
+    'unstable__errors.form_username_needs_non_number_char': "Your explorer's nickname must contain at least one non-numeric character.",
+    'signIn.start.actionLink__use_email_username': "Use email or explorer's nickname",
+    'signIn.start.actionLink__use_username': "Use explorer's nickname",
+    'userProfile.start.usernameSection.title': "Explorer's Nickname",
   };
 
   return (
