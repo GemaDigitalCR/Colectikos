@@ -6,6 +6,7 @@ import UpcomingRideWidget from '../../components/UpcomingRideWidget';
 import CategoryFilter from '../../components/CategoryFilter';
 import ProvinceFilter from '../../components/ProvinceFilter';
 import PlaceCard from '../../components/PlaceCard';
+import DailyLimitModal from '../../components/DailyLimitModal';
 
 import { useLugaresData } from '../../context/LugaresContext';
 import { useProgress } from '../../context/ProgressContext';
@@ -17,6 +18,7 @@ export default function Home() {
   const [activeProvince, setActiveProvince] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'LOCKED'>('ALL');
   const [isMessyView, setIsMessyView] = useState(false);
+  const [showDailyLimitModal, setShowDailyLimitModal] = useState(false);
   
   const galleryRef = useRef<HTMLElement>(null);
 
@@ -70,6 +72,18 @@ export default function Home() {
     return () => {
       window.removeEventListener('colectikos-select-lugar', handleSelectLugar);
       window.removeEventListener('tico-select-lugar', handleSelectLugar);
+    };
+  }, []);
+
+  // Escuchar el evento de límite diario alcanzado (4to tiquete usado)
+  useEffect(() => {
+    const handleDailyLimit = () => {
+      setShowDailyLimitModal(true);
+    };
+
+    window.addEventListener('colectikos-daily-limit-reached', handleDailyLimit);
+    return () => {
+      window.removeEventListener('colectikos-daily-limit-reached', handleDailyLimit);
     };
   }, []);
 
@@ -291,6 +305,13 @@ export default function Home() {
           )}
         </section>
       </main>
+
+      {/* Modal de Límite Diario Alcanzado (4to tiquete) */}
+      <DailyLimitModal
+        isOpen={showDailyLimitModal}
+        onClose={() => setShowDailyLimitModal(false)}
+        lang={lang}
+      />
     </>
   );
 }

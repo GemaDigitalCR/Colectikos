@@ -647,6 +647,9 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
           }
           setCompletedPlaces(newState);
           setEstampillas(prev => prev - 1);
+          if (res.unlocksToday === 4 && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('colectikos-daily-limit-reached'));
+          }
           return res.unlocksToday;
         } else if (!res.success && 'error' in res) {
           if (res.error === 'no_energy') {

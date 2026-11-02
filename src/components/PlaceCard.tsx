@@ -86,6 +86,10 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
     
     if (unlocks === 3) {
       setIsPuzzleOpen(true);
+    } else if (unlocks === 4) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('colectikos-daily-limit-reached'));
+      }
     }
   };
   
