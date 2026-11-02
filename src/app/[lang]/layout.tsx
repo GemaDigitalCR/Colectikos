@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | Colectikos",
   },
   applicationName: "Colectikos",
-  description: "Descubre, colecciona postales ilustradas y comparte los destinos más increíbles de Costa Rica.",
+  description: "Si te gusta coleccionar, jugar, y presumir de todo lo que conocés de Costa Rica... ¡Descargá COLECTIKOS ya!",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     url: 'https://colectikos.com',
     siteName: 'Colectikos',
     title: 'Colectikos | Conquistando el país más bello del mundo',
-    description: 'Descubre, colecciona postales ilustradas y comparte los destinos más increíbles de Costa Rica.',
+    description: 'Si te gusta coleccionar, jugar, y presumir de todo lo que conocés de Costa Rica... ¡Descargá COLECTIKOS ya!',
     images: [
       {
         url: '/images/og-image.jpg',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Colectikos | Conquistando el país más bello del mundo',
-    description: 'Descubre, colecciona postales ilustradas y comparte los destinos más increíbles de Costa Rica.',
+    description: 'Si te gusta coleccionar, jugar, y presumir de todo lo que conocés de Costa Rica... ¡Descargá COLECTIKOS ya!',
     images: ['/images/og-image.jpg'],
   },
 };
