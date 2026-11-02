@@ -15,8 +15,14 @@ export const metadata: Metadata = {
     title: "Colectikos",
   },
   icons: {
-    icon: '/images/icon-192x192.png',
-    apple: '/images/icon-192x192.png',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/images/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/images/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
 };
 
