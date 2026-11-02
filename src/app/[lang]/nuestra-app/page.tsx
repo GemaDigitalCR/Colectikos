@@ -89,12 +89,12 @@ function NuestraAppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE] text-stone-800 pb-20 pt-24 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#FAF6EE] text-stone-800 pb-20 pt-10 sm:pt-14 px-4 sm:px-6">
       
       {/* HEADER / NAVIGATION */}
-      <div className="max-w-5xl mx-auto mb-10 sm:mb-12 relative">
-        {/* Sello de Atribución Gema Digital */}
-        <div className="flex justify-center sm:justify-end mb-4 sm:mb-0 sm:absolute sm:top-1 sm:right-0 z-10">
+      <div className="max-w-5xl mx-auto mb-10 sm:mb-12">
+        {/* Sello de Atribución Gema Digital - Arriba a la derecha */}
+        <div className="flex justify-end mb-2 sm:mb-4">
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white backdrop-blur-xs border border-stone-200/80 hover:border-stone-300 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-xs transition-all duration-300 group">
             <span className="text-[11px] sm:text-xs text-stone-500 font-medium tracking-tight">
               {t.gemaAttribution || (lang === 'en' ? 'A product proudly designed and produced by' : 'Un producto orgullosamente diseñado y producido por')}{' '}
@@ -108,7 +108,7 @@ function NuestraAppContent() {
           </div>
         </div>
 
-        <h1 className="text-4xl font-serif italic text-center mb-8 text-stone-900 pt-1">
+        <h1 className="text-4xl font-serif italic text-center mb-8 text-stone-900">
           {t.title}
         </h1>
         
