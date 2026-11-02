@@ -5,9 +5,13 @@ import "../globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Colectikos",
+  metadataBase: new URL('https://colectikos.com'),
+  title: {
+    default: "Colectikos | Conquistando el país más bello del mundo",
+    template: "%s | Colectikos",
+  },
   applicationName: "Colectikos",
-  description: "Conquistando el país más bello del mundo",
+  description: "Descubre, colecciona postales ilustradas y comparte los destinos más increíbles de Costa Rica.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -23,6 +27,28 @@ export const metadata: Metadata = {
     apple: [
       { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_CR',
+    url: 'https://colectikos.com',
+    siteName: 'Colectikos',
+    title: 'Colectikos | Conquistando el país más bello del mundo',
+    description: 'Descubre, colecciona postales ilustradas y comparte los destinos más increíbles de Costa Rica.',
+    images: [
+      {
+        url: '/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Colectikos - Colección Oficial de Postales de Costa Rica',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Colectikos | Conquistando el país más bello del mundo',
+    description: 'Descubre, colecciona postales ilustradas y comparte los destinos más increíbles de Costa Rica.',
+    images: ['/images/og-image.jpg'],
   },
 };
 
