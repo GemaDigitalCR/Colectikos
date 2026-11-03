@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 import LevelUpModal from '../components/LevelUpModal';
 import StreakCelebrationModal from '../components/StreakCelebrationModal';
@@ -38,6 +39,7 @@ interface ProgressContextType {
   showTour: boolean;
   setShowTour: (val: boolean) => void;
   updateLocalXp?: (newXp: number, newLevel: number) => void;
+  refreshGamification?: () => Promise<void>;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -71,8 +73,60 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const { user, isLoaded: clerkLoaded } = useUser();
+  const pathname = usePathname();
   const dbLugares = useLugaresData();
   const dict = useDictionary();
+
+  const refreshGamification = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    let localUsername = user?.username || undefined;
+    const profileData = localStorage.getItem('userProfileData');
+    if (profileData) {
+      try {
+        const parsed = JSON.parse(profileData);
+        if (parsed.username) localUsername = parsed.username;
+      } catch (e) {}
+    }
+
+    try {
+      const gamificationData = await getUserGamification(localUsername, user?.id);
+      if (gamificationData) {
+        setXp(gamificationData.xp);
+        setLevel(gamificationData.level);
+        setEstampillas(gamificationData.estampillas);
+        try {
+          localStorage.setItem('colectikos_user_xp', String(gamificationData.xp));
+          localStorage.setItem('colectikos_user_level', String(gamificationData.level));
+        } catch {}
+      }
+    } catch (e) {
+      console.warn("Error refreshing gamification data:", e);
+    }
+  }, [user]);
+
+  // Al navegar entre páginas o al volver al foco de la pestaña, refrescar gamificación desde la BD
+  useEffect(() => {
+    if (user) {
+      refreshGamification();
+    }
+  }, [pathname, user, refreshGamification]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) refreshGamification();
+    };
+    const handleCustomXp = (e: any) => {
+      if (e.detail?.xp !== undefined) setXp(e.detail.xp);
+      if (e.detail?.level !== undefined) setLevel(e.detail.level);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('colectikos:xp_updated', handleCustomXp as EventListener);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('colectikos:xp_updated', handleCustomXp as EventListener);
+    };
+  }, [user, refreshGamification]);
   const hasLoadedRef = useRef(false);
 
   // Prevención visual de "Ghosting" de datos:
@@ -158,6 +212,11 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     const loadProgress = async () => {
       // 1. Cargar rápido de localStorage (UI instantánea)
       try {
+        const savedXp = localStorage.getItem('colectikos_user_xp');
+        if (savedXp) setXp(Number(savedXp));
+        const savedLevel = localStorage.getItem('colectikos_user_level');
+        if (savedLevel) setLevel(Number(savedLevel));
+
         const saved = localStorage.getItem('colectikos_progress') || localStorage.getItem('tico100_progress');
         if (saved) {
           setCompletedPlaces(JSON.parse(saved));
@@ -717,10 +776,15 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const updateLocalXp = (newXp: number, newLevel: number) => {
     setXp(newXp);
     setLevel(newLevel);
+    try {
+      localStorage.setItem('colectikos_user_xp', String(newXp));
+      localStorage.setItem('colectikos_user_level', String(newLevel));
+      window.dispatchEvent(new CustomEvent('colectikos:xp_updated', { detail: { xp: newXp, level: newLevel } }));
+    } catch {}
   };
 
   return (
-    <ProgressContext.Provider value={{ completedPlaces, placeDetails, unlockModes, bucketList, handleCheckIn, handleCheckInWithMode, updatePlaceDetails, toggleBucketList, communityRatings, userRatings, xp, level, currentStreak, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, handleRate, userProfile, showTour, setShowTour, updateLocalXp }}>
+    <ProgressContext.Provider value={{ completedPlaces, placeDetails, unlockModes, bucketList, handleCheckIn, handleCheckInWithMode, updatePlaceDetails, toggleBucketList, communityRatings, userRatings, xp, level, currentStreak, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, handleRate, userProfile, showTour, setShowTour, updateLocalXp, refreshGamification }}>
       {children}
       {showOnboarding && <OnboardingModal onCompleted={() => setShowOnboarding(false)} />}
       <LevelUpModal 

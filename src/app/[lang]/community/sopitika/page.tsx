@@ -22,6 +22,7 @@ import {
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
+import { useProgress } from "../../../../context/ProgressContext";
 import { 
   getPlacesForSopitika, 
   getSopitikaDailyStatus, 
@@ -112,6 +113,7 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
   const lang = unwrappedParams?.lang || "es";
   const isEn = lang === "en";
   const { user } = useUser();
+  const { updateLocalXp, refreshGamification } = useProgress();
 
   // Estados del juego
   const [grid, setGrid] = useState<string[][]>([]);
@@ -521,6 +523,15 @@ export default function SopitikaPage({ params }: { params: Promise<{ lang: strin
         });
         setRewardResult(res);
         await fetchDailyStatus();
+
+        if (res.success && res.xpAwarded > 0) {
+          if (updateLocalXp && res.newTotalXp !== undefined && res.newLevel !== undefined) {
+            updateLocalXp(res.newTotalXp, res.newLevel);
+          }
+          if (refreshGamification) {
+            refreshGamification();
+          }
+        }
       } catch (err) {
         console.error("Error al registrar XP de Sopitika:", err);
       }

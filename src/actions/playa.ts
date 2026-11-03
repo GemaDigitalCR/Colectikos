@@ -160,5 +160,5 @@ export async function saveBeachState(
     }
   });
 
-  return { success: true, xpAwarded };
+  return { success: true, xpAwarded, newTotalXp: newXp, newLevel };
 }

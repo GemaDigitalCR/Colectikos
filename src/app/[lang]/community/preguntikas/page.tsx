@@ -25,6 +25,7 @@ import {
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
+import { useProgress } from "../../../../context/ProgressContext";
 import {
   getDailyPreguntikasQuestions,
   getPreguntikasDailyStatus,
@@ -77,6 +78,7 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
   const lang = unwrappedParams?.lang || "es";
   const isEn = lang === "en";
   const { user } = useUser();
+  const { updateLocalXp, refreshGamification } = useProgress();
 
   // Estados de datos y juego
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
@@ -329,6 +331,12 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
       await fetchStatus();
 
       if (res.success && res.xpAwarded > 0) {
+        if (updateLocalXp && res.newTotalXp !== undefined && res.newLevel !== undefined) {
+          updateLocalXp(res.newTotalXp, res.newLevel);
+        }
+        if (refreshGamification) {
+          refreshGamification();
+        }
         toast.success(
           isEn
             ? `+${res.xpAwarded} XP awarded to your profile!`

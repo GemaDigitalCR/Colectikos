@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ZoomIn, ZoomOut, Move, Coins, RotateCcw, X, Volume2, VolumeX, ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import { loadBeachState, saveBeachState, saveBeachName } from "../../../../actions/playa";
+import { useProgress } from "../../../../context/ProgressContext";
 import { initMobileAudioUnlock, unlockAudio, playSynthesizedSound, playHtmlAudioClick } from "../../../../lib/soundUtils";
 
 const GRID_SIZE = 25;
@@ -171,6 +172,7 @@ type PlacedItem = {
 export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang: string }> }) {
   const unwrappedParams = use(params);
   const isEn = unwrappedParams.lang === 'en';
+  const { updateLocalXp, refreshGamification } = useProgress();
   const [placedItems, setPlacedItems] = useState<PlacedItem[]>([]);
   const [tikolones, setTikolones] = useState(0); 
   const [visitors, setVisitors] = useState(0);
@@ -457,6 +459,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           
           if (res.alerts?.dailyXp) {
             playSound('reward');
+            if (refreshGamification) refreshGamification();
             toast.success(isEn ? `Daily Reward! You earned ${res.alerts.dailyXp} XP for playing Tiko Beach today.` : `¡Recompensa Diaria! Has ganado ${res.alerts.dailyXp} XP por jugar Tiko Playa hoy.`, { icon: '🎁', duration: 6000 });
           }
           if (res.alerts?.newTikolonesFromXp) {
@@ -692,6 +695,12 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
           
           if (saveRes && saveRes.success && saveRes.xpAwarded && saveRes.xpAwarded > 0) {
             playSound('reward');
+            if (updateLocalXp && saveRes.newTotalXp !== undefined && saveRes.newLevel !== undefined) {
+              updateLocalXp(saveRes.newTotalXp, saveRes.newLevel);
+            }
+            if (refreshGamification) {
+              refreshGamification();
+            }
             toast.success(isEn ? `Milestone Reached! You received +${saveRes.xpAwarded} XP for attracting many visitors.` : `¡Hito Alcanzado! Has recibido +${saveRes.xpAwarded} XP por atraer muchos visitantes.`, { icon: '🌟', duration: 5000 });
           }
         } catch (err) {
