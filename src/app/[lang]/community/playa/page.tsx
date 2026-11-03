@@ -1198,7 +1198,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
         </div>
 
         {/* Game Grid Wrapper */}
-        <div className="order-1 md:order-2 flex-1 relative flex flex-col min-w-0 w-full h-[52vh] sm:h-[62vh] md:h-full min-h-[350px] overflow-hidden rounded-2xl shadow-xl border-4 border-[#0369a1] bg-gradient-to-b from-[#0284c7] via-[#0369a1] to-[#075985]">
+        <div className="order-1 md:order-2 flex-1 relative flex flex-col min-w-0 w-full h-[52vh] sm:h-[62vh] md:h-full min-h-[350px] overflow-hidden rounded-2xl shadow-xl border-4 border-[#166534] bg-gradient-to-br from-[#14532d] via-[#166534] to-[#0284c7]">
           
           {/* Card Flotante de Gestión / Inspector de Estructura Seleccionada */}
           {selectedPlacedItem && (() => {
@@ -1435,16 +1435,81 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                   }}
                 >
                 
-                {/* Layer 0: El Mar Caribeño vivo con cáusticas de sol y espuma animada */}
+                {/* Layer -1: Selva y Vegetación Costera de Costa Rica (Orillas No-Mar) */}
+                {/* Orilla Superior (detrás de los rótulos superiores) */}
+                <div 
+                  className="absolute pointer-events-none overflow-hidden"
+                  style={{
+                    background: '#14532d',
+                    backgroundImage: 'radial-gradient(ellipse at bottom, #16a34a 0%, #15803d 30%, #166534 55%, #14532d 80%, #052e16 100%)',
+                    bottom: '100%',
+                    left: '-2000px',
+                    width: '6000px',
+                    height: '4000px',
+                    transform: 'translateZ(-3px)',
+                    borderBottom: '6px solid #16a34a',
+                    boxShadow: '0 15px 35px rgba(5, 46, 22, 0.45)'
+                  }}
+                >
+                  {/* Fila de follaje y sombras de vegetación en el borde con la arena */}
+                  <div 
+                    className="absolute bottom-0 inset-x-0 h-16 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(to top, rgba(5, 46, 22, 0.85), transparent)',
+                      borderBottom: '4px dashed #22c55e'
+                    }}
+                  />
+                </div>
+
+                {/* Orilla Derecha (detrás de los rótulos y estructuras del lado derecho) */}
+                <div 
+                  className="absolute pointer-events-none overflow-hidden"
+                  style={{
+                    background: '#14532d',
+                    backgroundImage: 'radial-gradient(ellipse at left, #16a34a 0%, #15803d 30%, #166534 55%, #14532d 80%, #052e16 100%)',
+                    top: '-4000px',
+                    left: '100%',
+                    width: '4000px',
+                    height: '8000px',
+                    transform: 'translateZ(-3px)',
+                    borderLeft: '6px solid #16a34a',
+                    boxShadow: '-12px 0 35px rgba(5, 46, 22, 0.45)'
+                  }}
+                >
+                  <div 
+                    className="absolute left-0 inset-y-0 w-16 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(to right, rgba(5, 46, 22, 0.85), transparent)',
+                      borderLeft: '4px dashed #22c55e'
+                    }}
+                  />
+                </div>
+
+                {/* Orilla Inferior (detrás del borde inferior) */}
+                <div 
+                  className="absolute pointer-events-none overflow-hidden"
+                  style={{
+                    background: '#14532d',
+                    backgroundImage: 'linear-gradient(to bottom, #15803d 0%, #166534 40%, #14532d 75%, #052e16 100%)',
+                    top: '100%',
+                    left: '-500px',
+                    width: '4500px',
+                    height: '4000px',
+                    transform: 'translateZ(-3px)',
+                    borderTop: '6px solid #16a34a'
+                  }}
+                />
+
+                {/* Layer 0: El Mar Caribeño vivo (Única orilla de mar, en el frente de la playa) */}
                 <div 
                   className="absolute pointer-events-none overflow-hidden"
                   style={{
                      background: '#0284c7',
                      backgroundImage: 'linear-gradient(to left, #38bdf8 0%, #0284c7 35%, #0369a1 75%, #0c4a6e 100%)',
-                     top: '-4000px',
+                     top: '0px',
+                     bottom: '-4000px',
                      right: '100%',
                      width: '4000px',
-                     height: '8000px',
                      transform: 'translateZ(-2px)',
                      boxShadow: '10px 0 25px rgba(0,0,0,0.15)'
                   }}
