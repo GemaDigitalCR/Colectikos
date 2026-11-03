@@ -40,7 +40,15 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
 
   const [top10, setTop10] = useState<UserRankingEntry[]>([]);
   const [currentUserRank, setCurrentUserRank] = useState<UserRankingEntry | null>(null);
-  const [periodLabel, setPeriodLabel] = useState<{ es: string; en: string }>({ es: 'Este Mes', en: 'This Month' });
+  const [monthLabel, setMonthLabel] = useState<{ es: string; en: string }>(() => {
+    const monthsEs = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const now = new Date();
+    return {
+      es: `${monthsEs[now.getMonth()]} ${now.getFullYear()}`,
+      en: `${monthsEn[now.getMonth()]} ${now.getFullYear()}`
+    };
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +64,7 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
           setTop10(res.top10);
           setCurrentUserRank(res.currentUserRank);
           if (res.periodName) {
-            setPeriodLabel(res.periodName);
+            setMonthLabel(res.periodName);
           }
         } else if (activeTab === 'racha') {
           const res = await getStreakRanking(
@@ -186,7 +194,7 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
                   }`}
                 >
                   <Calendar size={14} />
-                  <span>{isEn ? periodLabel.en : periodLabel.es}</span>
+                  <span>{isEn ? monthLabel.en : monthLabel.es}</span>
                 </button>
                 <button
                   type="button"
@@ -225,7 +233,7 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
             <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
               <span>
                 {timeframe === 'month'
-                  ? (isEn ? `⚡ Showing points earned in ${periodLabel.en}. Resets on the 1st of each month.` : `⚡ Mostrando puntos sumados en ${periodLabel.es}. Se reinicia el día 1 de cada mes.`)
+                  ? (isEn ? `⚡ Showing points earned in ${monthLabel.en}. Resets on the 1st of each month.` : `⚡ Mostrando puntos sumados en ${monthLabel.es}. Se reinicia el día 1 de cada mes.`)
                   : (isEn ? "🏆 Hall of Fame: Total cumulative XP since inception." : "🏆 Salón de la Fama: Total histórico acumulado de todos los tiempos.")}
               </span>
             </div>

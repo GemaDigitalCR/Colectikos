@@ -41,9 +41,7 @@ export async function getGlobalXPRanking(
     en: `${monthsEn[crDate.getUTCMonth()]} ${crDate.getUTCFullYear()}`
   };
 
-  const periodName = timeframe === 'month' 
-    ? currentMonthName 
-    : { es: 'Histórico Global', en: 'All-Time Global' };
+  const periodName = currentMonthName;
 
   if (timeframe === 'month') {
     const startOfMonth = getCRStartOfMonthUTC();
