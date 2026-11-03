@@ -774,3 +774,87 @@ export async function solvePuzzleAndAwardXP(lugarId: string, localUsername?: str
     return { success: false, error: error.message || 'Ocurrió un error al otorgar XP por el puzzle', xpAwarded: 0 };
   }
 }
+
+export interface AwardComplementosDailyXPResult {
+  success: boolean;
+  alreadyClaimed?: boolean;
+  xpAwarded: number;
+  newTotalXp?: number;
+  newLevel?: number;
+  error?: string;
+}
+
+/**
+ * Otorga el Bono Diario de Exploración por visitar la sección Complementos de tu Ride.
+ * Regla: 10 XP diarios (1 vez por día natural según la hora oficial de Costa Rica UTC-6).
+ */
+export async function awardComplementosDailyXP(
+  localUsername?: string, 
+  fallbackClerkId?: string
+): Promise<AwardComplementosDailyXPResult> {
+  try {
+    const dbUser = await ensureDbUser(localUsername, fallbackClerkId);
+
+    if (!dbUser) {
+      return { success: false, error: 'Usuario no autenticado o no encontrado', xpAwarded: 0 };
+    }
+
+    const userId = dbUser.id;
+    const startOfDay = getCRStartOfDayUTC();
+
+    const result = await prisma.$transaction(async (tx: any) => {
+      // Verificar si ya recibió el bono de Complementos hoy (CR Time)
+      const existingToday = await tx.userActionLog.findFirst({
+        where: {
+          userId,
+          actionType: 'VISIT_COMPLEMENTOS',
+          createdAt: { gte: startOfDay }
+        }
+      });
+
+      if (existingToday) {
+        return { 
+          success: true, 
+          alreadyClaimed: true, 
+          xpAwarded: 0, 
+          newTotalXp: dbUser.xp, 
+          newLevel: dbUser.level 
+        };
+      }
+
+      const xpAwarded = 10;
+      const newTotalXp = dbUser.xp + xpAwarded;
+      const newLevel = Math.floor(newTotalXp / 100) + 1;
+
+      await tx.userActionLog.create({
+        data: {
+          userId,
+          actionType: 'VISIT_COMPLEMENTOS',
+          targetId: 'COMPLEMENTOS_DAILY_RIDE',
+          xpAwarded
+        }
+      });
+
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          xp: { increment: xpAwarded },
+          level: newLevel
+        }
+      });
+
+      return { 
+        success: true, 
+        alreadyClaimed: false, 
+        xpAwarded, 
+        newTotalXp, 
+        newLevel 
+      };
+    });
+
+    return result;
+  } catch (error: any) {
+    console.error("Error en awardComplementosDailyXP:", error);
+    return { success: false, error: error.message || 'Error al otorgar bono de Complementos', xpAwarded: 0 };
+  }
+}

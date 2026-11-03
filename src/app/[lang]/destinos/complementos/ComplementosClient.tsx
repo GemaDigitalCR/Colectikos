@@ -1,19 +1,68 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useDictionary } from '../../../../context/DictionaryContext';
+import { useUser } from '@clerk/nextjs';
+import { useProgress } from '../../../../context/ProgressContext';
+import { awardComplementosDailyXP } from '../../../../actions/gamification';
 import SponsorCard from '../../../../components/SponsorCard';
 import { ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
   const dict = useDictionary();
   const lang = dict?.lang || 'es';
+  const { user } = useUser();
+  const { updateLocalXp } = useProgress();
   
   const [activeProvince, setActiveProvince] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
   const [highlightedSponsorId, setHighlightedSponsorId] = useState<string | null>(null);
+  const hasTriggeredRewardRef = useRef(false);
 
-  React.useEffect(() => {
+  // Bono Diario de Explorador: 10 XP por permanecer explorando al menos 3 segundos
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (hasTriggeredRewardRef.current) return;
+
+    const timer = setTimeout(async () => {
+      hasTriggeredRewardRef.current = true;
+      try {
+        let localUsername = localStorage.getItem('localUsername') || undefined;
+        const profileData = localStorage.getItem('userProfileData');
+        if (profileData) {
+          try {
+            const parsed = JSON.parse(profileData);
+            if (parsed.username) localUsername = parsed.username;
+          } catch {}
+        }
+
+        const res = await awardComplementosDailyXP(localUsername, user?.id);
+        if (res?.success && !res.alreadyClaimed && res.xpAwarded > 0) {
+          if (updateLocalXp && res.newTotalXp !== undefined && res.newLevel !== undefined) {
+            updateLocalXp(res.newTotalXp, res.newLevel);
+          }
+          toast.success(
+            lang === 'en'
+              ? '🧭 +10 XP Daily Explorer Bonus!'
+              : '🧭 ¡+10 XP! Bono Diario de Explorador',
+            {
+              description: lang === 'en'
+                ? 'Thanks for exploring Ride Add-ons and supporting local businesses!'
+                : '¡Gracias por explorar Complementos de tu Ride y apoyar el comercio local!',
+              duration: 5500,
+            }
+          );
+        }
+      } catch (e) {
+        console.warn('Error awarding Complementos daily XP:', e);
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [user?.id, lang, updateLocalXp]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
 
     // Verificar si viene provincia en la URL (ej: ?provincia=Guanacaste)
@@ -120,6 +169,21 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
                 ? 'See what postcards are nearby!' 
                 : '¡Mirá qué postales tienen cerca!'}
             </p>
+          </div>
+
+          {/* Gamification Badge: 10 XP Diarios */}
+          <div className="pt-4 flex justify-center">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-400/40 text-xs sm:text-sm font-bold text-emerald-100 shadow-md backdrop-blur-sm">
+              <span>🧭</span>
+              <span>
+                {lang === 'en'
+                  ? 'Daily Explorer Bonus: +10 XP for discovering local spots'
+                  : 'Bono Diario de Explorador: +10 XP por descubrir comercios'}
+              </span>
+              <span className="bg-amber-400 text-amber-950 text-[10px] uppercase font-black px-2 py-0.5 rounded-full shadow-sm">
+                +10 XP
+              </span>
+            </div>
           </div>
         </div>
       </div>
