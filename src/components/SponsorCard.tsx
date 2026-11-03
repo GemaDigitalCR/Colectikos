@@ -36,11 +36,22 @@ interface SponsorCardProps {
   sponsor: SponsorType;
   lang: string;
   variant?: 'full' | 'compact';
+  onCardInteraction?: () => void;
 }
 
-export default function SponsorCard({ sponsor, lang, variant = 'full' }: SponsorCardProps) {
+export default function SponsorCard({ sponsor, lang, variant = 'full', onCardInteraction }: SponsorCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isCompact = variant === 'compact';
+
+  const handleToggleExpand = () => {
+    if (isCompact) {
+      const next = !isExpanded;
+      setIsExpanded(next);
+      if (next && onCardInteraction) {
+        onCardInteraction();
+      }
+    }
+  };
 
   // Contextos para calcular medallas/evolución provincial en las cápsulas
   const progressContext = useProgress?.();
@@ -164,7 +175,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
       {/* Hero Visual */}
       <div 
         className={`relative w-full ${isCompact ? 'aspect-[16/7] sm:aspect-[21/9]' : 'aspect-[16/7] sm:aspect-[21/9]'} min-h-[140px] max-h-[220px] bg-stone-950 overflow-hidden ${isCompact ? 'cursor-pointer hover:opacity-95' : ''} transition-all duration-300 shrink-0`}
-        onClick={() => isCompact && setIsExpanded(!isExpanded)}
+        onClick={handleToggleExpand}
       >
         {/* Fondo difuminado ambiental para rellenar los bordes laterales sin bandas duras */}
         <Image 
@@ -180,7 +191,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
           alt={sponsor.nombre}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-contain relative z-10 p-1 sm:p-2"
+          className="object-contain relative z-10 p-1 sm:p-2" 
         />
         <div className={`absolute top-3 left-3 z-20 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full ${isCompact ? 'text-[10px]' : 'text-xs'} font-bold text-stone-800 shadow-sm flex items-center gap-1.5`}>
           <span>{getCategoryEmoji(sponsor.categoria)}</span>
@@ -196,7 +207,7 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
         {/* Título y reseña */}
         <div 
           className={`mb-4 flex items-start justify-between gap-2 ${isCompact ? 'cursor-pointer select-none' : ''}`}
-          onClick={() => isCompact && setIsExpanded(!isExpanded)}
+          onClick={handleToggleExpand}
         >
           <div className="flex-1 min-w-0">
             <h2 className={`${isCompact ? 'text-xl' : 'text-2xl'} font-black text-emerald-900 leading-tight`}>{sponsor.nombre}</h2>
@@ -208,7 +219,14 @@ export default function SponsorCard({ sponsor, lang, variant = 'full' }: Sponsor
             )}
           </div>
           {isCompact && (
-            <button className="text-emerald-700 bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors shrink-0 mt-0.5">
+            <button 
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleExpand();
+              }}
+              className="text-emerald-700 bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors shrink-0 mt-0.5"
+            >
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
           )}

@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useDictionary } from '../../../../context/DictionaryContext';
 import { useUser } from '@clerk/nextjs';
 import { useProgress } from '../../../../context/ProgressContext';
 import { awardComplementosDailyXP } from '../../../../actions/gamification';
 import SponsorCard from '../../../../components/SponsorCard';
 import { ChevronDown } from 'lucide-react';
-import { toast } from 'sonner';
+import hotToast from 'react-hot-toast';
+import { toast as sonnerToast } from 'sonner';
+import confetti from 'canvas-confetti';
+import { playHtmlAudioClick } from '../../../../lib/soundUtils';
 
 export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
   const dict = useDictionary();
@@ -18,49 +21,98 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
   const [activeProvince, setActiveProvince] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
   const [highlightedSponsorId, setHighlightedSponsorId] = useState<string | null>(null);
-  const hasTriggeredRewardRef = useRef(false);
 
-  // Bono Diario de Explorador: 10 XP por permanecer explorando al menos 3 segundos
-  useEffect(() => {
+  const isCheckingRewardRef = useRef(false);
+  const rewardCheckedRef = useRef(false);
+  const alreadyNotifiedRef = useRef(false);
+
+  // Verificación y asignación de Bono Diario de Explorador (10 XP)
+  const checkAndAwardReward = useCallback(async (isUserAction: boolean = false) => {
     if (typeof window === 'undefined') return;
-    if (hasTriggeredRewardRef.current) return;
+    if (isCheckingRewardRef.current) return;
+    if (rewardCheckedRef.current && !isUserAction) return;
 
-    const timer = setTimeout(async () => {
-      hasTriggeredRewardRef.current = true;
-      try {
-        let localUsername = localStorage.getItem('localUsername') || undefined;
-        const profileData = localStorage.getItem('userProfileData');
-        if (profileData) {
-          try {
-            const parsed = JSON.parse(profileData);
-            if (parsed.username) localUsername = parsed.username;
-          } catch {}
-        }
+    isCheckingRewardRef.current = true;
+    try {
+      let localUsername = localStorage.getItem('localUsername') || undefined;
+      const profileData = localStorage.getItem('userProfileData');
+      if (profileData) {
+        try {
+          const parsed = JSON.parse(profileData);
+          if (parsed.username) localUsername = parsed.username;
+        } catch {}
+      }
 
-        const res = await awardComplementosDailyXP(localUsername, user?.id);
-        if (res?.success && !res.alreadyClaimed && res.xpAwarded > 0) {
+      const res = await awardComplementosDailyXP(localUsername, user?.id);
+      rewardCheckedRef.current = true;
+
+      if (res?.success) {
+        if (!res.alreadyClaimed && res.xpAwarded > 0) {
           if (updateLocalXp && res.newTotalXp !== undefined && res.newLevel !== undefined) {
             updateLocalXp(res.newTotalXp, res.newLevel);
           }
-          toast.success(
-            lang === 'en'
-              ? '🧭 +10 XP Daily Explorer Bonus!'
-              : '🧭 ¡+10 XP! Bono Diario de Explorador',
-            {
-              description: lang === 'en'
-                ? 'Thanks for exploring Ride Add-ons and supporting local businesses!'
-                : '¡Gracias por explorar Complementos de tu Ride y apoyar el comercio local!',
-              duration: 5500,
+
+          playHtmlAudioClick();
+          try {
+            confetti({
+              particleCount: 50,
+              spread: 60,
+              origin: { y: 0.6 }
+            });
+          } catch {}
+
+          const title = lang === 'en' ? '🧭 +10 XP Daily Explorer Bonus!' : '🧭 ¡+10 XP! Bono Diario de Explorador';
+          const desc = lang === 'en' 
+            ? 'Thanks for exploring Ride Add-ons and discovering local spots!' 
+            : '¡Ganaste 10 XP por explorar Complementos de tu Ride y descubrir comercios locales!';
+
+          hotToast.success(`${title}\n${desc}`, {
+            duration: 6000,
+            icon: '🧭',
+            style: {
+              borderRadius: '16px',
+              background: '#064e3b',
+              color: '#fff',
+              border: '2px solid #10b981',
+              fontWeight: 600
             }
-          );
+          });
+          sonnerToast.success(title, { description: desc, duration: 6000 });
+        } else if (res.alreadyClaimed && isUserAction && !alreadyNotifiedRef.current) {
+          alreadyNotifiedRef.current = true;
+          const alreadyTitle = lang === 'en' ? '🧭 Daily Bonus Active!' : '🧭 ¡Bono Diario Activo!';
+          const alreadyDesc = lang === 'en'
+            ? 'You already collected your 10 XPs today for exploring Ride Add-ons. Come back tomorrow!'
+            : 'Ya tienes tus 10 XPs de hoy acreditados por explorar Complementos de tu Ride. ¡Vuelve mañana por más!';
+
+          hotToast(alreadyTitle + '\n' + alreadyDesc, {
+            icon: '✅',
+            duration: 4500,
+            style: {
+              borderRadius: '16px',
+              background: '#1c1917',
+              color: '#fff',
+              border: '1px solid #78716c'
+            }
+          });
+          sonnerToast.info(alreadyTitle, { description: alreadyDesc, duration: 4500 });
         }
-      } catch (e) {
-        console.warn('Error awarding Complementos daily XP:', e);
       }
-    }, 3000);
+    } catch (e) {
+      console.warn('Error awarding Complementos daily XP:', e);
+    } finally {
+      isCheckingRewardRef.current = false;
+    }
+  }, [user?.id, lang, updateLocalXp]);
+
+  useEffect(() => {
+    // Al cabo de 1.2s en la página, premiar automáticamente si aún no ha reclamado hoy
+    const timer = setTimeout(() => {
+      checkAndAwardReward(false);
+    }, 1200);
 
     return () => clearTimeout(timer);
-  }, [user?.id, lang, updateLocalXp]);
+  }, [checkAndAwardReward]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -173,17 +225,22 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
 
           {/* Gamification Badge: 10 XP Diarios */}
           <div className="pt-4 flex justify-center">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-400/40 text-xs sm:text-sm font-bold text-emerald-100 shadow-md backdrop-blur-sm">
+            <button 
+              type="button"
+              onClick={() => checkAndAwardReward(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-950/60 hover:bg-emerald-900/80 active:scale-95 border border-emerald-400/50 text-xs sm:text-sm font-bold text-emerald-100 shadow-md backdrop-blur-sm cursor-pointer transition-all"
+              title={lang === 'en' ? 'Tap to check your daily explorer XP' : 'Toca para verificar tus XPs diarios de explorador'}
+            >
               <span>🧭</span>
               <span>
                 {lang === 'en'
                   ? 'Daily Explorer Bonus: +10 XP for discovering local spots'
                   : 'Bono Diario de Explorador: +10 XP por descubrir comercios'}
               </span>
-              <span className="bg-amber-400 text-amber-950 text-[10px] uppercase font-black px-2 py-0.5 rounded-full shadow-sm">
+              <span className="bg-amber-400 text-amber-950 text-[10px] uppercase font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">
                 +10 XP
               </span>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -243,7 +300,12 @@ export default function ComplementosClient({ sponsors }: { sponsors: any[] }) {
                     : ''
                 }`}
               >
-                <SponsorCard sponsor={sponsor} lang={lang} variant="compact" />
+                <SponsorCard 
+                  sponsor={sponsor} 
+                  lang={lang} 
+                  variant="compact" 
+                  onCardInteraction={() => checkAndAwardReward(true)}
+                />
               </div>
             ))}
           </div>

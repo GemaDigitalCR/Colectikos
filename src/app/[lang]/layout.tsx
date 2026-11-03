@@ -175,6 +175,7 @@ export default async function RootLayout({
                 }
               }}
             />
+              <SonnerToaster position="top-center" richColors closeButton />
               </ProgressProvider>
             </DictionaryProvider>
             </LugaresProvider>
