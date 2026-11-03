@@ -6,16 +6,20 @@ import InsightsFilters from './InsightsFilters';
 import { generateCrossInsight } from './actions';
 
 interface PageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  params: Promise<{ lang: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 const CR_PROVINCES = ['San José', 'Alajuela', 'Cartago', 'Heredia', 'Guanacaste', 'Puntarenas', 'Limón'];
 
-export default async function DemografiaInsights({ searchParams }: PageProps) {
-  const params = await searchParams; // In Next.js 15, searchParams is a Promise
-  const provinciaFilter = typeof params.provincia === 'string' ? params.provincia : undefined;
-  const edadFilter = typeof params.edad === 'string' ? params.edad : undefined;
-  const preferenciaFilter = typeof params.preferencia === 'string' ? params.preferencia : undefined;
+export default async function DemografiaInsights({ params, searchParams }: PageProps) {
+  const resolvedParams = await params;
+  const lang = resolvedParams?.lang || 'es';
+  const isEn = lang === 'en';
+  const queryParams = await searchParams; // In Next.js 15, searchParams is a Promise
+  const provinciaFilter = typeof queryParams.provincia === 'string' ? queryParams.provincia : undefined;
+  const edadFilter = typeof queryParams.edad === 'string' ? queryParams.edad : undefined;
+  const preferenciaFilter = typeof queryParams.preferencia === 'string' ? queryParams.preferencia : undefined;
 
   const baseWhere: any = {};
   if (provinciaFilter) baseWhere.provinciaResidencia = provinciaFilter;
@@ -43,15 +47,32 @@ export default async function DemografiaInsights({ searchParams }: PageProps) {
   const totalLocations = totalUsersWithLocation || 1;
 
   // -- Edades --
-  const agePercentages: Record<string, number> = { "18-25": 0, "26-35": 0, "36-45": 0, "46-55": 0, "56+": 0, "<18": 0 };
-  ageData.forEach((d: any) => { if (d.rangoEdad) agePercentages[d.rangoEdad] = Math.round((d._count.id / totalAges) * 100); });
-  if (totalUsersWithAge === 0) { agePercentages["26-35"] = 45; agePercentages["18-25"] = 30; agePercentages["36-45"] = 25; }
+  const agePercentages: Record<string, number> = { 
+    "<18": 0,
+    "18-25": 0, 
+    "26-35": 0, 
+    "36-45": 0, 
+    "46-55": 0, 
+    "56+": 0 
+  };
+  ageData.forEach((d: any) => { 
+    if (d.rangoEdad) agePercentages[d.rangoEdad] = Math.round((d._count.id / totalAges) * 100); 
+  });
+  if (totalUsersWithAge === 0) { 
+    agePercentages["<18"] = 5;
+    agePercentages["18-25"] = 25; 
+    agePercentages["26-35"] = 40; 
+    agePercentages["36-45"] = 20; 
+    agePercentages["46-55"] = 7;
+    agePercentages["56+"] = 3;
+  }
   
-  const p1 = agePercentages["26-35"];
+  const p1 = agePercentages["<18"];
   const p2 = p1 + agePercentages["18-25"];
-  const p3 = p2 + agePercentages["36-45"];
-  const p4 = p3 + agePercentages["46-55"];
-  const conicGradient = `conic-gradient(#10b981 0% ${p1}%, #3b82f6 ${p1}% ${p2}%, #f59e0b ${p2}% ${p3}%, #6366f1 ${p3}% ${p4}%, #ec4899 ${p4}% 100%)`;
+  const p3 = p2 + agePercentages["26-35"];
+  const p4 = p3 + agePercentages["36-45"];
+  const p5 = p4 + agePercentages["46-55"];
+  const conicGradient = `conic-gradient(#06b6d4 0% ${p1}%, #3b82f6 ${p1}% ${p2}%, #10b981 ${p2}% ${p3}%, #f59e0b ${p3}% ${p4}%, #6366f1 ${p4}% ${p5}%, #ec4899 ${p5}% 100%)`;
 
   // -- Preferencias --
   const prefMap: Record<string, number> = {};
@@ -133,7 +154,7 @@ export default async function DemografiaInsights({ searchParams }: PageProps) {
           {/* Distribución Demográfica */}
           <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col min-h-[380px]">
             <div className="flex items-center justify-between mb-8 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-bold text-stone-800 tracking-wide">Distribución de Edad</h2>
+              <h2 className="text-lg font-bold text-stone-800 tracking-wide">{isEn ? 'Age Distribution' : 'Distribución de Edad'}</h2>
               <PieChart className="text-emerald-500" size={24} />
             </div>
             
@@ -142,30 +163,40 @@ export default async function DemografiaInsights({ searchParams }: PageProps) {
                    style={{ background: conicGradient }}>
                 <div className="w-32 h-32 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
                   <span className="text-3xl font-black text-stone-800">{totalUsersStr}</span>
-                  <span className="text-xs text-stone-500 font-bold uppercase tracking-wider mt-1">Usuarios</span>
+                  <span className="text-xs text-stone-500 font-bold uppercase tracking-wider mt-1">{isEn ? 'Users' : 'Usuarios'}</span>
                 </div>
               </div>
               
               <div className="space-y-3 w-full xl:w-auto">
                 <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm"></div>
-                  <span className="text-sm font-medium text-stone-600 flex-1">26 - 35 años</span>
-                  <span className="text-base font-bold text-stone-800">{agePercentages["26-35"]}%</span>
+                  <div className="w-4 h-4 rounded-full bg-cyan-500 shadow-sm"></div>
+                  <span className="text-sm font-medium text-stone-600 flex-1">{isEn ? "Under 18 years old" : "Menor de 18 años"}</span>
+                  <span className="text-base font-bold text-stone-800">{agePercentages["<18"]}%</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 rounded-full bg-blue-500 shadow-sm"></div>
-                  <span className="text-sm font-medium text-stone-600 flex-1">18 - 25 años</span>
+                  <span className="text-sm font-medium text-stone-600 flex-1">{isEn ? "18 - 25 years" : "18 - 25 años"}</span>
                   <span className="text-base font-bold text-stone-800">{agePercentages["18-25"]}%</span>
                 </div>
                 <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded-full bg-emerald-500 shadow-sm"></div>
+                  <span className="text-sm font-medium text-stone-600 flex-1">{isEn ? "26 - 35 years" : "26 - 35 años"}</span>
+                  <span className="text-base font-bold text-stone-800">{agePercentages["26-35"]}%</span>
+                </div>
+                <div className="flex items-center gap-3">
                   <div className="w-4 h-4 rounded-full bg-amber-500 shadow-sm"></div>
-                  <span className="text-sm font-medium text-stone-600 flex-1">36 - 45 años</span>
+                  <span className="text-sm font-medium text-stone-600 flex-1">{isEn ? "36 - 45 years" : "36 - 45 años"}</span>
                   <span className="text-base font-bold text-stone-800">{agePercentages["36-45"]}%</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 rounded-full bg-indigo-500 shadow-sm"></div>
-                  <span className="text-sm font-medium text-stone-600 flex-1">46 - 55 años</span>
+                  <span className="text-sm font-medium text-stone-600 flex-1">{isEn ? "46 - 55 years" : "46 - 55 años"}</span>
                   <span className="text-base font-bold text-stone-800">{agePercentages["46-55"]}%</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded-full bg-pink-500 shadow-sm"></div>
+                  <span className="text-sm font-medium text-stone-600 flex-1">{isEn ? "56 years or older" : "56 años o más"}</span>
+                  <span className="text-base font-bold text-stone-800">{agePercentages["56+"]}%</span>
                 </div>
               </div>
             </div>

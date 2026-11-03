@@ -177,7 +177,7 @@
     "ageLabel": "Age Range",
     "agePlaceholder": "Select your age...",
     "ages": {
-      "<18": "Under 18",
+      "<18": "Under 18 years old",
       "18-25": "18 - 25 years",
       "26-35": "26 - 35 years",
       "36-45": "36 - 45 years",
