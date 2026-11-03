@@ -66,6 +66,7 @@ import Navbar from "../../components/Navbar";
 import InstallBanner from "../../components/InstallBanner";
 import { getDictionary } from "../../dictionaries/getDictionary";
 import WelcomeModal from "../../components/WelcomeModal";
+import ProfileReminderToast from "../../components/ProfileReminderToast";
 import { getDbLugares } from "../../actions/lugares";
 import { LugaresProvider } from "../../context/LugaresContext";
 
@@ -162,6 +163,7 @@ export default async function RootLayout({
                 <Navbar dict={dict.navbar} dictLevels={dict.levels} />
               <InstallBanner />
               <WelcomeModal />
+              <ProfileReminderToast />
               {children}
               <Toaster 
                 position="bottom-right"
