@@ -476,10 +476,33 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
     init();
   }, []);
 
-  // Centrar la cámara directamente en el centro de la playa
+  // Centrar la cámara directamente en el centro de la arena jugable
   const centerOnBoard = useCallback((smooth = false) => {
     const container = scrollContainerRef.current || document.getElementById('grid-scroll-container');
-    if (container) {
+    const target = document.getElementById('sand-playable-grid') || document.getElementById('tiko-playa-board');
+    if (container && target) {
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+
+      // Centro visual exacto de la arena jugable proyectada en pantalla
+      const targetCenterX = targetRect.left + targetRect.width / 2;
+      const targetCenterY = targetRect.top + targetRect.height / 2;
+      const containerCenterX = containerRect.left + containerRect.width / 2;
+      const containerCenterY = containerRect.top + containerRect.height / 2;
+
+      const deltaX = targetCenterX - containerCenterX;
+      const deltaY = targetCenterY - containerCenterY;
+
+      const targetLeft = Math.max(0, container.scrollLeft + deltaX);
+      const targetTop = Math.max(0, container.scrollTop + deltaY);
+
+      if (smooth) {
+        container.scrollTo({ left: targetLeft, top: targetTop, behavior: 'smooth' });
+      } else {
+        container.scrollLeft = targetLeft;
+        container.scrollTop = targetTop;
+      }
+    } else if (container) {
       const targetLeft = Math.max(0, (container.scrollWidth - container.clientWidth) / 2);
       const targetTop = Math.max(0, (container.scrollHeight - container.clientHeight) / 2);
       if (smooth) {
@@ -499,9 +522,12 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
       setZoom(1.0);
     }
 
-    const timer1 = setTimeout(() => centerOnBoard(false), 60);
-    const timer2 = setTimeout(() => centerOnBoard(false), 200);
-    const timer3 = setTimeout(() => centerOnBoard(false), 500);
+    // Centrado inmediato y progresivo asegurando que el DOM y 3D transforms estén renderizados
+    requestAnimationFrame(() => centerOnBoard(false));
+    const timer1 = setTimeout(() => centerOnBoard(false), 50);
+    const timer2 = setTimeout(() => centerOnBoard(false), 150);
+    const timer3 = setTimeout(() => centerOnBoard(false), 350);
+    const timer4 = setTimeout(() => centerOnBoard(false), 700);
 
     const handleResize = () => centerOnBoard(false);
     window.addEventListener('resize', handleResize);
@@ -509,6 +535,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
+      clearTimeout(timer4);
       window.removeEventListener('resize', handleResize);
     };
   }, [isLoaded, centerOnBoard]);
@@ -1445,9 +1472,9 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                     background: '#14532d',
                     backgroundImage: 'radial-gradient(ellipse at bottom, #16a34a 0%, #15803d 30%, #166534 55%, #14532d 80%, #052e16 100%)',
                     bottom: '100%',
-                    left: '-2000px',
-                    width: '6000px',
-                    height: '4000px',
+                    left: '-300px',
+                    width: 'calc(100% + 600px)',
+                    height: '1200px',
                     transform: 'translateZ(-3px)',
                     borderBottom: '6px solid #16a34a',
                     boxShadow: '0 15px 35px rgba(5, 46, 22, 0.45)'
@@ -1469,10 +1496,10 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                   style={{
                     background: '#14532d',
                     backgroundImage: 'radial-gradient(ellipse at left, #16a34a 0%, #15803d 30%, #166534 55%, #14532d 80%, #052e16 100%)',
-                    top: '-4000px',
+                    top: '-300px',
                     left: '100%',
-                    width: '4000px',
-                    height: '8000px',
+                    width: '1200px',
+                    height: 'calc(100% + 600px)',
                     transform: 'translateZ(-3px)',
                     borderLeft: '6px solid #16a34a',
                     boxShadow: '-12px 0 35px rgba(5, 46, 22, 0.45)'
@@ -1494,9 +1521,9 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                     background: '#14532d',
                     backgroundImage: 'linear-gradient(to bottom, #15803d 0%, #166534 40%, #14532d 75%, #052e16 100%)',
                     top: '100%',
-                    left: '-500px',
-                    width: '4500px',
-                    height: '4000px',
+                    left: '-300px',
+                    width: 'calc(100% + 600px)',
+                    height: '1200px',
                     transform: 'translateZ(-3px)',
                     borderTop: '6px solid #16a34a'
                   }}
@@ -1509,9 +1536,9 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                      background: '#0284c7',
                      backgroundImage: 'linear-gradient(to left, #38bdf8 0%, #0284c7 35%, #0369a1 75%, #0c4a6e 100%)',
                      top: '0px',
-                     bottom: '-4000px',
+                     bottom: '-300px',
                      right: '100%',
-                     width: '4000px',
+                     width: '1200px',
                      transform: 'translateZ(-2px)',
                      boxShadow: '10px 0 25px rgba(0,0,0,0.15)'
                   }}
@@ -1543,6 +1570,7 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
 
                 {/* Layer 1: The ground grid (clickable) - Estilo y ángulo según propuesta diseñadores */}
                 <div 
+                  id="sand-playable-grid"
                   className="grid"
                   style={{ 
                     gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
