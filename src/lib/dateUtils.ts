@@ -23,3 +23,10 @@ export function getCRStartOfDayUTC(date: Date = new Date()) {
   // Shift it back to actual UTC time by adding 6 hours (because CR is UTC-6)
   return new Date(crStart.getTime() + 6 * 60 * 60 * 1000);
 }
+
+export function getCRStartOfMonthUTC(date: Date = new Date()) {
+  // Returns a UTC Date object that represents 00:00:00 on the 1st of the current month in CR time (UTC-6)
+  const cr = getCRDate(date);
+  const crStart = new Date(Date.UTC(cr.getUTCFullYear(), cr.getUTCMonth(), 1, 0, 0, 0, 0));
+  return new Date(crStart.getTime() + 6 * 60 * 60 * 1000);
+}
