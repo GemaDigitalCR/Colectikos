@@ -182,36 +182,45 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
         {activeTab === 'xp' && (
           <div className="pt-4 pb-2 space-y-3">
             {/* Toggle Temporal: Este Mes (Temporada) vs Histórico Global */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="inline-flex p-1 bg-stone-100 rounded-2xl border border-stone-200/80 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setTimeframe('month')}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                    timeframe === 'month'
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                >
-                  <Calendar size={14} />
-                  <span>{isEn ? monthLabel.en : monthLabel.es}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeframe('all')}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                    timeframe === 'all'
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                >
-                  <Trophy size={14} />
-                  <span>{isEn ? "All-Time" : "Histórico Global"}</span>
-                </button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3">
+              <div>
+                <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-1 block">
+                  {isEn ? "Timeframe" : "Temporada"}
+                </label>
+                <div className="inline-flex p-1 bg-stone-100 rounded-2xl border border-stone-200/80 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setTimeframe('month')}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      timeframe === 'month'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    <Calendar size={14} />
+                    <span>{isEn ? monthLabel.en : monthLabel.es}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTimeframe('all')}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      timeframe === 'all'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    <Trophy size={14} />
+                    <span>{isEn ? "All-Time" : "Histórico Global"}</span>
+                  </button>
+                </div>
               </div>
 
               {/* Selector de Provincia de Residencia */}
               <div className="flex-1 sm:max-w-xs">
+                <label className="text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <span>👑</span>
+                  <span>{isEn ? "Province of Residence (Be the legend!)" : "Provincia de residencia (¡Sé la leyenda!)"}</span>
+                </label>
                 <div className="relative">
                   <select 
                     value={provincia} 
@@ -230,35 +239,43 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
             </div>
 
             {/* Aviso informativo de temporada */}
-            <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-stone-500 pt-1 gap-1">
               <span>
                 {timeframe === 'month'
                   ? (isEn ? `⚡ Showing points earned in ${monthLabel.en}. Resets on the 1st of each month.` : `⚡ Mostrando puntos sumados en ${monthLabel.es}. Se reinicia el día 1 de cada mes.`)
                   : (isEn ? "🏆 Hall of Fame: Total cumulative XP since inception." : "🏆 Salón de la Fama: Total histórico acumulado de todos los tiempos.")}
               </span>
+              {provincia !== 'Todas' && (
+                <span className="font-semibold text-emerald-700">
+                  📍 {isEn ? `Filtered by residents of ${provincia}` : `Mostrando solo exploradores de ${provincia}`}
+                </span>
+              )}
             </div>
           </div>
         )}
 
         {/* CONTROLES / FILTROS DE RACHA */}
         {activeTab === 'racha' && (
-          <div className="pt-4 pb-2 flex items-center justify-between gap-3">
-            <span className="text-xs text-stone-500 font-medium">
-              {isEn ? "Filter by user's province of residence:" : "Filtrar por provincia de residencia:"}
-            </span>
-            <div className="relative min-w-[200px]">
-              <select 
-                value={provincia} 
-                onChange={(e) => setProvincia(e.target.value)}
-                className="w-full appearance-none bg-stone-50 border border-stone-200 text-stone-700 py-2 px-3.5 pr-8 rounded-xl text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
-              >
-                {PROVINCIAS.map(p => (
-                  <option key={p} value={p}>
-                    {p === 'Todas' ? (isEn ? '🇨🇷 All Costa Rica' : '🇨🇷 Todo Costa Rica') : `📍 ${p}`}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={16} />
+          <div className="pt-4 pb-2 flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3">
+            <div className="flex-1 sm:max-w-xs">
+              <label className="text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <span>👑</span>
+                <span>{isEn ? "Province of Residence (Be the legend!)" : "Provincia de residencia (¡Sé la leyenda!)"}</span>
+              </label>
+              <div className="relative">
+                <select 
+                  value={provincia} 
+                  onChange={(e) => setProvincia(e.target.value)}
+                  className="w-full appearance-none bg-stone-50 border border-stone-200 text-stone-700 py-2 px-3.5 pr-8 rounded-xl text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
+                >
+                  {PROVINCIAS.map(p => (
+                    <option key={p} value={p}>
+                      {p === 'Todas' ? (isEn ? '🇨🇷 All Costa Rica' : '🇨🇷 Todo Costa Rica') : `📍 ${p}`}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={16} />
+              </div>
             </div>
           </div>
         )}
