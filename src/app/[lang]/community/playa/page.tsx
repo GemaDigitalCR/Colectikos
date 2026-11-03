@@ -13,14 +13,14 @@ const GRID_SIZE = 25;
 
 
 const ITEM_TYPES = {
-  sombrilla: { id: "sombrilla", name: "Sombrilla", name_en: "Umbrella", w: 1, h: 1, cost: 100, attract: 2, cat: "entretenimiento", cat_en: "entertainment", cap: 15, pollution: 1, image: "/assets/playa/sombrilla.png?v=20261029_v1", renderScale: 1.8, offsetX: 2, offsetY: -12 },
-  palmera: { id: "palmera", name: "Palmera", name_en: "Palm Tree", w: 1, h: 1, cost: 50, attract: 3, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -5, image: "/assets/playa/palmera.png?v=20261029_v1", renderScale: 2.3, offsetX: 0, offsetY: -28 },
-  pipas: { id: "pipas", name: "Pipas y Copos", name_en: "Coconut Water", w: 2, h: 1, cost: 150, attract: 5, cat: "alimentacion", cat_en: "food", cap: 20, pollution: 4, image: "/assets/playa/pipas.png?v=20261029_v1", renderScale: 1.55, offsetX: 0, offsetY: -14 },
-  soda: { id: "soda", name: "Soda", name_en: "Diner", w: 2, h: 2, cost: 300, attract: 10, cat: "alimentacion", cat_en: "food", cap: 60, pollution: 10, image: "/assets/playa/soda.png?v=20261029_v1", renderScale: 1.45, offsetX: 0, offsetY: -18 },
-  restaurante: { id: "restaurante", name: "Restaurante", name_en: "Restaurant", w: 3, h: 3, cost: 1200, attract: 50, cat: "alimentacion", cat_en: "food", cap: 250, pollution: 25, image: "/assets/playa/restaurante.png?v=20261029_v1", renderScale: 1.35, offsetX: 0, offsetY: -22 },
-  cabanas: { id: "cabanas", name: "Cabañas", name_en: "Cabins", w: 2, h: 2, cost: 1500, attract: 60, cat: "hospedaje", cat_en: "lodging", cap: 120, pollution: 12, image: "/assets/playa/cabanas.png?v=20261029_v1", renderScale: 1.45, offsetX: 0, offsetY: -18 },
-  hotel: { id: "hotel", name: "Hotel Boutique", name_en: "Boutique Hotel", w: 3, h: 3, cost: 6000, attract: 300, cat: "hospedaje", cat_en: "lodging", cap: 600, pollution: 35, image: "/assets/playa/hotel.png?v=20261029_v1", renderScale: 1.35, offsetX: 0, offsetY: -26 },
-  deportes: { id: "deportes", name: "Alquiler Deportes", name_en: "Sports Rental", w: 2, h: 2, cost: 400, attract: 20, cat: "entretenimiento", cat_en: "entertainment", cap: 40, pollution: 10, image: "/assets/playa/deportes.png?v=20261029_v1", renderScale: 1.45, offsetX: 0, offsetY: -18 },
+  sombrilla: { id: "sombrilla", name: "Sombrilla", name_en: "Umbrella", w: 1, h: 1, cost: 100, attract: 2, cat: "entretenimiento", cat_en: "entertainment", cap: 15, pollution: 1, image: "/assets/playa/sombrilla.png?v=20261029_v1", renderScale: 1.35, offsetX: 0, offsetY: 0 },
+  palmera: { id: "palmera", name: "Palmera", name_en: "Palm Tree", w: 1, h: 1, cost: 50, attract: 3, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -5, image: "/assets/playa/palmera.png?v=20261029_v1", renderScale: 1.5, offsetX: 0, offsetY: 0 },
+  pipas: { id: "pipas", name: "Pipas y Copos", name_en: "Coconut Water", w: 2, h: 1, cost: 150, attract: 5, cat: "alimentacion", cat_en: "food", cap: 20, pollution: 4, image: "/assets/playa/pipas.png?v=20261029_v1", renderScale: 1.25, offsetX: 0, offsetY: 0 },
+  soda: { id: "soda", name: "Soda", name_en: "Diner", w: 2, h: 2, cost: 300, attract: 10, cat: "alimentacion", cat_en: "food", cap: 60, pollution: 10, image: "/assets/playa/soda.png?v=20261029_v1", renderScale: 1.2, offsetX: 0, offsetY: 0 },
+  restaurante: { id: "restaurante", name: "Restaurante", name_en: "Restaurant", w: 3, h: 3, cost: 1200, attract: 50, cat: "alimentacion", cat_en: "food", cap: 250, pollution: 25, image: "/assets/playa/restaurante.png?v=20261029_v1", renderScale: 1.15, offsetX: 0, offsetY: 0 },
+  cabanas: { id: "cabanas", name: "Cabañas", name_en: "Cabins", w: 2, h: 2, cost: 1500, attract: 60, cat: "hospedaje", cat_en: "lodging", cap: 120, pollution: 12, image: "/assets/playa/cabanas.png?v=20261029_v1", renderScale: 1.2, offsetX: 0, offsetY: 0 },
+  hotel: { id: "hotel", name: "Hotel Boutique", name_en: "Boutique Hotel", w: 3, h: 3, cost: 6000, attract: 300, cat: "hospedaje", cat_en: "lodging", cap: 600, pollution: 35, image: "/assets/playa/hotel.png?v=20261029_v1", renderScale: 1.15, offsetX: 0, offsetY: 0 },
+  deportes: { id: "deportes", name: "Alquiler Deportes", name_en: "Sports Rental", w: 2, h: 2, cost: 400, attract: 20, cat: "entretenimiento", cat_en: "entertainment", cap: 40, pollution: 10, image: "/assets/playa/deportes.png?v=20261029_v1", renderScale: 1.2, offsetX: 0, offsetY: 0 },
   surf: { 
     id: "surf", 
     name: "Lecciones Surf", 
@@ -34,15 +34,15 @@ const ITEM_TYPES = {
     cap: 30, 
     pollution: 5, 
     image: "/assets/playa/surf.png?v=20261029_v1",
-    renderScale: 1.45,
+    renderScale: 1.2,
     offsetX: 0,
-    offsetY: -18
+    offsetY: 0
   },
-  artesanias: { id: "artesanias", name: "Artesanías", name_en: "Crafts", w: 2, h: 1, cost: 200, attract: 8, cat: "entretenimiento", cat_en: "entertainment", cap: 20, pollution: 5, image: "/assets/playa/artesanias.png?v=20261029_v1", renderScale: 1.55, offsetX: 0, offsetY: -14 },
-  trampolin: { id: "trampolin", name: "Trampolín Acuático", name_en: "Water Trampoline", w: 1, h: 1, cost: 500, attract: 25, cat: "entretenimiento", cat_en: "entertainment", cap: 50, pollution: 2, image: "/assets/playa/trampolin.png?v=20261011_v3", hidden: true, renderScale: 1.5, offsetX: 0, offsetY: -12 },
-  inflable: { id: "inflable", name: "Parque Inflable", name_en: "Inflatable Park", w: 2, h: 2, cost: 1000, attract: 45, cat: "entretenimiento", cat_en: "entertainment", cap: 120, pollution: 8, image: "/assets/playa/inflable.png?v=20261029_v1", renderScale: 1.45, offsetX: 0, offsetY: -18 },
-  reciclaje1: { id: "reciclaje1", name: "Punto Ecológico", name_en: "Eco Point", w: 1, h: 1, cost: 150, attract: 5, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -15, image: "/assets/playa/reciclaje1.png?v=20261029_v1", renderScale: 1.7, offsetX: 0, offsetY: -12 },
-  reciclaje2: { id: "reciclaje2", name: "Centro Reciclaje", name_en: "Recycling Center", w: 1, h: 1, cost: 150, attract: 10, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -35, image: "/assets/playa/reciclaje2.png?v=20261029_v1", renderScale: 1.7, offsetX: 0, offsetY: -12 },
+  artesanias: { id: "artesanias", name: "Artesanías", name_en: "Crafts", w: 2, h: 1, cost: 200, attract: 8, cat: "entretenimiento", cat_en: "entertainment", cap: 20, pollution: 5, image: "/assets/playa/artesanias.png?v=20261029_v1", renderScale: 1.25, offsetX: 0, offsetY: 0 },
+  trampolin: { id: "trampolin", name: "Trampolín Acuático", name_en: "Water Trampoline", w: 1, h: 1, cost: 500, attract: 25, cat: "entretenimiento", cat_en: "entertainment", cap: 50, pollution: 2, image: "/assets/playa/trampolin.png?v=20261011_v3", hidden: true, renderScale: 1.25, offsetX: 0, offsetY: 0 },
+  inflable: { id: "inflable", name: "Parque Inflable", name_en: "Inflatable Park", w: 2, h: 2, cost: 1000, attract: 45, cat: "entretenimiento", cat_en: "entertainment", cap: 120, pollution: 8, image: "/assets/playa/inflable.png?v=20261029_v1", renderScale: 1.2, offsetX: 0, offsetY: 0 },
+  reciclaje1: { id: "reciclaje1", name: "Punto Ecológico", name_en: "Eco Point", w: 1, h: 1, cost: 150, attract: 5, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -15, image: "/assets/playa/reciclaje1.png?v=20261029_v1", renderScale: 1.25, offsetX: 0, offsetY: 0 },
+  reciclaje2: { id: "reciclaje2", name: "Centro Reciclaje", name_en: "Recycling Center", w: 1, h: 1, cost: 150, attract: 10, cat: "decoracion", cat_en: "decoration", cap: 0, pollution: -35, image: "/assets/playa/reciclaje2.png?v=20261029_v1", renderScale: 1.25, offsetX: 0, offsetY: 0 },
 };
 
 const DECORATIVE_SIGNS = [
@@ -759,8 +759,9 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
   const handleCellClick = (row: number, col: number) => {
     if (movingItem) {
       const itemDef = ITEM_TYPES[movingItem.type as keyof typeof ITEM_TYPES];
-      const targetRow = row - Math.floor(itemDef.h / 2);
-      const targetCol = col - Math.floor(itemDef.w / 2);
+      // 1x1 se coloca exactamente en (row, col); assets más grandes tienen su esquina inferior derecha en (row, col)
+      const targetRow = row - itemDef.h + 1;
+      const targetCol = col - itemDef.w + 1;
 
       if (targetRow < 0 || targetCol < 0 || !canPlace(movingItem.type, targetRow, targetCol)) {
         playSound('error');
@@ -800,8 +801,9 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
     if (!selectedTool) return;
     
     const itemDef = ITEM_TYPES[selectedTool as keyof typeof ITEM_TYPES];
-    const targetRow = row - Math.floor(itemDef.h / 2);
-    const targetCol = col - Math.floor(itemDef.w / 2);
+    // 1x1 se coloca exactamente en (row, col); assets más grandes tienen su esquina inferior derecha en (row, col)
+    const targetRow = row - itemDef.h + 1;
+    const targetCol = col - itemDef.w + 1;
     
     if (tikolones < itemDef.cost) {
       playSound('error');
@@ -1643,14 +1645,8 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                     const is1x1 = def.w === 1 && def.h === 1;
                     const isSelected = selectedPlacedItem?.id === item.id;
                     const itemRenderWidth = (def as any).renderWidth || '100%';
-                    const itemTransformOrigin = (def as any).transformOrigin || 'bottom center';
-                    const itemAnchor = (def as any).anchor || 'bottom-center';
-                    const isBottomLeftAnchor = itemAnchor === 'bottom-left';
-                    const itemAnchorLeft = (def as any).anchorLeft ?? (isBottomLeftAnchor ? '0' : undefined);
-                    const itemAnchorBottom = (def as any).anchorBottom ?? (isBottomLeftAnchor ? '0' : undefined);
-                    const offsetX = (def as any).offsetX || 0;
-                    const offsetY = (def as any).offsetY || 0;
-                    const renderScale = (def as any).renderScale || (is1x1 ? 1.6 : 1.4);
+                    const itemTransformOrigin = is1x1 ? 'center center' : 'bottom center';
+                    const renderScale = (def as any).renderScale || (is1x1 ? 1.4 : 1.2);
 
                     return (
                       <div
@@ -1661,8 +1657,8 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                           transformStyle: 'preserve-3d'
                         }}
                         className={`pointer-events-auto relative ${
-                          isBottomLeftAnchor 
-                            ? '' 
+                          is1x1 
+                            ? 'flex items-center justify-center' 
                             : 'flex items-end justify-center'
                         }`}
                       >
@@ -1676,8 +1672,6 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                                playSound('select_placed');
                             }}
                             className={`relative drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)] flex items-end justify-center group cursor-pointer transition-all ${
-                              isBottomLeftAnchor ? 'absolute' : ''
-                            } ${
                               isSelected 
                                 ? '-translate-y-2 scale-105 z-30' 
                                 : isManageMode
@@ -1685,11 +1679,10 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                                 : 'hover:-translate-y-1 z-20'
                             }`}
                             style={{ 
-                              transform: `translateZ(${is1x1 ? 6 : 14}px) rotateZ(45deg) rotateX(-60deg) translate(${offsetX}px, ${offsetY}px) scale(${renderScale * (isSelected ? 1.05 : 1)})`, 
+                              transform: `translateZ(${is1x1 ? 6 : 14}px) rotateZ(45deg) rotateX(-60deg) scale(${renderScale * (isSelected ? 1.05 : 1)})`, 
                               transformOrigin: itemTransformOrigin,
                               width: itemRenderWidth,
                               height: 'auto',
-                              ...(isBottomLeftAnchor ? { left: itemAnchorLeft, bottom: itemAnchorBottom } : {})
                             }}
                          >
                            {/* Resplandor sutil cuando la estructura está seleccionada */}
