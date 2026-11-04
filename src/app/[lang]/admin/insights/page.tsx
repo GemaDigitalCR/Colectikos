@@ -32,7 +32,7 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
   const totalUsersWithLocation = await prisma.user.count({ where: { ...baseWhere, provinciaResidencia: { not: null } } });
   const totalUsersWithStyle = await prisma.user.count({ where: { ...baseWhere, estiloViaje: { not: null } } });
   const totalUsersWithCompany = await prisma.user.count({ where: { ...baseWhere, companiaHabitual: { not: null } } });
-  const totalUsersWithPlayMode = await prisma.user.count({ where: { ...baseWhere, playMode: { not: null } } });
+  const totalUsersWithGender = await prisma.user.count({ where: { ...baseWhere, genero: { not: null } } });
 
   const ageData = await prisma.user.groupBy({ by: ['rangoEdad'], _count: { id: true }, where: { ...baseWhere, rangoEdad: { not: null } } });
   const prefData = await prisma.user.groupBy({ by: ['tipoLugarPreferido'], _count: { id: true }, where: { ...baseWhere, tipoLugarPreferido: { not: null } } });
@@ -40,7 +40,7 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
   const placeData = await prisma.user.groupBy({ by: ['lugarFavorito'], _count: { id: true }, where: { ...baseWhere, lugarFavorito: { not: null } }, orderBy: { _count: { id: 'desc' } }, take: 20 });
   const styleData = await prisma.user.groupBy({ by: ['estiloViaje'], _count: { id: true }, where: { ...baseWhere, estiloViaje: { not: null } } });
   const companyData = await prisma.user.groupBy({ by: ['companiaHabitual'], _count: { id: true }, where: { ...baseWhere, companiaHabitual: { not: null } } });
-  const playModeData = await prisma.user.groupBy({ by: ['playMode'], _count: { id: true }, where: { ...baseWhere, playMode: { not: null } } });
+  const genderData = await prisma.user.groupBy({ by: ['genero'], _count: { id: true }, where: { ...baseWhere } });
 
   const totalAges = totalUsersWithAge || 1;
   const totalPrefs = totalUsersWithPref || 1;
@@ -104,10 +104,26 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
   companyData.forEach((d: any) => { if (d.companiaHabitual) compMap[d.companiaHabitual] = d._count.id; });
   const getCompPct = (k: string) => totalUsersWithCompany > 0 ? Math.round(((compMap[k] || 0) / totalUsersWithCompany) * 100) : 25;
 
-  // -- Código de Honor (PlayMode) --
-  const playModeMap: Record<string, number> = {};
-  playModeData.forEach((d: any) => { if (d.playMode) playModeMap[d.playMode] = d._count.id; });
-  const getPlayPct = (k: string) => totalUsersWithPlayMode > 0 ? Math.round(((playModeMap[k] || 0) / totalUsersWithPlayMode) * 100) : 33;
+  // -- Género --
+  let femaleCount = 0;
+  let maleCount = 0;
+  let neutralCount = 0;
+
+  genderData.forEach((d: any) => {
+    const rawGen = (d.genero || '').toUpperCase().trim();
+    if (rawGen === 'FEMENINO') {
+      femaleCount += d._count.id;
+    } else if (rawGen === 'MASCULINO') {
+      maleCount += d._count.id;
+    } else {
+      neutralCount += d._count.id;
+    }
+  });
+
+  const totalGenderUsers = femaleCount + maleCount + neutralCount;
+  const femalePct = totalGenderUsers > 0 ? Math.round((femaleCount / totalGenderUsers) * 100) : 0;
+  const malePct = totalGenderUsers > 0 ? Math.round((maleCount / totalGenderUsers) * 100) : 0;
+  const neutralPct = totalGenderUsers > 0 ? Math.max(0, 100 - femalePct - malePct) : 0;
 
   // -- Calificaciones (Ratings) --
   let avgRatings: { name: string, avg: number, count: number }[] = [];
@@ -306,28 +322,37 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
             </div>
           </div>
 
-          {/* Código de Honor (PlayMode) */}
+          {/* Distribución por Género */}
           <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col">
             <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-bold text-stone-800 tracking-wide">Código de Honor (Modo)</h2>
-              <Award className="text-cyan-500" size={24} />
+              <div>
+                <h2 className="text-lg font-bold text-stone-800 tracking-wide">
+                  {isEn ? 'Gender Identity' : 'Identidad de Género'}
+                </h2>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {isEn ? 'Declared by registered explorers' : 'Declarado por los exploradores'}
+                </p>
+              </div>
+              <Users className="text-rose-500" size={24} />
             </div>
             <div className="space-y-4 flex-1 flex flex-col justify-center">
               {[
-                { name: 'Modo Curioso', pct: getPlayPct('Modo Curioso'), color: 'bg-cyan-500' },
-                { name: 'Modo Nómada', pct: getPlayPct('Modo Nómada'), color: 'bg-sky-500' },
-                { name: 'Modo Conquistador', pct: getPlayPct('Modo Conquistador'), color: 'bg-blue-600' }
-              ].map(mode => (
-                <div key={mode.name} className="flex items-center gap-4">
-                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center shadow-inner">
-                    <span className="font-bold text-lg text-stone-400">{mode.pct}%</span>
+                { name: isEn ? 'Female' : 'Femenino', count: femaleCount, pct: femalePct, color: 'bg-rose-500' },
+                { name: isEn ? 'Male' : 'Masculino', count: maleCount, pct: malePct, color: 'bg-blue-500' },
+                { name: isEn ? 'Neutral / Other' : 'Neutro / Otro', count: neutralCount, pct: neutralPct, color: 'bg-emerald-500' }
+              ].map(gender => (
+                <div key={gender.name} className="flex items-center gap-4">
+                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-stone-50 border border-stone-100 flex flex-col items-center justify-center shadow-inner">
+                    <span className="font-bold text-lg text-stone-700">{gender.pct}%</span>
+                    <span className="text-[10px] text-stone-400 font-semibold">{gender.count}</span>
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="font-bold text-stone-700">{mode.name}</span>
+                      <span className="font-bold text-stone-700">{gender.name}</span>
+                      <span className="text-xs text-stone-400 font-medium">{gender.pct}%</span>
                     </div>
                     <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden shadow-inner">
-                      <div className={`h-full ${mode.color} rounded-full transition-all`} style={{ width: `${mode.pct}%` }}></div>
+                      <div className={`h-full ${gender.color} rounded-full transition-all duration-500`} style={{ width: `${gender.pct}%` }}></div>
                     </div>
                   </div>
                 </div>
