@@ -99,11 +99,35 @@ export async function updateUserProgressMode(
     const user = await ensureDbUser(localUsername, fallbackClerkId);
     if (!user) return { success: false, error: 'User not found' };
 
+    let targetLugarId = lugarId;
+    const directProgress = await prisma.userProgress.findUnique({
+      where: {
+        userId_lugarId: {
+          userId: user.id,
+          lugarId: targetLugarId
+        }
+      }
+    });
+
+    if (!directProgress) {
+      const matchedLugar = await prisma.lugar.findFirst({
+        where: {
+          OR: [
+            { id: lugarId },
+            { nombre: { equals: lugarId, mode: 'insensitive' } }
+          ]
+        }
+      });
+      if (matchedLugar) {
+        targetLugarId = matchedLugar.id;
+      }
+    }
+
     const progress = await prisma.userProgress.upsert({
       where: {
         userId_lugarId: {
           userId: user.id,
-          lugarId
+          lugarId: targetLugarId
         }
       },
       update: {
@@ -112,7 +136,7 @@ export async function updateUserProgressMode(
       },
       create: {
         userId: user.id,
-        lugarId,
+        lugarId: targetLugarId,
         completado: true,
         fechaCompletado: new Date(),
         modo: mode

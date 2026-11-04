@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, BookOpen, PawPrint, Check, Lock, Users, Globe } from 'lucide-react';
+import { X, Sparkles, BookOpen, PawPrint, Check, Lock, Users, Globe, Award } from 'lucide-react';
 import { useDictionary } from '../context/DictionaryContext';
 import { Lugar } from '../data/mockData';
 import toast from 'react-hot-toast';
@@ -172,39 +172,63 @@ export default function MemoriesModal({
         {/* Content */}
         <div className="p-5 sm:p-6 pt-2 sm:pt-3 flex flex-col gap-4 overflow-y-auto bg-stone-50/80 border-t border-stone-100">
           
-          {/* Selector de Modo de Visita */}
+          {/* Selector de Modo de Conquista / Visita */}
           {!isProv && (
-            <div className="flex flex-col gap-1.5 bg-white p-3 rounded-xl border border-stone-200 shadow-sm">
-              <span className="text-stone-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-between">
-                <span>{isEn ? "Visit Mode" : "Modo de Visita"}</span>
-                <span className="text-[10px] text-stone-400 font-normal lowercase">{isEn ? "tap to change" : "toca para cambiar"}</span>
-              </span>
-              <div className="grid grid-cols-3 p-1 bg-stone-100 rounded-xl gap-1 border border-stone-200/80">
-                {(['Curioso', 'Nómada', 'Conquistador'] as const).map((m) => {
-                  const isSelected = (mode || 'Curioso') === m;
+            <div className="flex flex-col gap-2 bg-white p-3.5 rounded-2xl border border-stone-200 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-stone-700 text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                  <Award size={13} className="text-amber-500" />
+                  <span>{isEn ? "Conquest Mode" : "Modo de Conquista"}</span>
+                </span>
+                <span className="text-[10px] text-stone-400 font-medium">
+                  {isEn ? "Select how you experienced it" : "Elige cómo lo viviste"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 p-1 bg-stone-100/90 rounded-xl gap-1.5 border border-stone-200/70">
+                {([
+                  { key: 'Curioso', icon: '👁', labelEs: 'Curioso', labelEn: 'Curious', descEs: 'Lo conocí antes / Vi la postal', descEn: 'Knew it before / View postcard', colorClass: 'bg-amber-800 text-white border-amber-900 shadow-sm ring-2 ring-amber-800/20' },
+                  { key: 'Nómada', icon: '🧭', labelEs: 'Nómada', labelEn: 'Nomad', descEs: 'Lo vi de pasadita', descEn: 'I just passed by', colorClass: 'bg-slate-300 text-slate-900 border-slate-400 shadow-sm ring-2 ring-slate-400/30' },
+                  { key: 'Conquistador', icon: '🏆', labelEs: 'Conquistador', labelEn: 'Conqueror', descEs: 'Lo caminé y disfruté', descEn: 'Walked & explored it', colorClass: 'bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 border-amber-500 shadow-sm ring-2 ring-amber-400/40' },
+                ] as const).map((item) => {
+                  const isSelected = (mode || 'Curioso') === item.key;
                   return (
                     <button
-                      key={m}
+                      key={item.key}
                       type="button"
                       onClick={() => {
-                        setMode(m);
-                        if (onUpdateMode) onUpdateMode(m);
+                        setMode(item.key as any);
+                        if (onUpdateMode) onUpdateMode(item.key as any);
+                        toast.success(
+                          isEn ? `Conquest mode: ${item.labelEn}` : `Modo: ${item.labelEs}`,
+                          { icon: item.icon, id: 'mode-toast' }
+                        );
                       }}
-                      className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         isSelected 
-                          ? m === 'Conquistador'
-                            ? 'bg-amber-400 text-amber-950 shadow-sm border border-amber-500/40'
-                            : m === 'Nómada'
-                            ? 'bg-slate-300 text-slate-900 shadow-sm border border-slate-400/40'
-                            : 'bg-amber-800 text-white shadow-sm border border-amber-900/40'
-                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+                          ? `${item.colorClass} scale-[1.02]`
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70 active:scale-95'
                       }`}
                     >
-                      <span>{m === 'Conquistador' ? '🏆' : m === 'Nómada' ? '🧭' : '👁'}</span>
-                      <span className="truncate">{m}</span>
+                      <span className="text-base sm:text-lg mb-0.5">{item.icon}</span>
+                      <span className="text-[11px] sm:text-xs font-black tracking-tight leading-tight">
+                        {isEn ? item.labelEn : item.labelEs}
+                      </span>
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Helper text explaining the selected mode */}
+              <div className="text-[10px] sm:text-[11px] text-stone-500 text-center font-medium bg-stone-50 py-1 px-2 rounded-lg border border-stone-100 flex items-center justify-center gap-1">
+                <span>✨</span>
+                <span className="truncate">
+                  {mode === 'Conquistador'
+                    ? (isEn ? "Conqueror: I walked it, explored it, and lived it fully!" : "Conquistador: ¡Lo caminé, lo observé y lo disfruté al máximo!")
+                    : mode === 'Nómada'
+                    ? (isEn ? "Nomad: I saw it in passing or on a quick ride." : "Nómada: Lo vi de pasadita o en un ride rápido.")
+                    : (isEn ? "Curious: I visited in the past or wanted to explore the postcard." : "Curioso: Lo conocí hace un tiempo o solo quería ver la postal.")}
+                </span>
               </div>
             </div>
           )}

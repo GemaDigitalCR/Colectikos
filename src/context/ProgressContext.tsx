@@ -516,6 +516,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
 
   const updateUnlockMode = async (id: string, mode: string) => {
     const newModes: Record<string, string> = { [id]: mode };
+    let targetDbId = id;
     const foundPlace = dbLugares.find(l => l.id === id);
     if (foundPlace) {
       newModes[foundPlace.nombre] = mode;
@@ -523,6 +524,18 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       const mockMatch = mockLugares.find(m => m.nombre.toLowerCase().trim() === cleanNombre);
       if (mockMatch) {
         newModes[mockMatch.id] = mode;
+      }
+    } else {
+      const mockMatch = mockLugares.find(m => m.id === id);
+      if (mockMatch) {
+        newModes[mockMatch.nombre] = mode;
+        const cleanNombre = mockMatch.nombre.toLowerCase().trim();
+        const dbMatch = dbLugares.find(l => l.nombre.toLowerCase().trim() === cleanNombre);
+        if (dbMatch) {
+          targetDbId = dbMatch.id;
+          newModes[dbMatch.id] = mode;
+          newModes[dbMatch.nombre] = mode;
+        }
       }
     }
     
@@ -544,11 +557,12 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         if (parsed.username) localUsername = parsed.username;
       } catch (e) {}
     }
-    await updateUserProgressMode(id, mode, localUsername, user?.id);
+    await updateUserProgressMode(targetDbId, mode, localUsername, user?.id);
   };
 
   const handleCheckInWithMode = async (id: string, mode: string) => {
     const newModes: Record<string, string> = { [id]: mode };
+    let targetDbId = id;
     const foundPlace = dbLugares.find(l => l.id === id);
     if (foundPlace) {
       newModes[foundPlace.nombre] = mode;
@@ -556,6 +570,18 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       const mockMatch = mockLugares.find(m => m.nombre.toLowerCase().trim() === cleanNombre);
       if (mockMatch) {
         newModes[mockMatch.id] = mode;
+      }
+    } else {
+      const mockMatch = mockLugares.find(m => m.id === id);
+      if (mockMatch) {
+        newModes[mockMatch.nombre] = mode;
+        const cleanNombre = mockMatch.nombre.toLowerCase().trim();
+        const dbMatch = dbLugares.find(l => l.nombre.toLowerCase().trim() === cleanNombre);
+        if (dbMatch) {
+          targetDbId = dbMatch.id;
+          newModes[dbMatch.id] = mode;
+          newModes[dbMatch.nombre] = mode;
+        }
       }
     }
     
@@ -577,9 +603,9 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         if (parsed.username) localUsername = parsed.username;
       } catch (e) {}
     }
-    updateUserProgressMode(id, mode, localUsername, user?.id).catch(console.error);
+    updateUserProgressMode(targetDbId, mode, localUsername, user?.id).catch(console.error);
 
-    return await handleCheckIn(id, mode);
+    return await handleCheckIn(targetDbId, mode);
   };
 
   const handleRate = async (id: string, score: number) => {

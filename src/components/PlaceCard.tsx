@@ -460,6 +460,13 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
         dict={dict}
         lang={dict?.lang === 'en' ? 'en' : 'es'}
       />
+      <UnlockModal 
+        isOpen={isUnlockModalOpen} 
+        onClose={() => setIsUnlockModalOpen(false)} 
+        onSelectMode={handleSelectMode} 
+        title={dict?.categories?.ALL === 'All' ? "Visit Mode" : "Modo de Visita"}
+        subtitle={dict?.categories?.ALL === 'All' ? "Change how you visited this destination:" : "¿Cómo visitaste este destino?"}
+      />
       </div>
     );
   }
