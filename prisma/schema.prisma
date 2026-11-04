@@ -43,6 +43,7 @@ model User {
   ratings                Rating[]
   actionLogs             UserActionLog[]
   progress               UserProgress[]
+  reviewLikes            ReviewLike[]
   tikolones              Int             @default(500)
   beach                  Beach?
 }
@@ -70,18 +71,32 @@ model Lugar {
 }
 
 model UserProgress {
-  id              String    @id @default(uuid())
+  id              String       @id @default(uuid())
   userId          String
   lugarId         String
-  completado      Boolean   @default(false)
+  completado      Boolean      @default(false)
   fechaCompletado DateTime?
   notas           String?
-  esPublico       Boolean   @default(false)
-  modo            String?   @default("Curioso")
-  lugar           Lugar     @relation(fields: [lugarId], references: [id], onDelete: Cascade)
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  esPublico       Boolean      @default(false)
+  modo            String?      @default("Curioso")
+  lugar           Lugar        @relation(fields: [lugarId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes           ReviewLike[]
 
   @@unique([userId, lugarId])
+}
+
+model ReviewLike {
+  id             String       @id @default(uuid())
+  userProgressId String
+  userId         String
+  createdAt      DateTime     @default(now())
+  userProgress   UserProgress @relation(fields: [userProgressId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userProgressId, userId])
+  @@index([userProgressId])
+  @@index([userId])
 }
 
 model CommunityPost {

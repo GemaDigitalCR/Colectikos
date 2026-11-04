@@ -21,9 +21,11 @@ import {
   EyeOff,
   Edit3,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Heart
 } from 'lucide-react';
-import { getPublicReviews, PublicReviewItem } from '../../../../actions/progress';
+import { getPublicReviews, toggleReviewLike, PublicReviewItem } from '../../../../actions/progress';
+import { useUser } from '@clerk/nextjs';
 import { 
   checkIsAdmin, 
   toggleReviewVisibilityAdmin, 
@@ -39,6 +41,7 @@ interface MuroPageProps {
 
 export default function MuroExploradoresPage({ params }: MuroPageProps) {
   const dict = useDictionary();
+  const { user: clerkUser } = useUser();
   const [lang, setLang] = useState('es');
   const [reviews, setReviews] = useState<PublicReviewItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -47,11 +50,16 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
 
+  const localUsername = clerkUser?.username || (typeof window !== 'undefined' ? (() => {
+    try { return JSON.parse(localStorage.getItem('userProfileData') || '{}').username; } catch(e) { return undefined; }
+  })() : undefined);
+  const fallbackClerkId = clerkUser?.id || undefined;
+
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [sortBy, setSortBy] = useState<'recent' | 'rating'>('recent');
+  const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'rating'>('recent');
   const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({});
 
   // Moderación Admin
@@ -127,6 +135,8 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
       sortBy,
       limit: LIMIT,
       offset: 0,
+      currentUsername: localUsername,
+      fallbackClerkId,
     }).then(res => {
       if (reqId !== reqIdRef.current) return; // Descartar respuestas de peticiones obsoletas
       if (res.success) {
@@ -150,7 +160,7 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
         setLoading(false);
       }
     });
-  }, [debouncedSearch, selectedProvince, selectedCategory, sortBy]);
+  }, [debouncedSearch, selectedProvince, selectedCategory, sortBy, localUsername, fallbackClerkId]);
 
   const handleLoadMore = async () => {
     if (loadingMore || !hasMore) return;
@@ -164,6 +174,8 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
         sortBy,
         limit: LIMIT,
         offset,
+        currentUsername: localUsername,
+        fallbackClerkId,
       });
       if (reqId === reqIdRef.current && res.success) {
         setReviews(prev => [...prev, ...res.reviews]);
@@ -177,6 +189,72 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
       if (reqId === reqIdRef.current) {
         setLoadingMore(false);
       }
+    }
+  };
+
+  const handleToggleLike = async (reviewId: string) => {
+    if (!localUsername && !fallbackClerkId) {
+      toast.error(lang === 'en' ? 'Please sign in to like reviews! ❤️' : '¡Inicia sesión para dar me gusta! ❤️');
+      return;
+    }
+
+    // Optimistic UI update
+    setReviews(prev => prev.map(rev => {
+      if (rev.id === reviewId) {
+        const wasLiked = Boolean(rev.hasLiked);
+        const currentCount = rev.likesCount || 0;
+        return {
+          ...rev,
+          hasLiked: !wasLiked,
+          likesCount: wasLiked ? Math.max(0, currentCount - 1) : currentCount + 1,
+        };
+      }
+      return rev;
+    }));
+
+    try {
+      const res = await toggleReviewLike(reviewId, localUsername, fallbackClerkId);
+      if (res.success) {
+        setReviews(prev => prev.map(rev => {
+          if (rev.id === reviewId) {
+            return {
+              ...rev,
+              hasLiked: res.liked,
+              likesCount: res.likesCount,
+            };
+          }
+          return rev;
+        }));
+      } else {
+        // Revert on failure
+        setReviews(prev => prev.map(rev => {
+          if (rev.id === reviewId) {
+            const wasLiked = Boolean(rev.hasLiked);
+            const currentCount = rev.likesCount || 0;
+            return {
+              ...rev,
+              hasLiked: !wasLiked,
+              likesCount: wasLiked ? Math.max(0, currentCount - 1) : currentCount + 1,
+            };
+          }
+          return rev;
+        }));
+        toast.error(res.error || (lang === 'en' ? 'Could not save like' : 'No se pudo guardar el me gusta'));
+      }
+    } catch (e) {
+      console.error('Error toggling like:', e);
+      setReviews(prev => prev.map(rev => {
+        if (rev.id === reviewId) {
+          const wasLiked = Boolean(rev.hasLiked);
+          const currentCount = rev.likesCount || 0;
+          return {
+            ...rev,
+            hasLiked: !wasLiked,
+            likesCount: wasLiked ? Math.max(0, currentCount - 1) : currentCount + 1,
+          };
+        }
+        return rev;
+      }));
     }
   };
 
@@ -342,28 +420,41 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
               <span className="text-xs font-bold text-stone-400 uppercase tracking-wider hidden sm:inline">
                 {lang === 'en' ? 'Sort:' : 'Ordenar:'}
               </span>
-              <div className="grid grid-cols-2 p-1 bg-stone-100 rounded-xl border border-stone-200 text-xs font-bold w-full sm:w-auto">
+              <div className="grid grid-cols-3 p-1 bg-stone-100 rounded-xl border border-stone-200 text-xs font-bold w-full sm:w-auto gap-0.5">
                 <button
                   type="button"
                   onClick={() => setSortBy('recent')}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
                     sortBy === 'recent' 
                       ? 'bg-white text-emerald-800 shadow-sm' 
                       : 'text-stone-500 hover:text-stone-700'
                   }`}
                 >
-                  {lang === 'en' ? 'Most Recent' : 'Más Recientes'}
+                  {lang === 'en' ? 'Recent' : 'Recientes'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy('popular')}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${
+                    sortBy === 'popular' 
+                      ? 'bg-white text-rose-600 shadow-sm' 
+                      : 'text-stone-500 hover:text-stone-700'
+                  }`}
+                >
+                  <span className="text-xs">❤️</span>
+                  <span>{lang === 'en' ? 'Popular' : 'Populares'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setSortBy('rating')}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${
                     sortBy === 'rating' 
                       ? 'bg-white text-emerald-800 shadow-sm' 
                       : 'text-stone-500 hover:text-stone-700'
                   }`}
                 >
-                  {lang === 'en' ? 'Top Rated' : 'Mejor Calificadas'}
+                  <span className="text-xs">🐾</span>
+                  <span>{lang === 'en' ? 'Top Rated' : 'Calificadas'}</span>
                 </button>
               </div>
             </div>
@@ -691,17 +782,43 @@ export default function MuroExploradoresPage({ params }: MuroPageProps) {
                   </div>
 
                   {/* Card Footer */}
-                  <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-400">
-                    <span className="flex items-center gap-1">
+                  <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-400 gap-2">
+                    <span className="flex items-center gap-1 shrink-0">
                       <Calendar size={12} />
-                      <span>{formattedDate ? `${lang === 'en' ? 'Visited on' : 'Visita:'} ${formattedDate}` : (lang === 'en' ? 'Visited' : 'Visitado')}</span>
+                      <span className="truncate">{formattedDate ? `${lang === 'en' ? 'Visited on' : 'Visita:'} ${formattedDate}` : (lang === 'en' ? 'Visited' : 'Visitado')}</span>
                     </span>
+
+                    {/* Botón de Respaldo / Me Gusta (Corazón ❤️) */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleToggleLike(rev.id);
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer select-none ${
+                        rev.hasLiked
+                          ? 'bg-rose-50 text-rose-600 border border-rose-200/90 shadow-xs scale-105'
+                          : 'bg-stone-50 text-stone-500 hover:text-rose-600 hover:bg-rose-50/60 border border-stone-200/80 active:scale-95'
+                      }`}
+                      title={lang === 'en' ? (rev.hasLiked ? 'Unlike review' : 'Like review') : (rev.hasLiked ? 'Quitar me gusta' : 'Me gusta')}
+                    >
+                      <Heart 
+                        size={14} 
+                        className={`transition-all duration-200 ${
+                          rev.hasLiked 
+                            ? 'fill-rose-500 text-rose-500 scale-110' 
+                            : 'text-stone-400 hover:text-rose-400'
+                        }`} 
+                      />
+                      <span className="font-bold">{rev.likesCount || 0}</span>
+                    </button>
 
                     <Link 
                       href={`/${lang}#lugar-${rev.lugarId}`}
-                      className="font-bold text-emerald-700 hover:text-emerald-800 hover:underline flex items-center gap-0.5"
+                      className="font-bold text-emerald-700 hover:text-emerald-800 hover:underline flex items-center gap-0.5 shrink-0"
                     >
-                      <span>{lang === 'en' ? 'View destination' : 'Ver en álbum'}</span>
+                      <span>{lang === 'en' ? 'View in album' : 'Ver en álbum'}</span>
                       <ChevronRight size={14} />
                     </Link>
                   </div>

@@ -279,6 +279,8 @@ export interface PublicReviewItem {
   notas: string;
   fechaCompletado: string | null;
   ratingScore?: number;
+  likesCount?: number;
+  hasLiked?: boolean;
 }
 
 export async function getPublicReviews(filters?: {
@@ -287,12 +289,23 @@ export async function getPublicReviews(filters?: {
   search?: string;
   limit?: number;
   offset?: number;
-  sortBy?: 'recent' | 'rating';
+  sortBy?: 'recent' | 'rating' | 'popular';
+  currentUsername?: string;
+  fallbackClerkId?: string;
 }) {
   try {
     const limit = filters?.limit ?? 20;
     const offset = filters?.offset ?? 0;
     const sortBy = filters?.sortBy ?? 'recent';
+
+    let currentDbUser: { id: string } | null = null;
+    if (filters?.currentUsername || filters?.fallbackClerkId) {
+      try {
+        currentDbUser = await ensureDbUser(filters.currentUsername, filters.fallbackClerkId);
+      } catch (e) {
+        // Ignorar si no se puede resolver
+      }
+    }
 
     const whereClause: any = {
       esPublico: true,
@@ -354,6 +367,21 @@ export async function getPublicReviews(filters?: {
             xp: true,
           },
         },
+        _count: {
+          select: {
+            likes: true,
+          },
+        },
+        ...(currentDbUser ? {
+          likes: {
+            where: {
+              userId: currentDbUser.id,
+            },
+            select: {
+              id: true,
+            },
+          },
+        } : {}),
       },
       orderBy: {
         fechaCompletado: 'desc',
@@ -389,7 +417,7 @@ export async function getPublicReviews(filters?: {
       });
     }
 
-    let items: PublicReviewItem[] = records.map((r) => ({
+    let items: PublicReviewItem[] = records.map((r: any) => ({
       id: r.id,
       lugarId: r.lugarId,
       lugarNombre: r.lugar.nombre,
@@ -406,10 +434,14 @@ export async function getPublicReviews(filters?: {
       notas: r.notas || '',
       fechaCompletado: r.fechaCompletado ? r.fechaCompletado.toISOString() : null,
       ratingScore: ratingMap.get(`${r.userId}_${r.lugarId}`) || 0,
+      likesCount: r._count?.likes ?? 0,
+      hasLiked: Boolean(r.likes && r.likes.length > 0),
     }));
 
     if (sortBy === 'rating') {
       items.sort((a, b) => (b.ratingScore || 0) - (a.ratingScore || 0));
+    } else if (sortBy === 'popular') {
+      items.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
     }
 
     return {
@@ -421,5 +453,52 @@ export async function getPublicReviews(filters?: {
   } catch (error: any) {
     console.error('Error fetching public reviews:', error);
     return { success: false, error: error?.message || 'Error cargando las reseñas', reviews: [], totalCount: 0, hasMore: false };
+  }
+}
+
+export async function toggleReviewLike(
+  userProgressId: string,
+  localUsername?: string,
+  fallbackClerkId?: string
+) {
+  try {
+    const user = await ensureDbUser(localUsername, fallbackClerkId);
+    if (!user) {
+      return { success: false, error: 'unauthenticated' };
+    }
+
+    const existingLike = await prisma.reviewLike.findUnique({
+      where: {
+        userProgressId_userId: {
+          userProgressId,
+          userId: user.id,
+        },
+      },
+    });
+
+    let liked = false;
+    if (existingLike) {
+      await prisma.reviewLike.delete({
+        where: { id: existingLike.id },
+      });
+      liked = false;
+    } else {
+      await prisma.reviewLike.create({
+        data: {
+          userProgressId,
+          userId: user.id,
+        },
+      });
+      liked = true;
+    }
+
+    const likesCount = await prisma.reviewLike.count({
+      where: { userProgressId },
+    });
+
+    return { success: true, liked, likesCount };
+  } catch (error: any) {
+    console.error('Error toggling review like:', error);
+    return { success: false, error: error?.message || 'Error al procesar el like' };
   }
 }
