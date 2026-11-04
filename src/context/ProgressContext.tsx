@@ -23,6 +23,7 @@ interface ProgressContextType {
   unlockModes: Record<string, string>;
   handleCheckIn: (id: string) => Promise<number>;
   handleCheckInWithMode: (id: string, mode: string) => Promise<number>;
+  updateUnlockMode: (id: string, mode: string) => Promise<void>;
   updatePlaceDetails: (id: string, date: string, note: string, isPublic?: boolean) => void;
   bucketList: string[];
   toggleBucketList: (id: string) => void;
@@ -513,6 +514,39 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUnlockMode = async (id: string, mode: string) => {
+    const newModes: Record<string, string> = { [id]: mode };
+    const foundPlace = dbLugares.find(l => l.id === id);
+    if (foundPlace) {
+      newModes[foundPlace.nombre] = mode;
+      const cleanNombre = foundPlace.nombre.toLowerCase().trim();
+      const mockMatch = mockLugares.find(m => m.nombre.toLowerCase().trim() === cleanNombre);
+      if (mockMatch) {
+        newModes[mockMatch.id] = mode;
+      }
+    }
+    
+    // 1. Guardar de inmediato en estado local y en localStorage
+    setUnlockModes(prev => {
+      const merged = { ...prev, ...newModes };
+      try {
+        localStorage.setItem('colectikos_unlock_modes', JSON.stringify(merged));
+      } catch (e) {}
+      return merged;
+    });
+
+    // 2. Persistir en la base de datos PostgreSQL
+    let localUsername = user?.username || undefined;
+    const profileData = localStorage.getItem('userProfileData');
+    if (profileData) {
+      try {
+        const parsed = JSON.parse(profileData);
+        if (parsed.username) localUsername = parsed.username;
+      } catch (e) {}
+    }
+    await updateUserProgressMode(id, mode, localUsername, user?.id);
+  };
+
   const handleCheckInWithMode = async (id: string, mode: string) => {
     const newModes: Record<string, string> = { [id]: mode };
     const foundPlace = dbLugares.find(l => l.id === id);
@@ -851,7 +885,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ProgressContext.Provider value={{ completedPlaces, placeDetails, unlockModes, bucketList, handleCheckIn, handleCheckInWithMode, updatePlaceDetails, toggleBucketList, communityRatings, userRatings, xp, level, currentStreak, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, handleRate, userProfile, showTour, setShowTour, updateLocalXp, refreshGamification }}>
+    <ProgressContext.Provider value={{ completedPlaces, placeDetails, unlockModes, bucketList, handleCheckIn, handleCheckInWithMode, updateUnlockMode, updatePlaceDetails, toggleBucketList, communityRatings, userRatings, xp, level, currentStreak, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, handleRate, userProfile, showTour, setShowTour, updateLocalXp, refreshGamification }}>
       {children}
       {showOnboarding && <OnboardingModal onCompleted={() => setShowOnboarding(false)} />}
       <LevelUpModal 

@@ -16,6 +16,8 @@ interface MemoriesModalProps {
   updatePlaceDetails: (id: string, date: string, note: string, isPublic?: boolean) => void;
   handleRate?: (id: string, score: number) => Promise<void>;
   rating: number;
+  currentMode?: string;
+  onUpdateMode?: (mode: 'Curioso' | 'Nómada' | 'Conquistador') => void;
 }
 
 export default function MemoriesModal({ 
@@ -26,7 +28,9 @@ export default function MemoriesModal({
   currentDetails,
   updatePlaceDetails,
   handleRate,
-  rating: initialRating
+  rating: initialRating,
+  currentMode,
+  onUpdateMode
 }: MemoriesModalProps) {
   const dict = useDictionary();
   const isEn = dict?.categories?.ALL === 'All' || dict?.lang === 'en';
@@ -35,6 +39,7 @@ export default function MemoriesModal({
   const [draftNote, setDraftNote] = useState(currentDetails.note);
   const [isPublic, setIsPublic] = useState<boolean>(currentDetails.isPublic ?? false);
   const [rating, setRating] = useState<number>(initialRating);
+  const [mode, setMode] = useState<'Curioso' | 'Nómada' | 'Conquistador'>((currentMode as any) || 'Curioso');
 
   const draftDateRef = useRef(draftDate);
   draftDateRef.current = draftDate;
@@ -55,8 +60,9 @@ export default function MemoriesModal({
       setDraftNote(currentDetails.note);
       setIsPublic(currentDetails.isPublic ?? false);
       setRating(initialRating);
+      if (currentMode) setMode(currentMode as any);
     }
-  }, [isOpen, currentDetails, initialRating]);
+  }, [isOpen, currentDetails, initialRating, currentMode]);
 
   // Función de auto-guardado centralizada y resiliente
   const performSave = (showToast = false) => {
@@ -166,6 +172,43 @@ export default function MemoriesModal({
         {/* Content */}
         <div className="p-5 sm:p-6 pt-2 sm:pt-3 flex flex-col gap-4 overflow-y-auto bg-stone-50/80 border-t border-stone-100">
           
+          {/* Selector de Modo de Visita */}
+          {!isProv && (
+            <div className="flex flex-col gap-1.5 bg-white p-3 rounded-xl border border-stone-200 shadow-sm">
+              <span className="text-stone-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-between">
+                <span>{isEn ? "Visit Mode" : "Modo de Visita"}</span>
+                <span className="text-[10px] text-stone-400 font-normal lowercase">{isEn ? "tap to change" : "toca para cambiar"}</span>
+              </span>
+              <div className="grid grid-cols-3 p-1 bg-stone-100 rounded-xl gap-1 border border-stone-200/80">
+                {(['Curioso', 'Nómada', 'Conquistador'] as const).map((m) => {
+                  const isSelected = (mode || 'Curioso') === m;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => {
+                        setMode(m);
+                        if (onUpdateMode) onUpdateMode(m);
+                      }}
+                      className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        isSelected 
+                          ? m === 'Conquistador'
+                            ? 'bg-amber-400 text-amber-950 shadow-sm border border-amber-500/40'
+                            : m === 'Nómada'
+                            ? 'bg-slate-300 text-slate-900 shadow-sm border border-slate-400/40'
+                            : 'bg-amber-800 text-white shadow-sm border border-amber-900/40'
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+                      }`}
+                    >
+                      <span>{m === 'Conquistador' ? '🏆' : m === 'Nómada' ? '🧭' : '👁'}</span>
+                      <span className="truncate">{m}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Fecha de Visita */}
           <div className="flex flex-col gap-1.5">
             <label className="text-stone-500 text-[10px] sm:text-xs uppercase font-bold tracking-widest flex items-center gap-1">

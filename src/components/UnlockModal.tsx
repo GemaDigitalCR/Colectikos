@@ -9,9 +9,11 @@ interface UnlockModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectMode: (mode: 'Curioso' | 'Nómada' | 'Conquistador') => void;
+  title?: string;
+  subtitle?: string;
 }
 
-export default function UnlockModal({ isOpen, onClose, onSelectMode }: UnlockModalProps) {
+export default function UnlockModal({ isOpen, onClose, onSelectMode, title, subtitle }: UnlockModalProps) {
   const dict = useDictionary();
   const mDict = dict?.unlockModal;
   const [mounted, setMounted] = useState(false);
@@ -55,10 +57,10 @@ export default function UnlockModal({ isOpen, onClose, onSelectMode }: UnlockMod
           </div>
 
           <h2 className="text-2xl font-black text-stone-800 tracking-tight">
-            {mDict?.title || "¡Desbloqueando!"}
+            {title || mDict?.title || "¡Desbloqueando!"}
           </h2>
           <p className="text-stone-500 text-sm mt-2 font-medium leading-relaxed px-4">
-            {mDict?.subtitle || "¿Cómo conociste este destino?"}
+            {subtitle || mDict?.subtitle || "¿Cómo conociste este destino?"}
           </p>
         </div>
 

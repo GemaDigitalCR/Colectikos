@@ -43,7 +43,7 @@ const getProvinceImage = (provinceId: string, progressPercentage: number) => {
 
 export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedState, progressPercentage, rotationClass = '' }: PlaceCardProps) {
   const dict = useDictionary();
-  const { placeDetails, updatePlaceDetails, bucketList, toggleBucketList, unlockModes, handleCheckInWithMode, handleRate, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, userProfile } = (useProgress() as any);
+  const { placeDetails, updatePlaceDetails, bucketList, toggleBucketList, unlockModes, handleCheckInWithMode, updateUnlockMode, handleRate, estampillas, hasReceivedBonusToday, hasRefundedTicketToday, userProfile } = (useProgress() as any);
 
   const currentDetails = placeDetails[lugar.id] || { date: '', note: '', isPublic: false };
   const isInBucketList = bucketList?.includes(lugar.id);
@@ -76,6 +76,14 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
 
   const handleSelectMode = async (mode: 'Curioso' | 'Nómada' | 'Conquistador') => {
     setIsUnlockModalOpen(false);
+    if (isCompleted) {
+      if (updateUnlockMode) {
+        await updateUnlockMode(lugar.id, mode);
+      }
+      toast.success(dict?.categories?.ALL === 'All' ? `Visit mode: ${mode}` : `Modo de visita: ${mode}`, { icon: '✨' });
+      return;
+    }
+
     let unlocks = 0;
     if (handleCheckInWithMode) {
       unlocks = await handleCheckInWithMode(lugar.id, mode);
@@ -293,13 +301,22 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
 
           {/* Sello de Modo de Conquista en esquina inferior derecha */}
           {isCompleted && !isProv && ModeIcon && (
-            <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 z-20 pointer-events-none">
-              <div className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full border ${modeBadgeClass} shadow-md backdrop-blur-md`}>
+            <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 z-20">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsUnlockModalOpen(true);
+                }}
+                className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full border ${modeBadgeClass} shadow-md backdrop-blur-md cursor-pointer hover:scale-110 active:scale-95 transition-all pointer-events-auto`}
+                title={dict?.categories?.ALL === 'All' ? "Click to change visit mode" : "Toca para cambiar modo de visita"}
+              >
                 <ModeIcon size={9} className="sm:w-2.5 sm:h-2.5 shrink-0" strokeWidth={2.5} />
                 <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-wider whitespace-nowrap leading-none">
                   {modeLabel}
                 </span>
-              </div>
+              </button>
             </div>
           )}
 
@@ -425,6 +442,8 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
         updatePlaceDetails={updatePlaceDetails}
         handleRate={handleRate}
         rating={rating}
+        currentMode={resolvedMode || 'Curioso'}
+        onUpdateMode={(mode) => updateUnlockMode && updateUnlockMode(lugar.id, mode)}
       />
       <ConfirmRemoveModal
         isOpen={isRemoveModalOpen}
@@ -568,6 +587,8 @@ export default function PlaceCard({ lugar, isCompleted, onCheckIn, isDerivedStat
         isOpen={isUnlockModalOpen} 
         onClose={() => setIsUnlockModalOpen(false)} 
         onSelectMode={handleSelectMode} 
+        title={isCompleted ? (dict?.categories?.ALL === 'All' ? "Visit Mode" : "Modo de Visita") : undefined}
+        subtitle={isCompleted ? (dict?.categories?.ALL === 'All' ? "Change how you visited this destination:" : "¿Cómo visitaste este destino?") : undefined}
       />
       {isPuzzleOpen && (
         <div className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-3 sm:p-4 bg-stone-900/80 backdrop-blur-md" onClick={() => setIsPuzzleOpen(false)}>
