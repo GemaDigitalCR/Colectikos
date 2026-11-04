@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
-import { UserCircle, Award, Trophy, Medal, Star, Edit3, BookOpen, Loader2, HelpCircle, LogIn } from 'lucide-react';
+import { UserCircle, Award, Trophy, Medal, Star, Edit3, BookOpen, Loader2, HelpCircle, LogIn, Heart, MessageSquare, ChevronRight } from 'lucide-react';
 import { Categoria, mockLugares } from '../../../data/mockData';
 import { useLugaresData } from '../../../context/LugaresContext';
 import { getPlaceUnlockMode } from '../../../utils/modeHelper';
@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import { calcularNivel } from '../../../utils/gamification';
 import SharePoster from '../../../components/SharePoster';
 import PassportModal from '../../../components/PassportModal';
+import { getUserReviewStats, UserReviewStats } from '../../../actions/progress';
 
 // Constantes visuales para las categorías
 const CATEGORY_UI: Partial<Record<Categoria, { icon: string, label: string, color: string }>> = {
@@ -54,11 +55,16 @@ export default function Profile() {
   const [username, setUsername] = useState<string>('Coleccionista');
   const [userGender, setUserGender] = useState<string>('Masculino');
   const [playMode, setPlayMode] = useState<string>('Modo Curioso');
+  const [communityStats, setCommunityStats] = useState<UserReviewStats | null>(null);
 
   useEffect(() => {
+    let resolvedUsername = 'Coleccionista';
     if (userProfile) {
       if (userProfile.avatarUrl) setAvatarUrl(userProfile.avatarUrl);
-      if (userProfile.username) setUsername(userProfile.username);
+      if (userProfile.username) {
+        setUsername(userProfile.username);
+        resolvedUsername = userProfile.username;
+      }
       if (userProfile.gender) setUserGender(userProfile.gender);
       if (userProfile.playMode) setPlayMode(userProfile.playMode);
     } else {
@@ -67,14 +73,24 @@ export default function Profile() {
         if (saved) {
           const data = JSON.parse(saved);
           if (data.avatarUrl) setAvatarUrl(data.avatarUrl);
-          if (data.username) setUsername(data.username);
+          if (data.username) {
+            setUsername(data.username);
+            resolvedUsername = data.username;
+          }
           if (data.gender) setUserGender(data.gender);
           if (data.playMode) setPlayMode(data.playMode);
         } else if (isLoaded && user?.username) {
           setUsername(user.username);
+          resolvedUsername = user.username;
         }
       } catch (e) {}
     }
+
+    getUserReviewStats(resolvedUsername, user?.id).then(res => {
+      if (res.success && res.stats) {
+        setCommunityStats(res.stats);
+      }
+    }).catch(console.error);
   }, [isLoaded, user, userProfile]);
   
   const handleNativeShare = async () => {
@@ -390,6 +406,167 @@ export default function Profile() {
                 <span className="text-sm font-bold text-stone-700 text-center">{dict?.profileStats?.conquistador || 'Postales Conquistadas'}</span>
               </div>
             </div>
+          </div>
+
+          {/* Sección: Impacto en la Comunidad */}
+          <div id="impacto-comunitario" className="mb-8 mt-12 scroll-mt-20">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-stone-900 flex items-center gap-2">
+                  <Heart className="text-rose-500 fill-rose-500" />
+                  {lang === 'en' ? 'Community Impact' : 'Impacto en la Comunidad'}
+                </h2>
+                <p className="text-stone-500 text-sm mt-0.5 font-medium">
+                  {lang === 'en' 
+                    ? 'How your recommendations and travel tips inspire fellow explorers'
+                    : 'Cómo tus consejos y anécdotas inspiran a otros exploradores'}
+                </p>
+              </div>
+
+              <Link
+                href={`/${lang}/community/muro`}
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-rose-600 hover:text-rose-700 hover:underline self-start sm:self-auto"
+              >
+                <span>{lang === 'en' ? 'Visit Explorers Wall' : 'Ir al Muro de Exploradores'}</span>
+                <ChevronRight size={15} />
+              </Link>
+            </div>
+
+            {/* Tarjetas de Métricas & Rango */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-5xl mx-auto mb-6">
+              {/* Card 1: Corazones Totales */}
+              <div className="bg-gradient-to-br from-rose-50 via-white to-rose-50/40 border-2 border-rose-200/80 rounded-2xl p-5 flex flex-col items-center justify-center relative overflow-hidden shadow-xs">
+                <div className="flex items-center gap-2 mb-1">
+                  <Heart className="text-rose-500 fill-rose-500 animate-pulse" size={24} />
+                  <span className="text-4xl font-black text-rose-600">
+                    {communityStats?.totalLikesReceived ?? 0}
+                  </span>
+                </div>
+                <span className="text-sm font-extrabold text-stone-800 text-center">
+                  {lang === 'en' ? 'Likes Received' : 'Corazones Recibidos'}
+                </span>
+                <span className="text-xs text-stone-500 text-center mt-0.5">
+                  {lang === 'en' ? 'Explorers who backed your tips' : 'Exploradores que respaldaron tus tips'}
+                </span>
+              </div>
+
+              {/* Card 2: Consejos Compartidos */}
+              <div className="bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 border-2 border-emerald-200/80 rounded-2xl p-5 flex flex-col items-center justify-center relative overflow-hidden shadow-xs">
+                <div className="flex items-center gap-2 mb-1">
+                  <MessageSquare className="text-emerald-600" size={24} />
+                  <span className="text-4xl font-black text-emerald-700">
+                    {communityStats?.totalPublicReviews ?? 0}
+                  </span>
+                </div>
+                <span className="text-sm font-extrabold text-stone-800 text-center">
+                  {lang === 'en' ? 'Shared Tips' : 'Consejos Compartidos'}
+                </span>
+                <span className="text-xs text-stone-500 text-center mt-0.5">
+                  {lang === 'en' ? 'Published on the Community Wall' : 'Publicados en el Muro'}
+                </span>
+              </div>
+
+              {/* Card 3: Rango de Guía Comunitario */}
+              <div className="bg-gradient-to-br from-amber-50 via-white to-amber-50/40 border-2 border-amber-200/80 rounded-2xl p-5 flex flex-col items-center justify-center relative overflow-hidden shadow-xs">
+                <span className="text-3xl mb-1">
+                  {communityStats?.communityRank.badgeEmoji || '🌱'}
+                </span>
+                <span className="text-sm font-extrabold text-stone-800 text-center">
+                  {lang === 'en' ? (communityStats?.communityRank.titleEn || 'Community Contributor') : (communityStats?.communityRank.titleEs || 'Colaborador')}
+                </span>
+                <span className="text-xs text-amber-700/80 font-bold uppercase tracking-wider text-center mt-0.5">
+                  {lang === 'en' ? 'Community Guide Status' : 'Estatus en la Comunidad'}
+                </span>
+              </div>
+            </div>
+
+            {/* Listado de Consejos o Call to Action */}
+            {communityStats && communityStats.reviews.length > 0 ? (
+              <div className="w-full max-w-5xl mx-auto space-y-3">
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-sm font-bold text-stone-700 uppercase tracking-wider">
+                    {lang === 'en' ? 'Your active tips on the Wall:' : 'Tus consejos activos en el Muro:'}
+                  </h3>
+                  <span className="text-xs text-stone-400 font-medium">
+                    {communityStats.reviews.length} {lang === 'en' ? 'shared' : 'compartidos'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {communityStats.reviews.map((rev) => (
+                    <div 
+                      key={rev.id}
+                      className="bg-white rounded-2xl p-4 border border-stone-200 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between gap-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        {rev.lugarImagenUrl ? (
+                          <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-stone-200 relative bg-stone-100">
+                            <Image 
+                              src={rev.lugarImagenUrl} 
+                              alt={rev.lugarNombre} 
+                              fill 
+                              sizes="48px"
+                              className="object-cover" 
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 font-bold">
+                            🇨🇷
+                          </div>
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-extrabold text-stone-800 text-sm truncate leading-tight">
+                            {lang === 'en' && rev.lugarNombreEn ? rev.lugarNombreEn : rev.lugarNombre}
+                          </h4>
+                          <p className="text-stone-600 text-xs italic font-serif mt-1 line-clamp-2 leading-relaxed">
+                            "{rev.notas}"
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-stone-100 text-xs">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold border border-rose-200/70">
+                          <Heart size={12} className="fill-rose-500" />
+                          <span>{rev.likesCount} {lang === 'en' ? 'likes' : 'corazones'}</span>
+                        </span>
+
+                        <Link
+                          href={`/${lang}/community/muro?search=${encodeURIComponent(rev.lugarNombre)}`}
+                          className="font-bold text-emerald-700 hover:text-emerald-800 hover:underline flex items-center gap-0.5"
+                        >
+                          <span>{lang === 'en' ? 'View on Wall' : 'Ver en el Muro'}</span>
+                          <ChevronRight size={13} />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              /* CTA motivacional si aún no tiene reseñas públicas */
+              <div className="w-full max-w-5xl mx-auto bg-gradient-to-r from-emerald-50/70 via-white to-amber-50/50 rounded-2xl p-6 border-2 border-dashed border-emerald-200 text-center flex flex-col items-center justify-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-emerald-100 flex items-center justify-center text-2xl">
+                  💡
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-stone-800">
+                    {lang === 'en' ? 'Inspire other explorers and earn likes!' : '¡Inspirá a otros exploradores y ganá corazones!'}
+                  </h3>
+                  <p className="text-stone-600 text-xs sm:text-sm max-w-lg mx-auto mt-1 leading-relaxed">
+                    {lang === 'en'
+                      ? 'When exploring destinations, open "My Notes" on any unlocked postcard and turn on "Colectikos Community". Your advice and recommendations will appear on the Explorer Wall!'
+                      : 'Al visitar destinos, abrí "Mis Notas" en cualquiera de tus postales desbloqueadas y activá "Comunidad Colectikos". ¡Tus consejos y recomendaciones aparecerán en el Muro para ayudar a la comunidad!'}
+                  </p>
+                </div>
+                <Link
+                  href={`/${lang}`}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all"
+                >
+                  {lang === 'en' ? 'Explore my album postcards' : 'Ver postales de mi álbum'}
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Sección Unificada: Medallas y Progreso */}

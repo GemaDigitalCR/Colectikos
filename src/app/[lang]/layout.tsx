@@ -67,6 +67,7 @@ import InstallBanner from "../../components/InstallBanner";
 import { getDictionary } from "../../dictionaries/getDictionary";
 import WelcomeModal from "../../components/WelcomeModal";
 import ProfileReminderToast from "../../components/ProfileReminderToast";
+import CommunityLikesToast from "../../components/CommunityLikesToast";
 import { getDbLugares } from "../../actions/lugares";
 import { LugaresProvider } from "../../context/LugaresContext";
 
@@ -164,6 +165,7 @@ export default async function RootLayout({
               <InstallBanner />
               <WelcomeModal />
               <ProfileReminderToast />
+              <CommunityLikesToast />
               {children}
               <Toaster 
                 position="bottom-right"

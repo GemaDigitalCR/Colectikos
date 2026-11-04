@@ -502,3 +502,127 @@ export async function toggleReviewLike(
     return { success: false, error: error?.message || 'Error al procesar el like' };
   }
 }
+
+export interface UserReviewStats {
+  totalLikesReceived: number;
+  totalPublicReviews: number;
+  communityRank: {
+    level: 'seed' | 'bronze' | 'silver' | 'gold';
+    titleEs: string;
+    titleEn: string;
+    badgeEmoji: string;
+  };
+  reviews: Array<{
+    id: string;
+    lugarId: string;
+    lugarNombre: string;
+    lugarNombreEn?: string | null;
+    lugarCategoria: string;
+    lugarImagenUrl?: string | null;
+    notas: string;
+    likesCount: number;
+    fechaCompletado: string | null;
+  }>;
+}
+
+export async function getUserReviewStats(
+  localUsername?: string,
+  fallbackClerkId?: string
+): Promise<{ success: boolean; stats?: UserReviewStats; error?: string }> {
+  try {
+    const user = await ensureDbUser(localUsername, fallbackClerkId);
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+
+    const publicRecords = await prisma.userProgress.findMany({
+      where: {
+        userId: user.id,
+        esPublico: true,
+        notas: {
+          not: null,
+        },
+        NOT: {
+          notas: '',
+        },
+      },
+      include: {
+        lugar: {
+          select: {
+            id: true,
+            nombre: true,
+            nombre_en: true,
+            categoria: true,
+            imagenUrl: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+          },
+        },
+      },
+      orderBy: {
+        fechaCompletado: 'desc',
+      },
+    });
+
+    const reviews = publicRecords.map((r) => ({
+      id: r.id,
+      lugarId: r.lugarId,
+      lugarNombre: r.lugar?.nombre || 'Destino',
+      lugarNombreEn: r.lugar?.nombre_en || null,
+      lugarCategoria: r.lugar?.categoria || '',
+      lugarImagenUrl: r.lugar?.imagenUrl || null,
+      notas: r.notas || '',
+      likesCount: r._count?.likes ?? 0,
+      fechaCompletado: r.fechaCompletado ? r.fechaCompletado.toISOString() : null,
+    }));
+
+    const totalLikesReceived = reviews.reduce((sum, r) => sum + r.likesCount, 0);
+    const totalPublicReviews = reviews.length;
+
+    let communityRank: UserReviewStats['communityRank'] = {
+      level: 'seed',
+      titleEs: 'Semillero de la Comunidad',
+      titleEn: 'Community Seedling',
+      badgeEmoji: '🌱',
+    };
+
+    if (totalLikesReceived >= 15) {
+      communityRank = {
+        level: 'gold',
+        titleEs: 'Leyenda del Muro',
+        titleEn: 'Wall Legend',
+        badgeEmoji: '🥇',
+      };
+    } else if (totalLikesReceived >= 5) {
+      communityRank = {
+        level: 'silver',
+        titleEs: 'Guía Local Destacado',
+        titleEn: 'Top Local Guide',
+        badgeEmoji: '🥈',
+      };
+    } else if (totalLikesReceived >= 1) {
+      communityRank = {
+        level: 'bronze',
+        titleEs: 'Colaborador Activo',
+        titleEn: 'Active Contributor',
+        badgeEmoji: '🥉',
+      };
+    }
+
+    return {
+      success: true,
+      stats: {
+        totalLikesReceived,
+        totalPublicReviews,
+        communityRank,
+        reviews,
+      },
+    };
+  } catch (error: any) {
+    console.error('Error fetching user review stats:', error);
+    return { success: false, error: error?.message || 'Error al obtener estadísticas comunitarias' };
+  }
+}
