@@ -201,7 +201,16 @@ export async function checkInAndAwardXP(lugarId: string, mode: string, localUser
             userId,
             lugarId,
             completado: true,
-            fechaCompletado: new Date()
+            fechaCompletado: new Date(),
+            modo: mode || 'Curioso'
+          }
+        });
+      } else {
+        await tx.userProgress.update({
+          where: { id: existingProgress.id },
+          data: {
+            completado: true,
+            modo: mode || existingProgress.modo || 'Curioso'
           }
         });
       }

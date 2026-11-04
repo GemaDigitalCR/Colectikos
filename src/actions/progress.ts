@@ -89,6 +89,43 @@ export async function updateUserProgressNote(
   }
 }
 
+export async function updateUserProgressMode(
+  lugarId: string,
+  mode: string,
+  localUsername?: string,
+  fallbackClerkId?: string
+) {
+  try {
+    const user = await ensureDbUser(localUsername, fallbackClerkId);
+    if (!user) return { success: false, error: 'User not found' };
+
+    const progress = await prisma.userProgress.upsert({
+      where: {
+        userId_lugarId: {
+          userId: user.id,
+          lugarId
+        }
+      },
+      update: {
+        modo: mode,
+        completado: true
+      },
+      create: {
+        userId: user.id,
+        lugarId,
+        completado: true,
+        fechaCompletado: new Date(),
+        modo: mode
+      }
+    });
+
+    return { success: true, progress };
+  } catch (error: any) {
+    console.error("Error updating progress mode:", error);
+    return { success: false, error: error?.message || 'Error al persistir el modo' };
+  }
+}
+
 export async function getUserProgress(localUsername?: string, fallbackClerkId?: string) {
   try {
     const user = await ensureDbUser(localUsername, fallbackClerkId);

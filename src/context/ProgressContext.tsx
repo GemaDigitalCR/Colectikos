@@ -14,7 +14,7 @@ import { getAllCommunityRatings } from '../actions/ratings';
 import { checkInAndAwardXP, rateAndAwardXP, getUserGamification, recordDailyLogin, toggleBucketListAndAwardXP } from '../actions/gamification';
 import { toast as sonnerToast } from 'sonner';
 import { useUser } from '@clerk/nextjs';
-import { updateUserProgressNote, getUserProgress, removeUserProgress, updateUserBucketList } from '../actions/progress';
+import { updateUserProgressNote, getUserProgress, removeUserProgress, updateUserBucketList, updateUserProgressMode } from '../actions/progress';
 import { getUserProfile } from '../actions/user';
 import { isSameCRDay } from '../lib/dateUtils';
 interface ProgressContextType {
@@ -289,6 +289,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         if (progressRes.success && progressRes.checkins) {
           const dbCompleted: string[] = [];
           const dbDetails: Record<string, { date: string; note: string; isPublic?: boolean }> = {};
+          const dbModes: Record<string, string> = {};
           
           progressRes.checkins.forEach((item: any) => {
             dbCompleted.push(item.lugarId);
@@ -299,9 +300,43 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
                 isPublic: Boolean(item.esPublico)
               };
             }
+            if (item.modo) {
+              dbModes[item.lugarId] = item.modo;
+              const place = dbLugares.find(l => l.id === item.lugarId);
+              if (place) {
+                dbModes[place.nombre] = item.modo;
+                const cleanNombre = place.nombre.toLowerCase().trim();
+                const mockMatch = mockLugares.find(m => m.nombre.toLowerCase().trim() === cleanNombre);
+                if (mockMatch) {
+                  dbModes[mockMatch.id] = item.modo;
+                }
+              }
+            }
           });
 
           setCompletedPlaces(dbCompleted);
+          
+          setUnlockModes(prev => {
+            const merged = { ...prev, ...dbModes };
+            try {
+              localStorage.setItem('colectikos_unlock_modes', JSON.stringify(merged));
+            } catch (e) {}
+            return merged;
+          });
+
+          // Si el usuario tenía en este dispositivo un modo no-Curioso en localStorage que en BD no estaba,
+          // sincronizarlo hacia la base de datos para no perderlo
+          try {
+            const savedLocalRaw = localStorage.getItem('colectikos_unlock_modes') || localStorage.getItem('tico100_unlock_modes');
+            if (savedLocalRaw) {
+              const savedLocal = JSON.parse(savedLocalRaw);
+              Object.entries(savedLocal).forEach(([pId, mVal]) => {
+                if (typeof mVal === 'string' && mVal !== 'Curioso' && (!dbModes[pId] || dbModes[pId] === 'Curioso')) {
+                  updateUserProgressMode(pId, mVal, localUsername, user?.id).catch(console.error);
+                }
+              });
+            }
+          } catch (e) {}
           
           setPlaceDetails(prev => {
             const merged: Record<string, { date: string; note: string; isPublic?: boolean }> = { ...prev };
@@ -489,7 +524,27 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         newModes[mockMatch.id] = mode;
       }
     }
-    setUnlockModes(prev => ({ ...prev, ...newModes }));
+    
+    // 1. Guardar de inmediato en estado local y en localStorage
+    setUnlockModes(prev => {
+      const merged = { ...prev, ...newModes };
+      try {
+        localStorage.setItem('colectikos_unlock_modes', JSON.stringify(merged));
+      } catch (e) {}
+      return merged;
+    });
+
+    // 2. Persistir en la base de datos PostgreSQL
+    let localUsername = user?.username || undefined;
+    const profileData = localStorage.getItem('userProfileData');
+    if (profileData) {
+      try {
+        const parsed = JSON.parse(profileData);
+        if (parsed.username) localUsername = parsed.username;
+      } catch (e) {}
+    }
+    updateUserProgressMode(id, mode, localUsername, user?.id).catch(console.error);
+
     return await handleCheckIn(id, mode);
   };
 
@@ -554,6 +609,18 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       : [...completedPlaces, id];
 
     if (isRemoving) {
+      setUnlockModes(prev => {
+        const copy = { ...prev };
+        delete copy[id];
+        const foundPlace = dbLugares.find(l => l.id === id);
+        if (foundPlace) {
+          delete copy[foundPlace.nombre];
+        }
+        try {
+          localStorage.setItem('colectikos_unlock_modes', JSON.stringify(copy));
+        } catch (e) {}
+        return copy;
+      });
       try {
         let localUsername = user?.username || undefined;
         const profileData = localStorage.getItem('userProfileData');
@@ -662,7 +729,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
           } catch (e) {}
         }
 
-        const modeToSave = customMode || unlockModes[id] || 'CURIOSO';
+        const modeToSave = customMode || unlockModes[id] || 'Curioso';
         const rawRes = await checkInAndAwardXP(id, modeToSave, localUsername, user?.id);
         const res = rawRes as any;
         
