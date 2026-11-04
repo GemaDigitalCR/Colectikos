@@ -169,6 +169,77 @@ type PlacedItem = {
   col: number;
 };
 
+/**
+ * ⚠️ REGLA DE ORO DE RENDERIZADO ISOMÉTRICO 3D (WEBKIT / SAFARI iOS):
+ * NUNCA aplicar filtros CSS (como drop-shadow, blur o backdrop-blur) en este contenedor 3D.
+ * Cualquier filtro en un elemento con transformación 3D fuerza 'transform-style: flat'
+ * en WebKit/Safari y aplasta el sprite contra el plano 2D de la arena.
+ * Las sombras DEBEN ir SIEMPRE en la etiqueta <img> interna.
+ * El transformOrigin DEBE ser siempre 'bottom center' para mantener la estructura erguida sobre el suelo.
+ */
+function IsometricBillboard({
+  image,
+  name,
+  is1x1,
+  renderScale,
+  itemRenderWidth,
+  isSelected,
+  isManageMode,
+  onClick,
+}: {
+  image?: string;
+  name: string;
+  is1x1: boolean;
+  renderScale: number;
+  itemRenderWidth: string;
+  isSelected: boolean;
+  isManageMode: boolean;
+  onClick: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <div 
+      onClick={onClick}
+      className={`relative flex items-end justify-center group cursor-pointer ${
+        isSelected 
+          ? 'z-30' 
+          : isManageMode
+          ? 'ring-2 ring-amber-400/80 rounded-xl z-20'
+          : 'z-20'
+      }`}
+      style={{ 
+        transform: `translateZ(${is1x1 ? 10 : 16}px) rotateZ(45deg) rotateX(-60deg) scale(${renderScale * (isSelected ? 1.08 : 1)})`, 
+        transformOrigin: 'bottom center',
+        transformStyle: 'preserve-3d',
+        WebkitTransformStyle: 'preserve-3d',
+        width: itemRenderWidth,
+        height: 'auto',
+      }}
+    >
+      {/* Resplandor sutil cuando la estructura está seleccionada */}
+      {isSelected && (
+        <div className="absolute inset-0 -m-1 rounded-2xl bg-amber-400/30 border-2 border-amber-400 animate-pulse pointer-events-none z-10" />
+      )}
+
+      {image ? (
+        <img 
+          src={image} 
+          alt={name} 
+          className={`w-full h-auto max-w-none transition-transform pointer-events-none ${
+            isSelected 
+              ? 'drop-shadow-[0_12px_14px_rgba(245,158,11,0.7)] scale-105' 
+              : 'drop-shadow-[0_10px_12px_rgba(0,0,0,0.35)] group-hover:scale-105 active:scale-95'
+          }`} 
+          style={{ marginBottom: '0' }} 
+        />
+      ) : (
+        <div className="bg-white/90 px-4 py-2 rounded-xl border-2 border-stone-300 font-black text-stone-600 shadow-xl group-hover:scale-105 transition-transform whitespace-nowrap">
+          {name}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang: string }> }) {
   const unwrappedParams = use(params);
   const isEn = unwrappedParams.lang === 'en';
@@ -1698,53 +1769,23 @@ export default function PlayaTikolonesPage({ params }: { params: Promise<{ lang:
                         }}
                         className="pointer-events-auto relative flex items-end justify-center"
                       >
-                         <div 
-                            onClick={(e) => {
-                               e.stopPropagation();
-                               if (movingItem) return;
-                               setSelectedTool(null);
-                               setSelectedPlacedItem(item);
-                               setIsManageMode(false);
-                               playSound('select_placed');
-                            }}
-                            className={`relative flex items-end justify-center group cursor-pointer ${
-                              isSelected 
-                                ? 'z-30' 
-                                : isManageMode
-                                ? 'ring-2 ring-amber-400/80 rounded-xl z-20'
-                                : 'z-20'
-                            }`}
-                            style={{ 
-                              transform: `translateZ(${is1x1 ? 10 : 16}px) rotateZ(45deg) rotateX(-60deg) scale(${renderScale * (isSelected ? 1.08 : 1)})`, 
-                              transformOrigin: itemTransformOrigin,
-                              transformStyle: 'preserve-3d',
-                              WebkitTransformStyle: 'preserve-3d',
-                              width: itemRenderWidth,
-                              height: 'auto',
-                            }}
-                         >
-                           {/* Resplandor sutil cuando la estructura está seleccionada */}
-                           {isSelected && (
-                             <div className="absolute inset-0 -m-1 rounded-2xl bg-amber-400/30 border-2 border-amber-400 animate-pulse pointer-events-none z-10" />
-                           )}
-
-                           {def.image ? (
-                              <img 
-                                src={def.image} 
-                                alt={def.name} 
-                                className={`w-full h-auto max-w-none transition-transform pointer-events-none ${
-                                  isSelected 
-                                    ? 'drop-shadow-[0_12px_14px_rgba(245,158,11,0.7)] scale-105' 
-                                    : 'drop-shadow-[0_10px_12px_rgba(0,0,0,0.35)] group-hover:scale-105 active:scale-95'
-                                }`} 
-                                style={{ marginBottom: '0' }} 
-                              />
-                           ) : (
-                              <div className="bg-white/90 px-4 py-2 rounded-xl border-2 border-stone-300 font-black text-stone-600 shadow-xl group-hover:scale-105 transition-transform whitespace-nowrap">
-                                 {def.name}
-                              </div>
-                           )}
-                         </div>
+                        <IsometricBillboard
+                          image={def.image}
+                          name={def.name}
+                          is1x1={is1x1}
+                          renderScale={renderScale}
+                          itemRenderWidth={itemRenderWidth}
+                          isSelected={isSelected}
+                          isManageMode={isManageMode}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (movingItem) return;
+                            setSelectedTool(null);
+                            setSelectedPlacedItem(item);
+                            setIsManageMode(false);
+                            playSound('select_placed');
+                          }}
+                        />
                       </div>
                     );
                   })}
