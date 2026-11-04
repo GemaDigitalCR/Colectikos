@@ -364,9 +364,6 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
                         <span className="text-[10px] text-amber-700 font-bold" title={isEn ? "Founder" : "Fundador"}>⭐</span>
                       )}
                     </div>
-                    {top10[1].provincia && (
-                      <p className="text-[10px] text-stone-400 font-semibold truncate mt-0.5">📍 {top10[1].provincia}</p>
-                    )}
                     <p className="text-emerald-700 font-black text-sm mt-1 flex justify-center items-center gap-1">
                       {top10[1].score} {activeTab === 'xp' ? 'XP' : activeTab === 'racha' ? <Flame size={14} /> : ''}
                     </p>
@@ -398,9 +395,6 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
                         <span className="text-[10px] text-amber-700 font-bold" title={isEn ? "Founder" : "Fundador"}>⭐</span>
                       )}
                     </div>
-                    {top10[0].provincia && (
-                      <p className="text-[11px] text-stone-500 font-bold truncate mt-0.5">📍 {top10[0].provincia}</p>
-                    )}
                     <p className="text-yellow-600 font-black text-lg mt-1 flex justify-center items-center gap-1">
                       {top10[0].score} {activeTab === 'xp' ? 'XP' : activeTab === 'racha' ? <Flame size={16} /> : ''}
                     </p>
@@ -424,9 +418,6 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
                         <span className="text-[10px] text-amber-700 font-bold" title={isEn ? "Founder" : "Fundador"}>⭐</span>
                       )}
                     </div>
-                    {top10[2].provincia && (
-                      <p className="text-[10px] text-stone-400 font-semibold truncate mt-0.5">📍 {top10[2].provincia}</p>
-                    )}
                     <p className="text-emerald-700 font-black text-sm mt-1 flex justify-center items-center gap-1">
                       {top10[2].score} {activeTab === 'xp' ? 'XP' : activeTab === 'racha' ? <Flame size={14} /> : ''}
                     </p>
@@ -459,11 +450,6 @@ export default function RankingsView({ isEn }: { isEn: boolean }) {
                       {user.isFounder && (
                         <span className="inline-flex items-center gap-0.5 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 shadow-2xs">
                           ⭐ {isEn ? "Founder" : "Fundador"}
-                        </span>
-                      )}
-                      {user.provincia && (
-                        <span className="text-[10px] font-semibold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded-md">
-                          📍 {user.provincia}
                         </span>
                       )}
                       {user.currentStreak > 0 && (

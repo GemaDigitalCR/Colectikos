@@ -77,8 +77,7 @@ export async function getGlobalXPRanking(
       currentStreak: u.currentStreak,
       score: Number(u.score),
       rank: i + 1,
-      isFounder: checkIsFounder(u.createdAt),
-      provincia: u.provincia
+      isFounder: checkIsFounder(u.createdAt)
     }));
 
     let currentUserRank: UserRankingEntry | null = null;
@@ -174,8 +173,7 @@ export async function getGlobalXPRanking(
     currentStreak: u.currentStreak,
     score: u.xp,
     rank: i + 1,
-    isFounder: checkIsFounder(u.createdAt),
-    provincia: u.provinciaResidencia
+    isFounder: checkIsFounder(u.createdAt)
   }));
 
   let currentUserRank: UserRankingEntry | null = null;
@@ -255,8 +253,7 @@ export async function getPostalesRanking(
     currentStreak: u.currentStreak,
     score: Number(u.score),
     rank: i + 1,
-    isFounder: checkIsFounder(u.createdAt),
-    provincia: u.provincia
+    isFounder: checkIsFounder(u.createdAt)
   }));
 
   let currentUserRank: UserRankingEntry | null = null;
@@ -340,8 +337,7 @@ export async function getStreakRanking(
     currentStreak: u.currentStreak,
     score: u.currentStreak,
     rank: i + 1,
-    isFounder: checkIsFounder(u.createdAt),
-    provincia: u.provinciaResidencia
+    isFounder: checkIsFounder(u.createdAt)
   }));
 
   let currentUserRank: UserRankingEntry | null = null;
