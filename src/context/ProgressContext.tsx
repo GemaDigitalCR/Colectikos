@@ -327,18 +327,21 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
 
           // Si el usuario tenía en este dispositivo un modo no-Curioso en localStorage que en BD no estaba,
           // sincronizarlo hacia la base de datos para no perderlo
+          const modesToSync: Array<{ pId: string; mVal: string }> = [];
           try {
             const savedLocalRaw = localStorage.getItem('colectikos_unlock_modes') || localStorage.getItem('tico100_unlock_modes');
             if (savedLocalRaw) {
               const savedLocal = JSON.parse(savedLocalRaw);
               Object.entries(savedLocal).forEach(([pId, mVal]) => {
                 if (typeof mVal === 'string' && mVal !== 'Curioso' && (!dbModes[pId] || dbModes[pId] === 'Curioso')) {
-                  updateUserProgressMode(pId, mVal, localUsername, user?.id).catch(console.error);
+                  modesToSync.push({ pId, mVal });
                 }
               });
             }
           } catch (e) {}
           
+          const notesToSync: Array<{ placeId: string; note: string; date: string; isPublic?: boolean }> = [];
+
           setPlaceDetails(prev => {
             const merged: Record<string, { date: string; note: string; isPublic?: boolean }> = { ...prev };
             Object.entries(dbDetails).forEach(([placeId, dbItem]) => {
@@ -347,13 +350,19 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
                 merged[placeId] = dbItem;
               } else if (localItem && localItem.note && localItem.note.trim() !== '') {
                 // Preservar la nota local y actualizar fecha si la BD la tiene
-                merged[placeId] = {
+                const updated = {
                   date: dbItem.date || localItem.date || '',
                   note: localItem.note,
                   isPublic: localItem.isPublic ?? dbItem.isPublic ?? false
                 };
-                // Sincronizar en segundo plano a la BD para no perder el dato
-                updateUserProgressNote(placeId, localItem.note, merged[placeId].date, localUsername, user?.id, merged[placeId].isPublic).catch(console.error);
+                merged[placeId] = updated;
+                // Programar sincronización para después del renderizado fuera de setState
+                notesToSync.push({
+                  placeId,
+                  note: localItem.note,
+                  date: updated.date,
+                  isPublic: updated.isPublic
+                });
               } else {
                 merged[placeId] = dbItem;
               }
@@ -363,6 +372,18 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
             } catch (e) {}
             return merged;
           });
+
+          // Sincronizaciones en segundo plano seguras fuera del ciclo de renderizado de React
+          if (modesToSync.length > 0 || notesToSync.length > 0) {
+            setTimeout(() => {
+              modesToSync.forEach(({ pId, mVal }) => {
+                updateUserProgressMode(pId, mVal, localUsername, user?.id).catch(console.error);
+              });
+              notesToSync.forEach(item => {
+                updateUserProgressNote(item.placeId, item.note, item.date, localUsername, user?.id, item.isPublic).catch(console.error);
+              });
+            }, 0);
+          }
 
           if (progressRes.userRatings) {
             const parsedRatings: Record<string, number> = {};

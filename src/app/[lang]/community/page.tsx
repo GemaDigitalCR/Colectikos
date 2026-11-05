@@ -147,6 +147,28 @@ export default async function CommunityHubPage({ params }: { params: Promise<{ l
                     </div>
                 </Link>
 
+                {/* Crucetiko Card */}
+                <Link href={`/${lang}/community/crucetiko`} className="group">
+                    <div className="bg-white rounded-2xl shadow-lg border-2 border-emerald-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-emerald-300 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="bg-emerald-100 text-emerald-700 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
+                            <span className="text-4xl leading-none block pt-1">🦥</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black mb-2 relative z-10 border border-emerald-200">
+                            <span>🌿</span>
+                            <span>{isEn ? "Fauna Crossing · Up to 90 XP" : "Paso de Fauna · ¡Hasta 90 XP!"}</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-emerald-950 mb-3 relative z-10">
+                            Crucetiko
+                        </h2>
+                        <p className="text-stone-600 relative z-10">
+                            {isEn 
+                                ? "Help Otico cross roads and rivers to reach the National Park safely! Earn up to 90 XP daily."
+                                : "¡Ayuda a Otico a cruzar carreteras y ríos para llegar a salvo al Parque Nacional! Gana hasta 90 XP por día."}
+                        </p>
+                    </div>
+                </Link>
+
             </div>
         </div>
     );
