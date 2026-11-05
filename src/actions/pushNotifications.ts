@@ -96,9 +96,9 @@ export async function sendTestPushNotification(localUsername?: string, fallbackC
     }
 
     const res = await sendPushToUser(dbUser.id, {
-      title: '🦥 ¡Colectikos Notificaciones Activas!',
-      body: '¡Excelente! Tu dispositivo ahora recibirá alertas de tus turnos diarios de Crucetiko y tus rachas de explorador.',
-      url: '/es/community/crucetiko',
+      title: '🎮 ¡Mini-juegos de Comunidad!',
+      body: 'Recuerda ganar más XPs en los mini-juegos de Comunidad. ¡Crucetiko, Sopitika y Parejitikas te esperan!',
+      url: '/es/community',
     });
 
     if (!res.success) {

@@ -74,8 +74,8 @@ export default function PushNotificationToggle({ isEn = false }: PushNotificatio
           setPermission('granted');
           toast.success(
             isEn 
-              ? 'Notifications activated! You will receive daily game reminders.' 
-              : '¡Notificaciones activadas! Recibirás avisos de tus turnos diarios.',
+              ? 'Notifications activated! You will receive reminders for Community mini-games and streaks.' 
+              : '¡Notificaciones activadas! Recibirás avisos para ganar más XPs en los mini-juegos de Comunidad.',
             { icon: '🔔', duration: 4000 }
           );
         } else {
@@ -152,8 +152,8 @@ export default function PushNotificationToggle({ isEn = false }: PushNotificatio
 
             <p className="text-xs text-stone-600 mt-1 leading-relaxed">
               {isEn 
-                ? "Get friendly reminders when your 3 daily Crucetiko turns are ready, keep your explorer streak safe, and community alerts."
-                : "Recibe avisos cuando tus 3 turnos diarios de Crucetiko estén listos, protege tu racha de explorador y alertas comunitarias."}
+                ? "Get friendly reminders to earn more XPs in Community mini-games, protect your explorer streak, and community alerts."
+                : "Recuerda ganar más XPs en los mini-juegos de Comunidad, protege tu racha de explorador y alertas comunitarias."}
             </p>
 
             {/* Guía para iPhone si no es PWA instalada */}

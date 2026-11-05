@@ -132,3 +132,89 @@ export async function sendPushToUser(
   }
 }
 
+/**
+ * Envía una notificación push a TODOS los dispositivos registrados activos en la plataforma.
+ */
+export async function sendPushToAllSubscribers(payload: PushNotificationPayload) {
+  try {
+    if (!prisma.pushSubscription) {
+      return { success: false, sentCount: 0, error: 'Tabla de suscripciones no disponible' };
+    }
+
+    const subscriptions = await prisma.pushSubscription.findMany();
+    if (!subscriptions || subscriptions.length === 0) {
+      return { success: true, sentCount: 0, total: 0 };
+    }
+
+    const results = await Promise.all(
+      subscriptions.map((sub) => sendPushToSubscription(sub, payload))
+    );
+
+    const successCount = results.filter((r) => r.success).length;
+    return { success: true, sentCount: successCount, total: subscriptions.length };
+  } catch (error: any) {
+    console.error('Error enviando push masivo:', error);
+    return { success: false, error: error?.message ? String(error.message) : 'Error inesperado' };
+  }
+}
+
+/**
+ * Envía un recordatorio de racha inteligente (7:00 PM CR) ÚNICAMENTE a los exploradores
+ * que tengan racha activa y que NO hayan ingresado hoy.
+ */
+export async function sendStreakReminderToAtRiskUsers() {
+  try {
+    if (!prisma.user || !prisma.pushSubscription) {
+      return { success: false, contactedCount: 0, error: 'Modelos no disponibles' };
+    }
+
+    const todayCR = new Date();
+    const users = await prisma.user.findMany({
+      where: {
+        currentStreak: { gt: 0 },
+        pushSubscriptions: { some: {} },
+      },
+      include: {
+        pushSubscriptions: true,
+      },
+    });
+
+    let contactedCount = 0;
+
+    for (const user of users) {
+      // Si el usuario ya inició sesión hoy en horario de CR, su racha está segura
+      if (user.lastLoginDate) {
+        const lastLogin = new Date(user.lastLoginDate);
+        const crToday = new Date(todayCR.getTime() - 6 * 60 * 60 * 1000);
+        const crLogin = new Date(lastLogin.getTime() - 6 * 60 * 60 * 1000);
+        const isSameDay = 
+          crToday.getUTCFullYear() === crLogin.getUTCFullYear() &&
+          crToday.getUTCMonth() === crLogin.getUTCMonth() &&
+          crToday.getUTCDate() === crLogin.getUTCDate();
+        
+        if (isSameDay) continue;
+      }
+
+      const streakDays = user.currentStreak;
+      const payload: PushNotificationPayload = {
+        title: '🔥 ¡Protegé tu racha de explorador!',
+        body: streakDays > 1 
+          ? `Llevás una racha de ${streakDays} días. ¡Entrá a Colectikos antes de medianoche para no perderla!`
+          : `¡Mantené tu racha activa en Colectikos hoy y ganá tus estampillas!`,
+        url: '/es/',
+        tag: 'streak-protection',
+      };
+
+      await Promise.all(
+        user.pushSubscriptions.map((sub) => sendPushToSubscription(sub, payload))
+      );
+      contactedCount++;
+    }
+
+    return { success: true, contactedCount, evaluatedCandidates: users.length };
+  } catch (error: any) {
+    console.error('Error enviando recordatorios de racha:', error);
+    return { success: false, error: error?.message ? String(error.message) : 'Error inesperado' };
+  }
+}
+
