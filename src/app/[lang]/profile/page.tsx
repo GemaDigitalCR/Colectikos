@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import { calcularNivel } from '../../../utils/gamification';
 import SharePoster from '../../../components/SharePoster';
 import PassportModal from '../../../components/PassportModal';
+import PushNotificationToggle from '../../../components/PushNotificationToggle';
 import { getUserReviewStats, UserReviewStats } from '../../../actions/progress';
 
 // Constantes visuales para las categorías
@@ -384,6 +385,11 @@ export default function Profile() {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Notificaciones Web Push PWA */}
+          <div className="w-full max-w-5xl mx-auto">
+            <PushNotificationToggle isEn={lang === 'en'} />
           </div>
 
           {/* Sección Orgullo de Coleccionista */}
