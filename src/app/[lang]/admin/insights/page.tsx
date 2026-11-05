@@ -36,7 +36,7 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
 
   const ageData = await prisma.user.groupBy({ by: ['rangoEdad'], _count: { id: true }, where: { ...baseWhere, rangoEdad: { not: null } } });
   const prefData = await prisma.user.groupBy({ by: ['tipoLugarPreferido'], _count: { id: true }, where: { ...baseWhere, tipoLugarPreferido: { not: null } } });
-  const locationData = await prisma.user.groupBy({ by: ['provinciaResidencia'], _count: { id: true }, where: { ...baseWhere, provinciaResidencia: { not: null } } });
+  const locationData = await prisma.user.groupBy({ by: ['provinciaResidencia'], _count: { id: true }, where: { ...baseWhere, provinciaResidencia: { not: null } }, orderBy: { _count: { id: 'desc' } } });
   const placeData = await prisma.user.groupBy({ by: ['lugarFavorito'], _count: { id: true }, where: { ...baseWhere, lugarFavorito: { not: null } }, orderBy: { _count: { id: 'desc' } }, take: 20 });
   const styleData = await prisma.user.groupBy({ by: ['estiloViaje'], _count: { id: true }, where: { ...baseWhere, estiloViaje: { not: null } } });
   const companyData = await prisma.user.groupBy({ by: ['companiaHabitual'], _count: { id: true }, where: { ...baseWhere, companiaHabitual: { not: null } } });
@@ -82,17 +82,43 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
   const aventura = totalUsersWithPref > 0 ? ((prefMap['Ríos'] || 0) + (prefMap['Bosques y Reservas'] || 0)) : 18;
   const relajacion = totalUsersWithPref > 0 ? (prefMap['Cultura'] || 0) : 12;
 
-  // -- Origen (Residente vs Visitante) --
+  // -- Origen (Residente vs Visitante) y Provincias --
+  const locationCountMap: Record<string, number> = {};
   let residents = 0;
   let visitors = 0;
   locationData.forEach((d: any) => {
     if (d.provinciaResidencia) {
+      locationCountMap[d.provinciaResidencia] = d._count.id;
       if (CR_PROVINCES.includes(d.provinciaResidencia)) residents += d._count.id;
       else visitors += d._count.id;
     }
   });
   const resPct = totalLocations > 1 ? Math.round((residents / totalLocations) * 100) : (totalUsersWithLocation === 0 ? 80 : (residents > 0 ? 100 : 0));
   const visPct = totalLocations > 1 ? Math.round((visitors / totalLocations) * 100) : (totalUsersWithLocation === 0 ? 20 : (visitors > 0 ? 100 : 0));
+
+  // Lista de las 7 provincias oficiales de Costa Rica (garantizando San José y todas las demás)
+  const allProvincesList: { name: string; count: number }[] = CR_PROVINCES.map((prov) => ({
+    name: prov,
+    count: locationCountMap[prov] || 0
+  }));
+
+  // Agregar otras ubicaciones registradas no pertenecientes a las 7 provincias (ej. visitantes internacionales)
+  locationData.forEach((d: any) => {
+    if (d.provinciaResidencia && !CR_PROVINCES.includes(d.provinciaResidencia)) {
+      allProvincesList.push({
+        name: d.provinciaResidencia,
+        count: d._count.id
+      });
+    }
+  });
+
+  // Ordenar de mayor a menor según cantidad de usuarios registrados para destacar los principales polos
+  allProvincesList.sort((a, b) => b.count - a.count);
+
+  // Filtrado reactivo si el usuario seleccionó una provincia específica en la barra superior
+  const displayLocations = provinciaFilter
+    ? allProvincesList.filter(p => p.count > 0 || p.name === provinciaFilter)
+    : allProvincesList;
 
   // -- Estilo de Viaje --
   const styleMap: Record<string, number> = {};
@@ -251,24 +277,24 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
           {/* ¿De dónde eres? */}
           <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col">
             <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-bold text-stone-800 tracking-wide">¿De dónde eres? (Residencia)</h2>
+              <h2 className="text-lg font-bold text-stone-800 tracking-wide">{isEn ? 'Where are you from? (Residence)' : '¿De dónde eres? (Residencia)'}</h2>
               <MapPin className="text-rose-500" size={24} />
             </div>
             
             <div className="flex gap-4 h-12 rounded-2xl overflow-hidden shadow-inner bg-stone-100 mb-6">
               <div className="bg-rose-500 h-full flex items-center justify-center text-white font-bold text-sm transition-all" style={{ width: `${resPct}%` }}>
-                {resPct > 10 && `Residentes ${resPct}%`}
+                {resPct > 10 && (isEn ? `Residents ${resPct}%` : `Residentes ${resPct}%`)}
               </div>
               <div className="bg-orange-400 h-full flex items-center justify-center text-white font-bold text-sm transition-all" style={{ width: `${visPct}%` }}>
-                {visPct > 10 && `Visitantes ${visPct}%`}
+                {visPct > 10 && (isEn ? `Visitors ${visPct}%` : `Visitantes ${visPct}%`)}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
-              {locationData.slice(0, 6).map((loc: any, i: any) => (
-                <div key={i} className="flex justify-between items-center text-sm p-2 bg-stone-50 rounded-xl border border-stone-100">
-                  <span className="text-stone-600 font-medium truncate">{loc.provinciaResidencia || 'Desconocido'}</span>
-                  <span className="font-bold text-stone-800">{loc._count.id}</span>
+              {displayLocations.map((loc) => (
+                <div key={loc.name} className="flex justify-between items-center text-sm p-2 bg-stone-50 rounded-xl border border-stone-100 hover:bg-stone-100/70 transition-colors">
+                  <span className="text-stone-600 font-medium truncate">{loc.name === 'Limón' && isEn ? 'Limon' : loc.name}</span>
+                  <span className="font-bold text-stone-800">{loc.count}</span>
                 </div>
               ))}
             </div>
