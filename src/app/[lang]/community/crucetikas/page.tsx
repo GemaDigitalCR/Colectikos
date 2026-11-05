@@ -270,6 +270,11 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
         if (localDay === todayStr) {
           localCount = parseInt(localStorage.getItem("crucetikas_local_count") || "0", 10);
         }
+        // Auto-reparación: si no ha ganado XP hoy, limpiar cualquier residuo de intentos fallidos
+        if (res.todayEarnedXp === 0 && localCount > 0) {
+          localCount = 0;
+          localStorage.setItem("crucetikas_local_count", "0");
+        }
         gamesPlayedToday = Math.max(res.gamesPlayedToday, localCount);
       }
 
