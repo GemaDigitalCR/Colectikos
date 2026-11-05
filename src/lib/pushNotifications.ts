@@ -28,9 +28,12 @@ function ensureVapid() {
 export interface PushNotificationPayload {
   title: string;
   body: string;
+  titleEn?: string;
+  bodyEn?: string;
   icon?: string;
   badge?: string;
   url?: string;
+  urlEn?: string;
   tag?: string;
 }
 
@@ -111,7 +114,19 @@ export async function sendPushToUser(
     }
 
     const results = await Promise.all(
-      subscriptions.map((sub) => sendPushToSubscription(sub, payload))
+      subscriptions.map((sub) => {
+        let finalPayload = payload;
+        const isEn = sub.userAgent?.includes('lang:en');
+        if (isEn && payload.titleEn && payload.bodyEn) {
+          finalPayload = {
+            ...payload,
+            title: payload.titleEn,
+            body: payload.bodyEn,
+            url: payload.urlEn || payload.url?.replace('/es/', '/en/'),
+          };
+        }
+        return sendPushToSubscription(sub, finalPayload);
+      })
     );
 
     const successCount = results.filter((r) => r.success).length;
@@ -129,6 +144,42 @@ export async function sendPushToUser(
       sentCount: 0,
       error: error?.message ? String(error.message) : 'Error inesperado enviando push' 
     };
+  }
+}
+
+/**
+ * Fase 4: Envía notificación social en vivo cuando otro explorador le da corazón ❤️
+ * a una reseña o consejo en el Muro de Exploradores.
+ */
+export async function sendReviewLikeNotification(
+  authorUserId: string,
+  likerName?: string,
+  placeName?: string,
+  placeNameEn?: string
+) {
+  try {
+    const displayName = likerName ? likerName.trim() : null;
+    const resolvedPlaceEs = placeName ? ` sobre ${placeName}` : '';
+    const resolvedPlaceEn = (placeNameEn || placeName) ? ` on ${placeNameEn || placeName}` : '';
+
+    const payload: PushNotificationPayload = {
+      title: '❤️ ¡Nuevo corazón en el Muro!',
+      body: displayName 
+        ? `A ${displayName} le gustó tu consejo${resolvedPlaceEs}.`
+        : `A un explorador le gustó tu consejo${resolvedPlaceEs}.`,
+      titleEn: '❤️ New heart on the Wall!',
+      bodyEn: displayName
+        ? `${displayName} liked your recommendation${resolvedPlaceEn}.`
+        : `An explorer liked your travel recommendation${resolvedPlaceEn}.`,
+      url: '/es/community/muro',
+      urlEn: '/en/community/muro',
+      tag: 'community-like',
+    };
+
+    return await sendPushToUser(authorUserId, payload);
+  } catch (error) {
+    console.warn('Error enviando notificación de corazón en el muro:', error);
+    return { success: false };
   }
 }
 

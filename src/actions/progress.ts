@@ -3,6 +3,7 @@
 import prisma from '../lib/prisma';
 import { isSameCRDay } from '../lib/dateUtils';
 import { ensureDbUser } from './gamification';
+import { sendReviewLikeNotification } from '../lib/pushNotifications';
 
 export async function updateUserProgressNote(
   lugarId: string, 
@@ -490,6 +491,25 @@ export async function toggleReviewLike(
         },
       });
       liked = true;
+
+      // Fase 4: Notificación social en vivo al autor de la reseña en el Muro
+      try {
+        const reviewProgress = await prisma.userProgress.findUnique({
+          where: { id: userProgressId },
+          include: { lugar: true },
+        });
+
+        if (reviewProgress && reviewProgress.userId && reviewProgress.userId !== user.id) {
+          sendReviewLikeNotification(
+            reviewProgress.userId,
+            user.username || undefined,
+            reviewProgress.lugar?.nombre,
+            reviewProgress.lugar?.nombre_en || undefined
+          ).catch((e) => console.warn('Background push like error:', e));
+        }
+      } catch (err) {
+        console.warn('Error disparando notificación de like:', err);
+      }
     }
 
     const likesCount = await prisma.reviewLike.count({
