@@ -103,29 +103,15 @@ export default function PushNotificationToggle({ isEn = false }: PushNotificatio
     setIsSendingTest(true);
 
     try {
-      // 1. Disparo inmediato en primer plano (para verificar si macOS permite alertas del navegador)
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        try {
-          const directNotif = new Notification('🦥 ¡Colectikos en tu Mac!', {
-            body: '¡Excelente! Tu navegador y tu Mac tienen los permisos activos.',
-            icon: '/icon-192x192.png',
-          });
-          directNotif.onclick = () => window.focus();
-        } catch (err) {
-          console.warn('Direct notification error:', err);
-        }
-      }
-
-      // 2. Disparo a través del Service Worker y servidor Cloud Push
       const localUsername = localStorage.getItem('localUsername') || undefined;
       const res = await sendTestPushNotification(localUsername, user?.id);
 
       if (res.success) {
         toast.success(
           isEn 
-            ? 'Notification sent! Check top-right of screen.' 
-            : '¡Notificación enviada! Si no la ves, revisa Ajustes de Mac > Notificaciones.',
-          { icon: '📲', duration: 6500 }
+            ? 'Test notification sent! Check your device.' 
+            : '¡Notificación enviada! Revisa la pantalla de tu dispositivo.',
+          { icon: '📲', duration: 5000 }
         );
       } else {
         toast.error(formatToastError(res.error, isEn ? 'Could not send test' : 'No se pudo enviar la prueba'));
