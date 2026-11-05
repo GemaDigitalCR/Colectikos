@@ -249,24 +249,30 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
     gamesRemaining: number;
   } | null>(null);
 
-  // Carga de estado diario de recompensas de XP con fallback sincronizado en localStorage
+  // Carga de estado diario de recompensas de XP con sincronización autoritativa
   const fetchStatus = useCallback(async () => {
     try {
       const username = getEffectiveUsername();
       const res = await getCrucetikasDailyStatus(username, user?.id);
 
-      // Verificación de sincronización con fecha de Costa Rica en localStorage
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const localDay = localStorage.getItem("crucetikas_local_day");
-      let localCount = 0;
-      if (localDay === todayStr) {
-        localCount = parseInt(localStorage.getItem("crucetikas_local_count") || "0", 10);
-      } else {
+      let gamesPlayedToday = res.gamesPlayedToday;
+
+      // Para usuarios registrados, la base de datos es la única fuente de la verdad
+      if (res.isLoggedIn) {
+        const todayStr = new Date().toISOString().slice(0, 10);
         localStorage.setItem("crucetikas_local_day", todayStr);
-        localStorage.setItem("crucetikas_local_count", "0");
+        localStorage.setItem("crucetikas_local_count", String(res.gamesPlayedToday));
+      } else {
+        // Fallback únicamente para invitados locales desconectados
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const localDay = localStorage.getItem("crucetikas_local_day");
+        let localCount = 0;
+        if (localDay === todayStr) {
+          localCount = parseInt(localStorage.getItem("crucetikas_local_count") || "0", 10);
+        }
+        gamesPlayedToday = Math.max(res.gamesPlayedToday, localCount);
       }
 
-      const gamesPlayedToday = Math.max(res.gamesPlayedToday, localCount);
       const gamesRemaining = Math.max(0, 3 - gamesPlayedToday);
       const limitReached = gamesRemaining === 0 || res.todayEarnedXp >= 90;
 
@@ -440,20 +446,20 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
     const randomTip = CONSERVATION_TIPS[Math.floor(Math.random() * CONSERVATION_TIPS.length)];
     setActiveTip(randomTip);
 
+    // Calcular distancia real alcanzada con precisión
+    const currentMeters = Math.round((TOTAL_LANES - 1 - slothPos.current.row) * (75 / (TOTAL_LANES - 1)));
+    const effectiveDistance = Math.max(maxDistanceReached, distance, currentMeters);
+
     // Actualizar récord local
-    if (maxDistanceReached > highScore) {
-      setHighScore(maxDistanceReached);
-      localStorage.setItem("crucetikas_high_score", String(maxDistanceReached));
+    if (effectiveDistance > highScore) {
+      setHighScore(effectiveDistance);
+      localStorage.setItem("crucetikas_high_score", String(effectiveDistance));
     }
 
     const currentDiff = getTurnDifficulty(dailyStatus?.gamesPlayedToday ?? 0);
 
     // Si ya estamos en modo práctica libre (límite de 3 turnos alcanzado)
     if (currentDiff.isPractice) {
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const localCount = parseInt(localStorage.getItem("crucetikas_local_count") || "3", 10);
-      localStorage.setItem("crucetikas_local_day", todayStr);
-      localStorage.setItem("crucetikas_local_count", String(localCount + 1));
       setLastReward({ xpAwarded: 0, isPractice: true, gamesRemaining: 0 });
       return;
     }
@@ -462,7 +468,7 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
     try {
       const username = getEffectiveUsername();
       const res = await awardCrucetikasXp({
-        distance: maxDistanceReached,
+        distance: effectiveDistance,
         slothsSaved,
         leavesCollected,
         localUsername: username,
@@ -471,11 +477,12 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
 
       setRewardResult(res);
 
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const localCount = parseInt(localStorage.getItem("crucetikas_local_count") || "0", 10);
-      const newLocalCount = Math.max(localCount + 1, res.gamesPlayedToday);
-      localStorage.setItem("crucetikas_local_day", todayStr);
-      localStorage.setItem("crucetikas_local_count", String(newLocalCount));
+      // Solo incrementamos contador local si efectivamente se otorgó XP
+      if (res.xpAwarded > 0) {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        localStorage.setItem("crucetikas_local_day", todayStr);
+        localStorage.setItem("crucetikas_local_count", String(res.gamesPlayedToday));
+      }
 
       setLastReward({
         xpAwarded: res.xpAwarded,
@@ -501,7 +508,7 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
     } catch (e) {
       console.warn("Error premiando XP:", e);
     }
-  }, [dailyStatus?.gamesPlayedToday, fetchStatus, getEffectiveUsername, getTurnDifficulty, highScore, isEn, leavesCollected, maxDistanceReached, playSound, refreshGamification, slothsSaved, updateLocalXp, user?.id]);
+  }, [dailyStatus?.gamesPlayedToday, distance, fetchStatus, getEffectiveUsername, getTurnDifficulty, highScore, isEn, leavesCollected, maxDistanceReached, playSound, refreshGamification, slothsSaved, updateLocalXp, user?.id]);
 
   // Manejo de victoria (llegada al Parque Nacional)
   const handleVictory = useCallback(async () => {
@@ -528,10 +535,6 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
 
     // Si ya estamos en modo práctica libre
     if (currentDiff.isPractice) {
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const localCount = parseInt(localStorage.getItem("crucetikas_local_count") || "3", 10);
-      localStorage.setItem("crucetikas_local_day", todayStr);
-      localStorage.setItem("crucetikas_local_count", String(localCount + 1));
       setLastReward({ xpAwarded: 0, isPractice: true, gamesRemaining: 0 });
       return;
     }
@@ -549,11 +552,11 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
 
       setRewardResult(res);
 
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const localCount = parseInt(localStorage.getItem("crucetikas_local_count") || "0", 10);
-      const newLocalCount = Math.max(localCount + 1, res.gamesPlayedToday);
-      localStorage.setItem("crucetikas_local_day", todayStr);
-      localStorage.setItem("crucetikas_local_count", String(newLocalCount));
+      if (res.xpAwarded > 0) {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        localStorage.setItem("crucetikas_local_day", todayStr);
+        localStorage.setItem("crucetikas_local_count", String(res.gamesPlayedToday));
+      }
 
       setLastReward({
         xpAwarded: res.xpAwarded,
@@ -1334,12 +1337,17 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
                   </div>
                 </div>
               ) : (
-                <div className="w-full max-w-xs bg-stone-900 border border-stone-800 rounded-xl p-2 mb-2.5 text-center">
-                  <div className="text-[11px] font-bold text-amber-400">
-                    {isEn ? "0 XP (Advance at least 20m or collect 1 leaf)" : "0 XP (Avanza al menos 20m o recoge 1 hoja)"}
+                <div className="w-full max-w-xs bg-amber-950/40 border border-amber-500/40 rounded-xl p-2.5 mb-2.5 text-center">
+                  <div className="text-xs font-black text-amber-300">
+                    {isEn ? "⚠️ Try Again! Turn Preserved" : "⚠️ ¡Inténtalo de Nuevo! Turno Conservado"}
                   </div>
-                  <div className="text-[9px] text-stone-400">
-                    {isEn ? `Turns with XP left: ${dailyStatus?.gamesRemaining ?? 0} of 3` : `Turnos con XP restantes: ${dailyStatus?.gamesRemaining ?? 0} de 3`}
+                  <div className="text-[10px] text-stone-300 mt-0.5 leading-snug">
+                    {isEn 
+                      ? "Your turn was NOT consumed. Cross past 12m or collect 1 guarumo leaf to bank your XP!" 
+                      : "Tu turno NO fue consumido. Avanza más de 12m o recoge 1 hoja de guarumo para asegurar tus XP."}
+                  </div>
+                  <div className="text-[10px] text-emerald-400 font-bold mt-1">
+                    ⭐ {dailyStatus?.gamesRemaining ?? 3} {isEn ? "turn(s) with XP available today" : "turno(s) con XP disponibles hoy"}
                   </div>
                 </div>
               )}

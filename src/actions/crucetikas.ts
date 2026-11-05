@@ -19,6 +19,7 @@ export interface CrucetikasRewardResult {
   todayEarnedXp: number;
   maxDailyGames: number;
   maxDailyXp: number;
+  retryWithoutPenalty?: boolean;
   error?: string;
 }
 
@@ -46,11 +47,13 @@ export async function getCrucetikasDailyStatus(
     const userId = dbUser.id;
     const startOfCRDay = getCRStartOfDayUTC();
 
+    // Solo contabilizamos partidas donde REALMENTE se ganó XP hoy
     const todayLogs = await prisma.userActionLog.findMany({
       where: {
         userId,
         actionType: 'CRUCETIKAS_GAME',
-        createdAt: { gte: startOfCRDay }
+        createdAt: { gte: startOfCRDay },
+        xpAwarded: { gt: 0 }
       },
       select: { xpAwarded: true }
     });
@@ -102,17 +105,17 @@ export async function awardCrucetikasXp({
   localUsername?: string;
   fallbackClerkId?: string;
 }): Promise<CrucetikasRewardResult> {
-  // Escala de Desempeño aprobada:
-  // - Nivel Básico (20m a 45m o al menos 1 hoja de Guarumo recogida) -> 10 XP
-  // - Nivel Intermedio (50m a 70m o 3 hojas recogidas) -> 20 XP
-  // - Nivel Maestría (Llegar al Parque Nacional: 75m+ o salvar a Otico) -> 30 XP (máx por turno)
-  // - Menos de 15m sin hojas -> 0 XP (protección anti-farming)
+  // Escala de Desempeño justa, transparente y amigable:
+  // - Llegar al Parque Nacional (75m+) o salvar a Otico -> 30 XP (máximo por turno)
+  // - Llegar a la mitad del camino (35m+) o recoger al menos 2 hojas -> 20 XP
+  // - Cruzar la primera sección de carretera (12m+) o recoger 1 hoja -> 10 XP
+  // - Choque prematuro en los primeros pasos (<12m sin hojas) -> 0 XP (NO consume turno)
   let baseXp = 0;
   if (distance >= 75 || slothsSaved >= 1) {
     baseXp = 30;
-  } else if (distance >= 50 || leavesCollected >= 3) {
+  } else if (distance >= 35 || leavesCollected >= 2) {
     baseXp = 20;
-  } else if (distance >= 20 || leavesCollected >= 1) {
+  } else if (distance >= 12 || leavesCollected >= 1) {
     baseXp = 10;
   } else {
     baseXp = 0;
@@ -126,8 +129,8 @@ export async function awardCrucetikasXp({
         baseXp,
         xpAwarded: 0,
         limitReached: false,
-        gamesPlayedToday: 1,
-        gamesRemaining: 1,
+        gamesPlayedToday: 0,
+        gamesRemaining: MAX_DAILY_GAMES,
         todayEarnedXp: 0,
         maxDailyGames: MAX_DAILY_GAMES,
         maxDailyXp: MAX_DAILY_XP,
@@ -142,15 +145,17 @@ export async function awardCrucetikasXp({
       where: {
         userId,
         actionType: 'CRUCETIKAS_GAME',
-        createdAt: { gte: startOfCRDay }
+        createdAt: { gte: startOfCRDay },
+        xpAwarded: { gt: 0 }
       },
       select: { xpAwarded: true }
     });
 
     const gamesPlayedToday = todayLogs.length;
     const todayEarnedXp = todayLogs.reduce((sum, log) => sum + (log.xpAwarded || 0), 0);
+    const gamesRemaining = Math.max(0, MAX_DAILY_GAMES - gamesPlayedToday);
 
-    // Límite diario de 2 partidas con recompensa
+    // Límite diario de 3 partidas con recompensa alcanzado
     if (gamesPlayedToday >= MAX_DAILY_GAMES || todayEarnedXp >= MAX_DAILY_XP) {
       return {
         success: false,
@@ -165,6 +170,25 @@ export async function awardCrucetikasXp({
         maxDailyGames: MAX_DAILY_GAMES,
         maxDailyXp: MAX_DAILY_XP,
         error: 'Límite diario alcanzado: Ya jugaste tus partidas remuneradas de hoy.',
+      };
+    }
+
+    // Si la partida no alcanzó el puntaje mínimo (ej. atropello inmediato en los primeros 11m),
+    // NO consumimos el turno ni penalizamos al usuario. Puede volver a intentarlo de inmediato.
+    if (baseXp === 0) {
+      return {
+        success: true,
+        baseXp: 0,
+        xpAwarded: 0,
+        newTotalXp: dbUser.xp,
+        newLevel: dbUser.level,
+        limitReached: false,
+        gamesPlayedToday,
+        gamesRemaining,
+        todayEarnedXp,
+        maxDailyGames: MAX_DAILY_GAMES,
+        maxDailyXp: MAX_DAILY_XP,
+        retryWithoutPenalty: true,
       };
     }
 
