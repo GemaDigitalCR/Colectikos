@@ -3,8 +3,26 @@
 // Soluciona restricciones de autoplay, estado suspended, y el switch físico de silencio en iPhones.
 
 let sharedAudioCtx: AudioContext | null = null;
-let persistentSilentAudio: HTMLAudioElement | null = null;
 let isAudioUnlocked = false;
+
+// Auto-suspensión de audio para proteger la batería del iPhone cuando se bloquea o cambia de app
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && sharedAudioCtx && sharedAudioCtx.state === "running") {
+      sharedAudioCtx.suspend().catch(() => {});
+    }
+  });
+}
+
+/**
+ * Suspende explícitamente el motor de audio al salir o pausar juegos.
+ */
+export function suspendAudio(): void {
+  if (typeof window === "undefined") return;
+  if (sharedAudioCtx && sharedAudioCtx.state === "running") {
+    sharedAudioCtx.suspend().catch(() => {});
+  }
+}
 
 /**
  * Configura la sesión de audio del navegador en modo 'playback' (iOS 16.4+).
@@ -123,37 +141,15 @@ export function getAudioContext(): AudioContext | null {
 }
 
 /**
- * Desbloquea activamente el motor de audio en dispositivos móviles (iOS y Android).
- * 1. Configura navigator.audioSession en 'playback'.
- * 2. Mantiene un elemento HTML5 Audio silencioso en bucle continuo (loop = true).
- *    Esto evita que iOS regrese la sesión a 'ambient' y silencie los juegos cuando
- *    el teléfono está en modo vibración/silencio.
- * 3. Despierta el AudioContext con ctx.resume().
+ * Desbloquea activamente el motor de audio en dispositivos móviles (iOS y Android)
+ * SIN dejar bucles infinitos en segundo plano para proteger la batería.
  */
 export function unlockAudio(): void {
   if (typeof window === "undefined") return;
 
   setAudioSessionPlayback();
 
-  // 1. Iniciar HTML5 Audio silencioso en loop para forzar el canal Playback en iOS
-  try {
-    if (!persistentSilentAudio) {
-      const ctx = getAudioContext();
-      const sampleRate = ctx ? ctx.sampleRate : 44100;
-      persistentSilentAudio = document.createElement("audio");
-      persistentSilentAudio.setAttribute("x-webkit-airplay", "deny");
-      persistentSilentAudio.preload = "auto";
-      persistentSilentAudio.loop = true;
-      persistentSilentAudio.src = createSilentWav(sampleRate);
-      persistentSilentAudio.volume = 0.001;
-    }
-    const p = persistentSilentAudio.play();
-    if (p !== undefined) {
-      p.catch(() => {});
-    }
-  } catch {}
-
-  // 2. Despertar el Web AudioContext
+  // Despertar el Web AudioContext bajo demanda
   const ctx = getAudioContext();
   if (ctx) {
     if (ctx.state === "suspended") {

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useProgress } from "../../../../context/ProgressContext";
 import { useUser } from "@clerk/nextjs";
-import { initMobileAudioUnlock, playSynthesizedSound } from "../../../../lib/soundUtils";
+import { initMobileAudioUnlock, playSynthesizedSound, suspendAudio } from "../../../../lib/soundUtils";
 import { awardCrucetikasXp, getCrucetikasDailyStatus, CrucetikasRewardResult } from "../../../../actions/crucetikas";
 import { CONSERVATION_TIPS, ConservationTip } from "../../../../data/crucetikasTips";
 
@@ -751,10 +751,39 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
     if (!ctx) return;
 
     let lastTime = performance.now();
+    let lastRenderTime = performance.now();
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        suspendAudio();
+      } else {
+        lastTime = performance.now();
+        lastRenderTime = performance.now();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const renderLoop = (now: number) => {
-      const dt = (now - lastTime) / 1000;
+      // 0. Ahorro de batería: Si la pestaña/pantalla está en segundo plano o apagada, congelar dibujo
+      if (typeof document !== "undefined" && document.hidden) {
+        requestRef.current = requestAnimationFrame(renderLoop);
+        return;
+      }
+
+      // Límite de FPS inteligente para evitar que pantallas ProMotion (120Hz de iPhone) sobrecalienten la batería:
+      // 60 FPS jugando (fluidez perfecta), 30 FPS en menús/pantalla de inicio
+      const targetFps = isPlaying ? 60 : 30;
+      const minInterval = 1000 / targetFps;
+      const elapsedSinceRender = now - lastRenderTime;
+
+      if (elapsedSinceRender < minInterval) {
+        requestRef.current = requestAnimationFrame(renderLoop);
+        return;
+      }
+
+      const dt = Math.min(0.08, (now - lastTime) / 1000);
       lastTime = now;
+      lastRenderTime = now - (elapsedSinceRender % minInterval);
 
       // 1. ACTUALIZAR POSICIONES DE VEHÍCULOS Y TRONCOS (CONSERVACIÓN PERFECTA DE ESPACIO)
       const wrapSpan = CANVAS_WIDTH + 180;
@@ -1120,6 +1149,8 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
 
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      suspendAudio();
     };
   }, [handleGameOver, isBridgeActive, isPlaying]);
 
