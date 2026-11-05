@@ -67,6 +67,7 @@ export default function PushNotificationToggle({ isEn = false }: PushNotificatio
         const res = await subscribeToPush({
           localUsername,
           fallbackClerkId: user?.id,
+          isEn,
         });
 
         if (res.success) {
@@ -104,7 +105,7 @@ export default function PushNotificationToggle({ isEn = false }: PushNotificatio
 
     try {
       const localUsername = localStorage.getItem('localUsername') || undefined;
-      const res = await sendTestPushNotification(localUsername, user?.id);
+      const res = await sendTestPushNotification(localUsername, user?.id, isEn);
 
       if (res.success) {
         toast.success(

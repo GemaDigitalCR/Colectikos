@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendPushToAllSubscribers } from '../../../../lib/pushNotifications';
+import { sendDailyCommunityGamesReminder } from '../../../../lib/pushNotifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,14 +14,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const payload = {
-      title: '🎮 ¡Mini-juegos de Comunidad!',
-      body: 'Recuerda ganar más XPs en los mini-juegos de Comunidad. ¡Crucetiko, Sopitika y Parejitikas te esperan!',
-      url: '/es/community',
-      tag: 'daily-community-games',
-    };
-
-    const res = await sendPushToAllSubscribers(payload);
+    const res = await sendDailyCommunityGamesReminder();
 
     return NextResponse.json({
       success: true,
@@ -37,3 +30,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

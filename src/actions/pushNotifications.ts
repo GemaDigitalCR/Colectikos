@@ -88,18 +88,26 @@ export async function getPushSubscriptionStatus(endpoint: string) {
 /**
  * Envía una notificación push de prueba al usuario actual.
  */
-export async function sendTestPushNotification(localUsername?: string, fallbackClerkId?: string) {
+export async function sendTestPushNotification(localUsername?: string, fallbackClerkId?: string, isEn: boolean = false) {
   try {
     const dbUser = await ensureDbUser(localUsername, fallbackClerkId);
     if (!dbUser) {
-      return { success: false, error: 'Usuario no encontrado en la base de datos' };
+      return { success: false, error: isEn ? 'User not found in database' : 'Usuario no encontrado en la base de datos' };
     }
 
-    const res = await sendPushToUser(dbUser.id, {
-      title: '🎮 ¡Mini-juegos de Comunidad!',
-      body: 'Recuerda ganar más XPs en los mini-juegos de Comunidad. ¡Crucetiko, Sopitika y Parejitikas te esperan!',
-      url: '/es/community',
-    });
+    const payload = isEn
+      ? {
+          title: '🎮 Community Mini-Games',
+          body: 'Earn more XPs today in Community mini-games!',
+          url: '/en/community',
+        }
+      : {
+          title: '🎮 Mini-Juegos en Comunidad',
+          body: '¡Entrá a ganar más XPs en los mini-juegos de Comunidad!',
+          url: '/es/community',
+        };
+
+    const res = await sendPushToUser(dbUser.id, payload);
 
     if (!res.success) {
       return { 

@@ -133,6 +133,49 @@ export async function sendPushToUser(
 }
 
 /**
+ * Envía el recordatorio diario de Mini-Juegos en Comunidad a todos los suscriptores,
+ * adaptando el idioma (español o inglés) de manera concisa para evitar que se corte en pantalla.
+ */
+export async function sendDailyCommunityGamesReminder() {
+  try {
+    if (!prisma.pushSubscription) {
+      return { success: false, sentCount: 0, error: 'Tabla de suscripciones no disponible' };
+    }
+
+    const subscriptions = await prisma.pushSubscription.findMany();
+    if (!subscriptions || subscriptions.length === 0) {
+      return { success: true, sentCount: 0, total: 0 };
+    }
+
+    const results = await Promise.all(
+      subscriptions.map((sub) => {
+        const isEn = sub.userAgent?.includes('lang:en');
+        const payload: PushNotificationPayload = isEn
+          ? {
+              title: '🎮 Community Mini-Games',
+              body: 'Earn more XPs today in Community mini-games!',
+              url: '/en/community',
+              tag: 'daily-community-games',
+            }
+          : {
+              title: '🎮 Mini-Juegos en Comunidad',
+              body: '¡Entrá a ganar más XPs en los mini-juegos de Comunidad!',
+              url: '/es/community',
+              tag: 'daily-community-games',
+            };
+        return sendPushToSubscription(sub, payload);
+      })
+    );
+
+    const successCount = results.filter((r) => r.success).length;
+    return { success: true, sentCount: successCount, total: subscriptions.length };
+  } catch (error: any) {
+    console.error('Error enviando recordatorio matutino de mini-juegos:', error);
+    return { success: false, error: error?.message ? String(error.message) : 'Error inesperado' };
+  }
+}
+
+/**
  * Envía una notificación push a TODOS los dispositivos registrados activos en la plataforma.
  */
 export async function sendPushToAllSubscribers(payload: PushNotificationPayload) {
@@ -160,7 +203,7 @@ export async function sendPushToAllSubscribers(payload: PushNotificationPayload)
 
 /**
  * Envía un recordatorio de racha inteligente (7:00 PM CR) ÚNICAMENTE a los exploradores
- * que tengan racha activa y que NO hayan ingresado hoy.
+ * que tengan racha activa y que NO hayan ingresado hoy (bilingüe y conciso).
  */
 export async function sendStreakReminderToAtRiskUsers() {
   try {
@@ -196,17 +239,28 @@ export async function sendStreakReminderToAtRiskUsers() {
       }
 
       const streakDays = user.currentStreak;
-      const payload: PushNotificationPayload = {
-        title: '🔥 ¡Protegé tu racha de explorador!',
-        body: streakDays > 1 
-          ? `Llevás una racha de ${streakDays} días. ¡Entrá a Colectikos antes de medianoche para no perderla!`
-          : `¡Mantené tu racha activa en Colectikos hoy y ganá tus estampillas!`,
-        url: '/es/',
-        tag: 'streak-protection',
-      };
-
       await Promise.all(
-        user.pushSubscriptions.map((sub) => sendPushToSubscription(sub, payload))
+        user.pushSubscriptions.map((sub) => {
+          const isEn = sub.userAgent?.includes('lang:en');
+          const payload: PushNotificationPayload = isEn
+            ? {
+                title: '🔥 Explorer Streak',
+                body: streakDays > 1
+                  ? `You have a ${streakDays}-day streak! Visit Colectikos before midnight to keep it.`
+                  : `Keep your explorer streak safe! Visit Colectikos before midnight.`,
+                url: '/en/',
+                tag: 'streak-protection',
+              }
+            : {
+                title: '🔥 Racha de Explorador',
+                body: streakDays > 1
+                  ? `Llevás ${streakDays} días de racha. ¡Entrá a Colectikos hoy y protegé tu racha activa!`
+                  : `¡Entrá a Colectikos hoy y protegé tu racha activa!`,
+                url: '/es/',
+                tag: 'streak-protection',
+              };
+          return sendPushToSubscription(sub, payload);
+        })
       );
       contactedCount++;
     }

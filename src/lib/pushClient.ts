@@ -86,6 +86,7 @@ export async function checkPushStatus(): Promise<{
 export async function subscribeToPush(options?: {
   localUsername?: string;
   fallbackClerkId?: string;
+  isEn?: boolean;
 }): Promise<{ success: boolean; error?: string }> {
   try {
     if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -132,7 +133,7 @@ export async function subscribeToPush(options?: {
         p256dh: subJson.keys.p256dh,
         auth: subJson.keys.auth,
       },
-      userAgent: navigator.userAgent,
+      userAgent: `${navigator.userAgent} [lang:${options?.isEn ? 'en' : 'es'}]`,
       localUsername: options?.localUsername,
       fallbackClerkId: options?.fallbackClerkId,
     });
