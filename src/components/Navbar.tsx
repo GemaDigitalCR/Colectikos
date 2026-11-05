@@ -316,6 +316,12 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
                       {dict?.rankings || 'Rankings'}
                     </Link>
                     <Link
+                      href={`/${currentLang}/community/crucetiko`}
+                      className="px-4 py-2 text-left w-full transition-colors hover:bg-stone-50 hover:text-emerald-700 text-stone-700 font-medium border-b border-stone-50"
+                    >
+                      Crucetiko 🦥
+                    </Link>
+                    <Link
                       href={`/${currentLang}/community/playa`}
                       className="px-4 py-2 text-left w-full transition-colors hover:bg-stone-50 hover:text-emerald-700 text-stone-700 font-medium border-b border-stone-50"
                     >
@@ -493,6 +499,9 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
                 <div className="pl-4 border-l-2 border-stone-100 flex flex-col gap-3 mt-2">
                   <Link href={`/${currentLang}/community/rankings`} onClick={() => setIsMobileMenuOpen(false)} className="text-stone-600 font-medium hover:text-emerald-700 block text-base">
                     {dict?.rankings || 'Rankings'}
+                  </Link>
+                  <Link href={`/${currentLang}/community/crucetiko`} onClick={() => setIsMobileMenuOpen(false)} className="text-stone-600 font-medium hover:text-emerald-700 block text-base">
+                    Crucetiko 🦥
                   </Link>
                   <Link href={`/${currentLang}/community/playa`} onClick={() => setIsMobileMenuOpen(false)} className="text-stone-600 font-medium hover:text-amber-600 block text-base">
                     {isEn ? "Tiko Beach 🏖️" : "Tiko Playa 🏖️"}
