@@ -16,6 +16,7 @@ export interface DailyPreguntikasStatus {
   maxDailyXp: number;
   canPlay: boolean;
   crDateFormatted: string;
+  playedQuestionIdsToday?: string[];
 }
 
 export interface AwardPreguntikasXPResult {
@@ -34,12 +35,17 @@ export interface AwardPreguntikasXPResult {
 }
 
 /**
- * Retorna las 3 preguntas del día o 3 preguntas aleatorias para modo práctica.
- * - Modo oficial diario: Determinístico basado en la fecha oficial de Costa Rica (UTC-6).
- *   Todos los usuarios reciben las mismas 3 preguntas de 3 categorías distintas con fuentes oficiales.
- * - Modo práctica (forceRandom = true): 3 preguntas aleatorias de categorías variadas sin XP.
+ * Retorna 3 preguntas variadas y garantiza que no se repitan preguntas entre intentos.
+ * - attemptIndex = 0: Intento 1 del día.
+ * - attemptIndex = 1: Intento 2 del día (excluye estrictamente las preguntas de intento 1).
+ * - attemptIndex >= 2 o forceRandom = true: Modo práctica (excluye preguntas ya jugadas).
+ * - Mayor aleatoriedad y rotación sobre el banco de 52 preguntas oficiales verificadas.
  */
-export async function getDailyPreguntikasQuestions(forceRandom: boolean = false): Promise<TriviaQuestion[]> {
+export async function getDailyPreguntikasQuestions(
+  forceRandom: boolean = false,
+  attemptIndex: number = 0,
+  excludeIds: string[] = []
+): Promise<TriviaQuestion[]> {
   const categories: TriviaQuestion["category"][] = [
     "GEOGRAFIA",
     "PARQUES",
@@ -47,31 +53,51 @@ export async function getDailyPreguntikasQuestions(forceRandom: boolean = false)
     "HISTORIA_CULTURA",
   ];
 
-  if (forceRandom) {
-    // Mezclar categorías y tomar 3 distintas
-    const shuffledCategories = [...categories].sort(() => 0.5 - Math.random()).slice(0, 3);
-    return shuffledCategories.map((cat) => {
-      const catQuestions = PREGUNTIKAS_BANK.filter((q) => q.category === cat);
-      const randomIndex = Math.floor(Math.random() * catQuestions.length);
-      return catQuestions[randomIndex];
-    });
-  }
-
-  // Modo oficial: Basado en la fecha de Costa Rica
   const crDate = getCRDate(new Date());
-  // Número de días transcurridos desde epoch en zona horaria CR
   const dayNumber = Math.floor(crDate.getTime() / (1000 * 60 * 60 * 24));
 
-  // Seleccionar 3 categorías de las 4 rotando cuál se omite hoy
-  const omitCategoryIndex = Math.abs(dayNumber) % 4;
-  const chosenCategories = categories.filter((_, idx) => idx !== omitCategoryIndex);
+  // Determinar qué categoría descansa en el intento 1 según el día del año
+  const omitCategoryIndex1 = Math.abs(dayNumber) % 4;
 
-  // Para cada una de las 3 categorías seleccionadas, elegir pregunta con rotación fija
-  const selectedQuestions = chosenCategories.map((cat, catIdx) => {
-    const catQuestions = PREGUNTIKAS_BANK.filter((q) => q.category === cat);
-    const qIndex = Math.abs(dayNumber * 3 + catIdx * 7) % catQuestions.length;
-    return catQuestions[qIndex];
-  });
+  let chosenCategories: TriviaQuestion["category"][];
+
+  if (forceRandom || attemptIndex >= 2) {
+    // Modo práctica: mezclar las 4 categorías y tomar 3 al azar
+    chosenCategories = [...categories].sort(() => 0.5 - Math.random()).slice(0, 3);
+  } else if (attemptIndex === 1) {
+    // Intento 2 oficial: Priorizar la categoría que descansó en el intento 1 para máxima variedad temática
+    const restedCategory = categories[omitCategoryIndex1];
+    const otherCategories = categories.filter((c) => c !== restedCategory);
+    const shuffledOthers = [...otherCategories].sort(() => 0.5 - Math.random()).slice(0, 2);
+    chosenCategories = [restedCategory, ...shuffledOthers];
+  } else {
+    // Intento 1 oficial: Las 3 categorías del día
+    chosenCategories = categories.filter((_, idx) => idx !== omitCategoryIndex1);
+  }
+
+  // Mezclar el orden de las categorías elegidas para variedad en la presentación
+  const shuffledChosenCats = [...chosenCategories].sort(() => 0.5 - Math.random());
+
+  const currentExcludeSet = new Set(excludeIds);
+  const selectedQuestions: TriviaQuestion[] = [];
+
+  for (const cat of shuffledChosenCats) {
+    // Filtrar preguntas de la categoría que NO hayan salido en la sesión/día
+    let catPool = PREGUNTIKAS_BANK.filter(
+      (q) => q.category === cat && !currentExcludeSet.has(q.id)
+    );
+
+    // Si se agotaron las preguntas de esa categoría en una sesión muy larga, reiniciar el pool
+    if (catPool.length === 0) {
+      catPool = PREGUNTIKAS_BANK.filter((q) => q.category === cat);
+    }
+
+    // Selección aleatoria entre las preguntas disponibles de esa categoría
+    const randomIndex = Math.floor(Math.random() * catPool.length);
+    const chosen = catPool[randomIndex];
+    selectedQuestions.push(chosen);
+    currentExcludeSet.add(chosen.id);
+  }
 
   return selectedQuestions;
 }
@@ -113,12 +139,28 @@ export async function getPreguntikasDailyStatus({
         actionType: "PREGUNTIKAS_GAME",
         createdAt: { gte: startOfCRDay },
       },
-      select: { xpAwarded: true },
+      select: { xpAwarded: true, targetId: true },
     });
 
     const gamesPlayedToday = todayLogs.length;
     const todayEarnedXp = todayLogs.reduce((sum, log) => sum + (log.xpAwarded || 0), 0);
     const gamesRemaining = Math.max(0, MAX_DAILY_GAMES - gamesPlayedToday);
+
+    // Extraer preguntas ya jugadas hoy por este usuario para evitar repeticiones
+    const playedQuestionIdsToday: string[] = [];
+    todayLogs.forEach((log) => {
+      if (log.targetId && log.targetId.includes("_q_")) {
+        const parts = log.targetId.split("_q_");
+        if (parts[1]) {
+          const ids = parts[1].split(",");
+          ids.forEach((id) => {
+            if (id && !playedQuestionIdsToday.includes(id)) {
+              playedQuestionIdsToday.push(id);
+            }
+          });
+        }
+      }
+    });
 
     return {
       gamesPlayedToday,
@@ -128,6 +170,7 @@ export async function getPreguntikasDailyStatus({
       maxDailyXp: MAX_DAILY_XP,
       canPlay: gamesRemaining > 0,
       crDateFormatted,
+      playedQuestionIdsToday,
     };
   } catch (error) {
     console.error("Error al consultar estado diario de Preguntikas:", error);
@@ -155,12 +198,14 @@ export async function awardPreguntikasXP({
   correctCount,
   totalQuestions,
   timeSeconds,
+  questionIds = [],
   localUsername,
   fallbackClerkId,
 }: {
   correctCount: number;
   totalQuestions: number;
   timeSeconds: number;
+  questionIds?: string[];
   localUsername?: string;
   fallbackClerkId?: string;
 }): Promise<AwardPreguntikasXPResult> {
@@ -236,12 +281,14 @@ export async function awardPreguntikasXP({
     const newTotalXp = dbUser.xp + xpAwarded;
     const newLevel = Math.floor(newTotalXp / 100) + 1;
 
+    const qSuffix = questionIds.length > 0 ? `_q_${questionIds.join(",")}` : "";
+
     await prisma.$transaction(async (tx) => {
       await tx.userActionLog.create({
         data: {
           userId,
           actionType: "PREGUNTIKAS_GAME",
-          targetId: `trivia_${correctCount}_of_${totalQuestions}_time_${timeSeconds}`,
+          targetId: `trivia_${correctCount}_of_${totalQuestions}_time_${timeSeconds}${qSuffix}`,
           xpAwarded,
         },
       });

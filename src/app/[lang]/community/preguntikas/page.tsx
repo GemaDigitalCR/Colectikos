@@ -82,6 +82,7 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
 
   // Estados de datos y juego
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
+  const [seenQuestionIds, setSeenQuestionIds] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -105,11 +106,23 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
-  // Cargar preferencia de sonido y desbloquear audio en móvil
+  // Cargar preferencia de sonido y preguntas vistas en la sesión
   useEffect(() => {
     const saved = localStorage.getItem("preguntikas_sound");
     if (saved !== null) {
       setSoundEnabled(saved === "true");
+    }
+    try {
+      const todayKey = new Date().toISOString().slice(0, 10);
+      const savedSeen = sessionStorage.getItem(`preguntikas_seen_${todayKey}`);
+      if (savedSeen) {
+        const parsed = JSON.parse(savedSeen);
+        if (Array.isArray(parsed)) {
+          setSeenQuestionIds(parsed);
+        }
+      }
+    } catch {
+      // Ignorar error de storage en entornos privados
     }
     const cleanup = initMobileAudioUnlock();
     return cleanup;
@@ -226,11 +239,35 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
     const shouldBePractice = forcePractice || (status !== null && status.gamesRemaining <= 0);
     setIsPracticeMode(shouldBePractice);
 
+    // Determinar attemptIndex (0 para partida 1, 1 para partida 2, >=2 para práctica)
+    const attemptIndex = shouldBePractice ? 2 : (status ? status.gamesPlayedToday : 0);
+
+    // Combinar IDs jugados hoy en BD y en la sesión actual
+    const dbSeen = status?.playedQuestionIdsToday || [];
+    const combinedExcludes = Array.from(new Set([...dbSeen, ...seenQuestionIds]));
+
     try {
-      // Si es modo práctica, generar preguntas aleatorias del banco.
-      // Si es modo diario oficial, obtener las 3 preguntas fijas del día de Costa Rica.
-      const dailyQuestions = await getDailyPreguntikasQuestions(shouldBePractice);
+      // Obtener preguntas garantizando 0 repeticiones entre Set 1 y Set 2
+      const dailyQuestions = await getDailyPreguntikasQuestions(
+        shouldBePractice,
+        attemptIndex,
+        combinedExcludes
+      );
       setQuestions(dailyQuestions);
+
+      // Registrar los IDs recién seleccionados en memoria y sessionStorage
+      const newQuestionIds = dailyQuestions.map((q) => q.id);
+      setSeenQuestionIds((prev) => {
+        const updated = Array.from(new Set([...prev, ...newQuestionIds]));
+        try {
+          const todayKey = new Date().toISOString().slice(0, 10);
+          sessionStorage.setItem(`preguntikas_seen_${todayKey}`, JSON.stringify(updated));
+        } catch {
+          // Ignorar error de storage
+        }
+        return updated;
+      });
+
       setGameState("playing");
 
       // Iniciar timer
@@ -323,6 +360,7 @@ export default function PreguntikasPage({ params }: { params: Promise<{ lang: st
         correctCount,
         totalQuestions: questions.length,
         timeSeconds: timerSeconds,
+        questionIds: questions.map((q) => q.id),
         localUsername,
         fallbackClerkId: user?.id,
       });
