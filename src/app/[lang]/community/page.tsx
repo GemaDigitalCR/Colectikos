@@ -169,6 +169,28 @@ export default async function CommunityHubPage({ params }: { params: Promise<{ l
                     </div>
                 </Link>
 
+                {/* Santuario Tico: Rescate y Liberación Card */}
+                <Link href={`/${lang}/community/santuario`} className="group">
+                    <div className="bg-white rounded-2xl shadow-lg border-2 border-amber-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-amber-300 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="bg-amber-100 text-amber-700 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
+                            <span className="text-4xl leading-none block pt-1">🏥</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black mb-2 relative z-10 border border-amber-200">
+                            <span>❤️</span>
+                            <span>{isEn ? "Fauna Sanctuary · Up to 90 XP" : "Santuario Silvestre · ¡Hasta 90 XP!"}</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-amber-950 mb-3 relative z-10">
+                            {isEn ? "Tiko Sanctuary" : "Santuario Tico"}
+                        </h2>
+                        <p className="text-stone-600 relative z-10">
+                            {isEn 
+                                ? "Care for injured Costa Rican wildlife and release them back into National Parks!"
+                                : "¡Rehabilita animales silvestres rescatados en Costa Rica y libéralos en los Parques Nacionales!"}
+                        </p>
+                    </div>
+                </Link>
+
             </div>
         </div>
     );
