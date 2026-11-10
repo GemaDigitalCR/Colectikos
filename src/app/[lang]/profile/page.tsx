@@ -222,7 +222,11 @@ export default function Profile() {
           if (domLogo && domLogo.complete && domLogo.naturalWidth > 0) {
             logoDrawable = domLogo;
           } else {
-            logoDrawable = await loadHtmlImage(LOGO_BASE64);
+            try {
+              logoDrawable = await loadHtmlImage(LOGO_BASE64);
+            } catch {
+              logoDrawable = await loadHtmlImage('/images/Imagenes_Pagina/logo_colectikos_oro.PNG');
+            }
           }
           if (logoDrawable) {
             const lx = 460 * scale;

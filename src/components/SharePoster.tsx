@@ -127,19 +127,24 @@ export default function SharePoster({
           {/* CENTER: Colectikos Golden Seal Logo */}
           <div 
             id="poster-logo-container"
-            className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
-            style={{ width: '160px', height: '160px', top: '30px' }}
+            className="flex items-center justify-center"
+            style={{ 
+              position: 'absolute', 
+              left: '460px', 
+              top: '30px', 
+              width: '160px', 
+              height: '160px',
+              zIndex: 20
+            }}
           >
-            <div className="flex items-center justify-center h-40 w-40">
-              <img 
-                id="poster-logo-img"
-                width={160}
-                height={160}
-                src={LOGO_BASE64}
-                className="h-full w-full object-contain block drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)]"
-                alt="Colectikos Logo"
-              />
-            </div>
+            <img 
+              id="poster-logo-img"
+              width={160}
+              height={160}
+              src={LOGO_BASE64}
+              className="h-full w-full object-contain block"
+              alt="Colectikos Logo"
+            />
           </div>
 
           {/* RIGHT: Collection Title */}
