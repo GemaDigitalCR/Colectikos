@@ -66,7 +66,7 @@ import Navbar from "../../components/Navbar";
 import InstallBanner from "../../components/InstallBanner";
 import { getDictionary } from "../../dictionaries/getDictionary";
 import WelcomeModal from "../../components/WelcomeModal";
-import CrucetikoModal from "../../components/CrucetikoModal";
+import SocialFollowModal from "../../components/SocialFollowModal";
 import ProfileReminderToast from "../../components/ProfileReminderToast";
 import CommunityLikesToast from "../../components/CommunityLikesToast";
 import { getDbLugares } from "../../actions/lugares";
@@ -165,7 +165,7 @@ export default async function RootLayout({
                 <Navbar dict={dict.navbar} dictLevels={dict.levels} />
               <InstallBanner />
               <WelcomeModal />
-              <CrucetikoModal />
+              <SocialFollowModal />
               <ProfileReminderToast />
               <CommunityLikesToast />
               {children}
