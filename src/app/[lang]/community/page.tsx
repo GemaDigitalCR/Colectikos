@@ -169,6 +169,28 @@ export default async function CommunityHubPage({ params }: { params: Promise<{ l
                     </div>
                 </Link>
 
+                {/* Marea Limpia: Misión Tortuguero Card (Nuevo Juego Estilo Fruit Ninja) */}
+                <Link href={`/${lang}/community/marealimpia`} className="group">
+                    <div className="bg-white rounded-2xl shadow-lg border-2 border-cyan-100 p-8 h-full flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-cyan-300 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="bg-cyan-100 text-cyan-700 p-5 rounded-full mb-6 group-hover:scale-110 transition-transform shadow-inner relative z-10 flex items-center justify-center">
+                            <span className="text-4xl leading-none block pt-1">🌊</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 text-xs font-black mb-2 relative z-10 border border-cyan-200">
+                            <span>🐢</span>
+                            <span>{isEn ? "Eco-Ninja · Up to 90 XP" : "Eco-Ninja · ¡Hasta 90 XP!"}</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-cyan-950 mb-3 relative z-10">
+                            {isEn ? "Clean Tide" : "Marea Limpia"}
+                        </h2>
+                        <p className="text-stone-600 relative z-10">
+                            {isEn 
+                                ? "Slice marine plastic waste with your finger and protect baby sea turtles on the coast!"
+                                : "¡Rebana desechos plásticos con tu dedo al estilo ninja y protege a las tortuguitas marinas!"}
+                        </p>
+                    </div>
+                </Link>
+
             </div>
         </div>
     );
