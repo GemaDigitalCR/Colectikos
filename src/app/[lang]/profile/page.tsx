@@ -48,18 +48,51 @@ function loadHtmlImage(src: string): Promise<HTMLImageElement> {
     if (!src.startsWith('data:') && !src.startsWith('/')) {
       img.crossOrigin = 'anonymous';
     }
-    img.onload = () => resolve(img);
+
+    let resolved = false;
+    const finish = () => {
+      if (resolved) return;
+      resolved = true;
+      if (img.decode) {
+        img.decode().then(() => resolve(img)).catch(() => resolve(img));
+      } else {
+        resolve(img);
+      }
+    };
+
+    img.onload = finish;
     img.onerror = () => {
+      if (resolved) return;
       if (img.crossOrigin) {
         const retry = new window.Image();
-        retry.onload = () => resolve(retry);
-        retry.onerror = (err: any) => reject(err);
+        retry.onload = () => {
+          if (resolved) return;
+          resolved = true;
+          if (retry.decode) {
+            retry.decode().then(() => resolve(retry)).catch(() => resolve(retry));
+          } else {
+            resolve(retry);
+          }
+        };
+        retry.onerror = (err: any) => {
+          if (!resolved) {
+            resolved = true;
+            reject(err);
+          }
+        };
         retry.src = src;
       } else {
+        resolved = true;
         reject(new Error(`Failed to load image: ${src.slice(0, 50)}`));
       }
     };
+
     img.src = src;
+
+    // Si ya cargó sincrónicamente (e.g. data URI en Safari WebKit)
+    if (img.complete && img.naturalWidth > 0) {
+      finish();
+    }
   });
 }
 
@@ -150,16 +183,27 @@ export default function Profile() {
       }
 
       const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isIOS = typeof navigator !== 'undefined' && (
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+      );
       
       // En móviles usamos pixelRatio: 1.5 para máxima nitidez sin sobrepasar límites de GPU en WebKit
       const pixelRatio = isMobile ? 1.5 : 2;
       
+      // 1.5. Precalentamiento opcional en iOS para asegurar decodificación en memoria gráfica
+      if (isIOS) {
+        try {
+          await toCanvas(progressRef.current, { width: 1080, height: 1080, pixelRatio: 1, cacheBust: true });
+        } catch {}
+      }
+
       // 2. Generar el Canvas base del póster (renderiza fondo, mapa SVG, medallas y textos)
       const canvas = await toCanvas(progressRef.current, { 
         width: 1080,
         height: 1080,
         pixelRatio,
-        cacheBust: false,
+        cacheBust: true,
       });
 
       // 3. Post-procesamiento directo sobre Canvas 2D (Garantía definitiva para Safari / iPhone / iOS)
@@ -173,12 +217,22 @@ export default function Profile() {
 
         // A. Dibujar el Sello Dorado directamente sobre el Canvas (centrado horizontalmente en 540)
         try {
-          const logoImg = await loadHtmlImage(LOGO_BASE64);
-          const lx = 460 * scale;
-          const ly = 30 * scale;
-          const lw = 160 * scale;
-          const lh = 160 * scale;
-          ctx.drawImage(logoImg, lx, ly, lw, lh);
+          const domLogo = progressRef.current?.querySelector('#poster-logo-img') as HTMLImageElement | null;
+          let logoDrawable: CanvasImageSource | null = null;
+          if (domLogo && domLogo.complete && domLogo.naturalWidth > 0) {
+            logoDrawable = domLogo;
+          } else {
+            logoDrawable = await loadHtmlImage(LOGO_BASE64);
+          }
+          if (logoDrawable) {
+            const lx = 460 * scale;
+            const ly = 30 * scale;
+            const lw = 160 * scale;
+            const lh = 160 * scale;
+            ctx.save();
+            ctx.drawImage(logoDrawable, lx, ly, lw, lh);
+            ctx.restore();
+          }
         } catch (e) {
           console.warn("Logo direct canvas draw fallback:", e);
         }
@@ -192,71 +246,68 @@ export default function Profile() {
         const cx = 120 * scale;
         const cy = 110 * scale;
 
-        if (avatarUrl) {
-          try {
-            let resolvedAvatarSrc = avatarUrl;
+        try {
+          const domAvatar = progressRef.current?.querySelector('#poster-avatar-container img') as HTMLImageElement | null;
+          let avDrawable: CanvasImageSource | null = null;
+
+          if (domAvatar && domAvatar.complete && domAvatar.naturalWidth > 0) {
+            avDrawable = domAvatar;
+          } else if (avatarUrl) {
+            let resolvedSrc = avatarUrl;
             try {
               const fetchUrl = avatarUrl.startsWith('/') && typeof window !== 'undefined'
                 ? `${window.location.origin}${avatarUrl}`
                 : avatarUrl;
               const res = await fetch(fetchUrl);
               const blob = await res.blob();
-              resolvedAvatarSrc = await new Promise<string>((resolve, reject) => {
+              resolvedSrc = await new Promise<string>((resBlob, rejBlob) => {
                 const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.onerror = reject;
+                reader.onloadend = () => resBlob(reader.result as string);
+                reader.onerror = rejBlob;
                 reader.readAsDataURL(blob);
               });
             } catch {
-              // Si falla fetch, usamos avatarUrl directamente
+              resolvedSrc = avatarUrl;
             }
+            avDrawable = await loadHtmlImage(resolvedSrc);
+          }
 
-            const avImg = await loadHtmlImage(resolvedAvatarSrc);
+          ctx.save();
+          // Fondo oscuro para el avatar
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.fillStyle = '#1c1917';
+          ctx.fill();
 
-            // Fondo oscuro para el avatar
+          if (avDrawable) {
+            // Recorte circular para la imagen
             ctx.save();
             ctx.beginPath();
             ctx.arc(cx, cy, radius, 0, Math.PI * 2);
             ctx.closePath();
-            ctx.fillStyle = '#1c1917';
-            ctx.fill();
-
-            // Recorte circular para el avatar
             ctx.clip();
-            ctx.drawImage(avImg, ax, ay, aw, ah);
+            ctx.drawImage(avDrawable, ax, ay, aw, ah);
             ctx.restore();
-
-            // Borde verde esmeralda (4px escalado)
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius - (2 * scale), 0, Math.PI * 2);
-            ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 4 * scale;
-            ctx.stroke();
-            ctx.restore();
-          } catch (e) {
-            console.warn("Avatar direct canvas draw fallback:", e);
+          } else {
+            // Inicial si no hay avatar
+            ctx.font = `bold ${44 * scale}px sans-serif`;
+            ctx.fillStyle = '#10b981';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(username ? username.charAt(0).toUpperCase() : '?', cx, cy);
           }
-        } else {
-          // Fallback si no hay avatarUrl: inicial del usuario con fondo y borde esmeralda
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-          ctx.fillStyle = '#1c1917';
-          ctx.fill();
 
+          // Borde verde esmeralda (4px escalado)
           ctx.beginPath();
           ctx.arc(cx, cy, radius - (2 * scale), 0, Math.PI * 2);
           ctx.strokeStyle = '#10b981';
           ctx.lineWidth = 4 * scale;
           ctx.stroke();
 
-          ctx.font = `bold ${44 * scale}px sans-serif`;
-          ctx.fillStyle = '#10b981';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(username ? username.charAt(0).toUpperCase() : '?', cx, cy);
           ctx.restore();
+        } catch (avErr) {
+          console.warn("Avatar direct canvas draw fallback:", avErr);
         }
       }
 

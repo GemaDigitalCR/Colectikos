@@ -67,15 +67,17 @@ export default function SharePoster({
 
   return (
     <div 
-      className="fixed z-[-50] pointer-events-none overflow-hidden" 
+      className="fixed pointer-events-none overflow-hidden" 
       style={{ 
         position: 'fixed', 
-        left: '-9999px', 
-        top: '0', 
+        left: '0px', 
+        top: '0px', 
         width: '1080px', 
         height: '1080px', 
-        opacity: 1, 
-        visibility: 'visible' 
+        opacity: 0.001, 
+        zIndex: -9999,
+        visibility: 'visible',
+        pointerEvents: 'none',
       }} 
       aria-hidden="true"
     >
