@@ -19,6 +19,11 @@ export async function getDbLugares() {
       }
     });
 
+    if (!lugares || lugares.length === 0) {
+      console.warn("No places found in DB, using mockLugares fallback.");
+      return mockLugares;
+    }
+
     const orderMap = new Map<string, number>();
     mockLugares.forEach((l, index) => {
       orderMap.set(l.id, index);
@@ -40,7 +45,7 @@ export async function getDbLugares() {
       ubicacion_en: undefined,
     }));
   } catch (error) {
-    console.error("Error fetching places from DB:", error);
-    return [];
+    console.error("Error fetching places from DB, using mockLugares fallback:", error);
+    return mockLugares;
   }
 }
