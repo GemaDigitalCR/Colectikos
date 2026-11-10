@@ -6,39 +6,6 @@ import Link from 'next/link';
 import StaticProgressMap from './StaticProgressMap';
 import { LOGO_BASE64 } from '../data/logoBase64';
 
-const CanvasImage = ({ src, className, size = 512, isContain = false }: { src: string, className?: string, size?: number, isContain?: boolean }) => {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  React.useEffect(() => {
-    if (!src || !canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const img = new window.Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (isContain) {
-        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-        const w = img.width * scale;
-        const h = img.height * scale;
-        const x = (canvas.width - w) / 2;
-        const y = (canvas.height - h) / 2;
-        ctx.drawImage(img, x, y, w, h);
-      } else {
-        const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-        const w = img.width * scale;
-        const h = img.height * scale;
-        const x = (canvas.width - w) / 2;
-        const y = (canvas.height - h) / 2;
-        ctx.drawImage(img, x, y, w, h);
-      }
-    };
-    img.src = src;
-  }, [src, size, isContain]);
-  return <canvas ref={canvasRef} width={size} height={size} className={className} />;
-};
-
-
 interface SharePosterProps {
   posterRef: React.RefObject<HTMLDivElement | null>;
   username: string;
@@ -99,7 +66,19 @@ export default function SharePoster({
   }, [avatarUrl]);
 
   return (
-    <div className="fixed top-0 left-0 w-[1080px] h-[1080px] z-[-50] opacity-0 pointer-events-none overflow-hidden" aria-hidden="true">
+    <div 
+      className="fixed z-[-50] pointer-events-none overflow-hidden" 
+      style={{ 
+        position: 'fixed', 
+        left: '-9999px', 
+        top: '0', 
+        width: '1080px', 
+        height: '1080px', 
+        opacity: 1, 
+        visibility: 'visible' 
+      }} 
+      aria-hidden="true"
+    >
       <div 
         ref={posterRef}
         className="flex flex-col items-center justify-between overflow-hidden text-white shadow-[inset_0_0_120px_rgba(0,0,0,0.8)] relative"
@@ -115,13 +94,18 @@ export default function SharePoster({
           
           {/* LEFT: Avatar and User Info */}
           <div className="flex items-center gap-5 justify-self-start">
-            <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-emerald-500 shadow-2xl bg-stone-800 flex-shrink-0 flex items-center justify-center">
+            <div 
+              id="poster-avatar-container"
+              className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-emerald-500 shadow-2xl bg-stone-800 flex-shrink-0 flex items-center justify-center"
+            >
               {base64Avatar || avatarUrl ? (
                 <img 
+                  id="poster-avatar-img"
+                  width={112}
+                  height={112}
                   src={base64Avatar || (avatarUrl?.startsWith('/') && typeof window !== 'undefined' ? `${window.location.origin}${avatarUrl}` : avatarUrl!)}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover block"
                   alt="Avatar"
-                  crossOrigin="anonymous"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-stone-400">
@@ -135,11 +119,17 @@ export default function SharePoster({
             </div>
           </div>
 
-          <div className="justify-self-center ml-16 translate-y-8">
+          <div 
+            id="poster-logo-container"
+            className="justify-self-center ml-16"
+          >
             <div className="flex items-center justify-center h-40 w-40">
               <img 
+                id="poster-logo-img"
+                width={160}
+                height={160}
                 src={LOGO_BASE64}
-                className="h-full w-full object-contain"
+                className="h-full w-full object-contain block"
                 alt="Colectikos Logo"
               />
             </div>

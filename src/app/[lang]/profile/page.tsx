@@ -8,7 +8,8 @@ import { UserCircle, Award, Trophy, Medal, Star, Edit3, BookOpen, Loader2, HelpC
 import { Categoria, mockLugares } from '../../../data/mockData';
 import { useLugaresData } from '../../../context/LugaresContext';
 import { getPlaceUnlockMode } from '../../../utils/modeHelper';
-import { toPng } from 'html-to-image';
+import { toCanvas } from 'html-to-image';
+import { LOGO_BASE64 } from '../../../data/logoBase64';
 import toast from 'react-hot-toast';
 import { calcularNivel } from '../../../utils/gamification';
 import SharePoster from '../../../components/SharePoster';
@@ -119,16 +120,121 @@ export default function Profile() {
     try {
       setIsSharing(true);
       
+      // 1. Asegurar que las fuentes y estilos estén completamente listos
+      if (typeof document !== 'undefined' && 'fonts' in document) {
+        await document.fonts.ready;
+      }
+
       const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      // En móviles usamos pixelRatio: 1.25 para evitar agotar la memoria de GPU de WebKit / Safari
-      // y prevenir reinicios de pestaña. En Desktop mantenemos 2.0.
-      const pixelRatio = isMobile ? 1.25 : 2;
+      // En móviles usamos pixelRatio: 1.5 para máxima nitidez sin sobrepasar límites de GPU en WebKit
+      const pixelRatio = isMobile ? 1.5 : 2;
       
-      const dataUrl = await toPng(progressRef.current, { 
+      // 2. Generar el Canvas base del póster (renderiza fondo, mapa SVG, medallas y textos)
+      const canvas = await toCanvas(progressRef.current, { 
         pixelRatio,
-        cacheBust: true,
+        cacheBust: false,
       });
+
+      // 3. Post-procesamiento directo sobre Canvas 2D (Garantía definitiva para Safari / iPhone / iOS)
+      // Dibuja el Sello Dorado y el Avatar directamente en el lienzo usando la API nativa de Canvas 2D,
+      // evitando cualquier fallo de decodificación o restricciones de SVG foreignObject en WebKit.
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const posterEl = progressRef.current;
+        const posterRect = posterEl.getBoundingClientRect();
+        const scale = canvas.width / posterRect.width;
+
+        // A. Dibujar el Sello Dorado directamente sobre el Canvas
+        const logoContainer = posterEl.querySelector('#poster-logo-container') as HTMLElement | null;
+        if (logoContainer) {
+          try {
+            const logoRect = logoContainer.getBoundingClientRect();
+            const lx = (logoRect.left - posterRect.left) * scale;
+            const ly = (logoRect.top - posterRect.top) * scale;
+            const lw = logoRect.width * scale;
+            const lh = logoRect.height * scale;
+
+            const logoImg = new window.Image();
+            logoImg.src = LOGO_BASE64;
+            if (logoImg.decode) {
+              await logoImg.decode();
+            } else {
+              await new Promise((res) => { logoImg.onload = res; logoImg.onerror = res; });
+            }
+            ctx.drawImage(logoImg, lx, ly, lw, lh);
+          } catch (e) {
+            console.warn("Logo direct draw fallback:", e);
+          }
+        }
+
+        // B. Dibujar el Avatar directamente sobre el Canvas con recorte circular y borde esmeralda
+        const avatarContainer = posterEl.querySelector('#poster-avatar-container') as HTMLElement | null;
+        if (avatarContainer && avatarUrl) {
+          try {
+            const avRect = avatarContainer.getBoundingClientRect();
+            const ax = (avRect.left - posterRect.left) * scale;
+            const ay = (avRect.top - posterRect.top) * scale;
+            const aw = avRect.width * scale;
+            const ah = avRect.height * scale;
+            const radius = aw / 2;
+            const centerX = ax + radius;
+            const centerY = ay + radius;
+
+            let resolvedAvatarSrc = avatarUrl;
+            try {
+              const fetchUrl = avatarUrl.startsWith('/') && typeof window !== 'undefined'
+                ? `${window.location.origin}${avatarUrl}`
+                : avatarUrl;
+              const res = await fetch(fetchUrl);
+              const blob = await res.blob();
+              resolvedAvatarSrc = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              });
+            } catch {
+              // Si falla fetch, usamos avatarUrl directamente
+            }
+
+            const avImg = new window.Image();
+            avImg.crossOrigin = 'anonymous';
+            avImg.src = resolvedAvatarSrc;
+            if (avImg.decode) {
+              await avImg.decode();
+            } else {
+              await new Promise((res) => { avImg.onload = res; avImg.onerror = res; });
+            }
+
+            // Fondo oscuro para el avatar
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fillStyle = '#1c1917';
+            ctx.fill();
+
+            // Recorte circular para el avatar
+            ctx.clip();
+            ctx.drawImage(avImg, ax, ay, aw, ah);
+            ctx.restore();
+
+            // Borde verde esmeralda (4px escalado)
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius - (2 * scale), 0, Math.PI * 2);
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 4 * scale;
+            ctx.stroke();
+            ctx.restore();
+          } catch (e) {
+            console.warn("Avatar direct draw fallback:", e);
+          }
+        }
+      }
+
+      const dataUrl = canvas.toDataURL('image/png');
       
       setPreviewDataUrl(dataUrl);
 
