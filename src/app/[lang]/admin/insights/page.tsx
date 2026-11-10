@@ -1,5 +1,5 @@
 import React from 'react';
-import { PieChart, BarChart2, MapPin, Tent, Users, Award, Map, Navigation, PawPrint } from 'lucide-react';
+import { PieChart, BarChart2, MapPin, Tent, Users, Award, Map, Navigation, PawPrint, Trophy, Star, Sparkles, CheckCircle2 } from 'lucide-react';
 import prisma from '@/lib/prisma';
 import InsightClient from './InsightClient';
 import InsightsFilters from './InsightsFilters';
@@ -11,6 +11,17 @@ interface PageProps {
 }
 
 const CR_PROVINCES = ['San José', 'Alajuela', 'Cartago', 'Heredia', 'Guanacaste', 'Puntarenas', 'Limón'];
+
+const CATEGORY_NAMES: Record<string, string> = {
+  VOLCAN: 'Volcán',
+  PARQUE_NACIONAL: 'Parque Nacional',
+  PLAYA: 'Playa',
+  RIOS_Y_CATARATAS: 'Ríos y Cataratas',
+  LAGUNAS: 'Laguna',
+  CIUDAD_Y_CULTURA: 'Ciudad y Cultura',
+  BOSQUES_RESERVAS: 'Bosque y Reserva',
+  HITOS_CULTURALES: 'Hito Cultural',
+};
 
 export default async function DemografiaInsights({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
@@ -151,29 +162,125 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
   const malePct = totalGenderUsers > 0 ? Math.round((maleCount / totalGenderUsers) * 100) : 0;
   const neutralPct = totalGenderUsers > 0 ? Math.max(0, 100 - femalePct - malePct) : 0;
 
-  // -- Calificaciones (Ratings) --
-  let avgRatings: { name: string, avg: number, count: number }[] = [];
+  // -- Postales: Top Desbloqueadas y Top Calificadas --
+  const userFilter = Object.keys(baseWhere).length > 0 ? { user: baseWhere } : {};
+
+  let topUnlockedPlaces: {
+    id: string;
+    nombre: string;
+    categoria: string;
+    ubicacion: string;
+    imagenUrl: string | null;
+    unlockCount: number;
+    pct: number;
+  }[] = [];
+
+  let topRatedPlaces: {
+    id: string;
+    nombre: string;
+    categoria: string;
+    ubicacion: string;
+    imagenUrl: string | null;
+    avgScore: number;
+    reviewCount: number;
+  }[] = [];
+
   try {
-    const placesWithRatings = await prisma.lugar.findMany({
-      include: { ratings: { select: { score: true } } }
+    const places = await prisma.lugar.findMany({
+      where: {
+        categoria: { not: 'PROVINCIA' },
+        isVisible: true,
+      },
+      select: {
+        id: true,
+        nombre: true,
+        categoria: true,
+        ubicacion: true,
+        imagenUrl: true,
+        _count: {
+          select: {
+            userProgress: {
+              where: {
+                completado: true,
+                ...userFilter,
+              },
+            },
+            ratings: {
+              where: userFilter,
+            },
+          },
+        },
+        ratings: {
+          where: userFilter,
+          select: { score: true },
+        },
+      },
     });
-    avgRatings = placesWithRatings.map((place: any) => {
-      const totalScore = place.ratings.reduce((acc: number, curr: any) => acc + curr.score, 0);
-      const avg = place.ratings.length > 0 ? totalScore / place.ratings.length : 0;
-      return { name: place.nombre, avg: Number(avg.toFixed(1)), count: place.ratings.length };
-   }).filter((p: any) => p.count > 0).sort((a: any, b: any) => b.avg - a.avg).slice(0, 5);
+
+    // 1. Top Desbloqueadas
+    const sortedByUnlocks = [...places]
+      .map((p) => ({
+        id: p.id,
+        nombre: p.nombre,
+        categoria: CATEGORY_NAMES[p.categoria] || p.categoria,
+        ubicacion: p.ubicacion,
+        imagenUrl: p.imagenUrl,
+        unlockCount: p._count.userProgress,
+      }))
+      .filter((p) => p.unlockCount > 0)
+      .sort((a, b) => b.unlockCount - a.unlockCount)
+      .slice(0, 5);
+
+    const maxUnlock = sortedByUnlocks[0]?.unlockCount || 1;
+    topUnlockedPlaces = sortedByUnlocks.map((p) => ({
+      ...p,
+      pct: Math.round((p.unlockCount / maxUnlock) * 100),
+    }));
+
+    // 2. Top Calificadas (Promedio comunitario)
+    topRatedPlaces = places
+      .map((p) => {
+        const total = p.ratings.reduce((acc, curr) => acc + curr.score, 0);
+        const count = p.ratings.length;
+        const avg = count > 0 ? total / count : 0;
+        return {
+          id: p.id,
+          nombre: p.nombre,
+          categoria: CATEGORY_NAMES[p.categoria] || p.categoria,
+          ubicacion: p.ubicacion,
+          imagenUrl: p.imagenUrl,
+          avgScore: Number(avg.toFixed(1)),
+          reviewCount: count,
+        };
+      })
+      .filter((p) => p.reviewCount > 0)
+      .sort((a, b) => {
+        if (b.avgScore !== a.avgScore) return b.avgScore - a.avgScore;
+        return b.reviewCount - a.reviewCount;
+      })
+      .slice(0, 5);
   } catch (error) {
-    console.log("No se pudo obtener las calificaciones (la tabla puede no existir o no hay conexión):", error);
+    console.error("Error al obtener postales top en insights:", error);
   }
 
-  if (avgRatings.length === 0) {
-    // Mock data si no hay ratings en DB local o si falló la consulta
-    avgRatings = [
-      { name: 'Volcán Arenal', avg: 3.9, count: 42 },
-      { name: 'Parque Nacional Manuel Antonio', avg: 3.8, count: 38 },
-      { name: 'Río Celeste', avg: 3.7, count: 35 },
-      { name: 'Playa Conchal', avg: 3.5, count: 29 },
-      { name: 'Monteverde', avg: 3.4, count: 24 }
+  // Fallbacks si la base de datos está en desarrollo o aún no tiene interacciones suficientes
+  if (topUnlockedPlaces.length === 0) {
+    topUnlockedPlaces = [
+      { id: '1', nombre: 'Volcán Arenal', categoria: 'Volcán', ubicacion: 'Alajuela, San Carlos', imagenUrl: null, unlockCount: 142, pct: 100 },
+      { id: '2', nombre: 'Parque Nacional Manuel Antonio', categoria: 'Parque Nacional', ubicacion: 'Puntarenas, Quepos', imagenUrl: null, unlockCount: 128, pct: 90 },
+      { id: '3', nombre: 'Catarata Río Celeste', categoria: 'Ríos y Cataratas', ubicacion: 'Alajuela, Guatuso', imagenUrl: null, unlockCount: 115, pct: 81 },
+      { id: '4', nombre: 'Reserva Bosque Nuboso Monteverde', categoria: 'Bosque y Reserva', ubicacion: 'Puntarenas, Monteverde', imagenUrl: null, unlockCount: 94, pct: 66 },
+      { id: '5', nombre: 'Playa Conchal', categoria: 'Playa', ubicacion: 'Guanacaste, Santa Cruz', imagenUrl: null, unlockCount: 82, pct: 58 },
+    ];
+  }
+
+  if (topRatedPlaces.length === 0) {
+    topRatedPlaces = [
+      { id: '1', nombre: 'Volcán Arenal', categoria: 'Volcán', ubicacion: 'Alajuela, San Carlos', imagenUrl: null, avgScore: 3.9, reviewCount: 42 },
+      { id: '2', nombre: 'Parque Nacional Manuel Antonio', categoria: 'Parque Nacional', ubicacion: 'Puntarenas, Quepos', imagenUrl: null, avgScore: 3.8, reviewCount: 38 },
+      { id: '3', nombre: 'Catarata Río Celeste', categoria: 'Ríos y Cataratas', ubicacion: 'Alajuela, Guatuso', imagenUrl: null, avgScore: 3.7, reviewCount: 35 },
+      { id: '4', nombre: 'Playa Conchal', categoria: 'Playa', ubicacion: 'Guanacaste, Santa Cruz', imagenUrl: null, avgScore: 3.5, reviewCount: 29 },
+      { id: '5', nombre: 'Reserva Bosque Nuboso Monteverde', categoria: 'Bosque y Reserva', ubicacion: 'Puntarenas, Monteverde', imagenUrl: null, avgScore: 3.4, reviewCount: 24 },
     ];
   }
 
@@ -387,67 +494,201 @@ export default async function DemografiaInsights({ params, searchParams }: PageP
           </div>
         </div>
 
-        {/* Fila 4: Nube de Palabras y Ratings */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Fila 4: Top 5 Postales Más Desbloqueadas y Top 5 Mejor Calificadas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          {/* Lugar Favorito */}
-          <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col">
-            <div className="flex items-center gap-3 mb-6 border-b border-stone-100 pb-4">
-              <Navigation className="text-emerald-500" size={24} />
-              <h2 className="text-lg font-bold text-stone-800 tracking-wide">Lugar Favorito</h2>
+          {/* Top 5 Postales Más Desbloqueadas */}
+          <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-stone-800 tracking-wide">
+                    {isEn ? 'Top 5 Most Unlocked Postcards' : 'Top 5 Postales Más Desbloqueadas'}
+                  </h2>
+                </div>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {isEn ? 'Destinations with the highest number of completions' : 'Destinos con mayor cantidad de exploradores que los han completado'}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                <Trophy className="text-emerald-600" size={22} />
+              </div>
             </div>
             
-            <div className="flex flex-wrap justify-center items-center gap-4 py-8 px-4 flex-1 bg-stone-50 rounded-2xl border border-stone-100 shadow-inner">
-              {placeData.length > 0 ? placeData.map((place: any, idx: any) => {
-                const ratio = place._count.id / maxPlaceCount;
-                const size = 0.8 + (ratio * 1.7);
-                const colors = ['text-emerald-600', 'text-blue-500', 'text-amber-500', 'text-rose-500', 'text-indigo-500', 'text-cyan-600', 'text-fuchsia-600'];
-                const colorClass = colors[idx % colors.length];
-                
+            <div className="space-y-4 flex-1 flex flex-col justify-center">
+              {topUnlockedPlaces.map((place, idx) => {
+                const rankStyles = [
+                  'bg-amber-100 text-amber-800 border-amber-300 shadow-sm ring-2 ring-amber-400/20',
+                  'bg-slate-100 text-slate-700 border-slate-300 shadow-sm',
+                  'bg-amber-50 text-amber-900 border-amber-200 shadow-sm',
+                  'bg-stone-50 text-stone-600 border-stone-200',
+                  'bg-stone-50 text-stone-600 border-stone-200',
+                ];
+                const badgeStyle = rankStyles[idx] || rankStyles[3];
+
                 return (
-                  <span 
-                    key={idx} 
-                    className={`font-black ${colorClass} transition-transform hover:scale-110 cursor-default`}
-                    style={{ fontSize: `${size}rem`, opacity: 0.6 + (ratio * 0.4) }}
-                    title={`${place._count.id} usuarios`}
-                  >
-                    {place.lugarFavorito}
-                  </span>
+                  <div key={place.id || idx} className="p-3.5 bg-stone-50/70 hover:bg-stone-50 rounded-2xl border border-stone-100 transition-all">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-9 h-9 shrink-0 rounded-xl border flex items-center justify-center font-black text-sm ${badgeStyle}`}>
+                        #{idx + 1}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="font-bold text-stone-800 text-sm truncate" title={place.nombre}>
+                            {place.nombre}
+                          </span>
+                          <span className="shrink-0 flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                            <CheckCircle2 size={12} className="text-emerald-600" />
+                            {place.unlockCount} {isEn ? 'unlocks' : 'desbloqueos'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-xs text-stone-400 mb-1.5">
+                          <span className="truncate max-w-[200px] sm:max-w-xs">{place.ubicacion}</span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-stone-200/60 text-stone-600 text-[10px] font-semibold uppercase tracking-wider">
+                            {place.categoria}
+                          </span>
+                        </div>
+
+                        <div className="w-full h-2 bg-stone-200/60 rounded-full overflow-hidden shadow-inner">
+                          <div 
+                            className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700" 
+                            style={{ width: `${place.pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 );
-              }) : (
-                <span className="text-stone-400 font-medium italic">Aún no hay lugares registrados.</span>
-              )}
+              })}
             </div>
           </div>
 
-          {/* Top Calificaciones (Ratings) */}
-          <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col">
+          {/* Top 5 Postales Mejor Calificadas */}
+          <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-bold text-stone-800 tracking-wide">Top Postales (Huellas)</h2>
-              <PawPrint className="text-amber-500" size={24} />
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-stone-800 tracking-wide">
+                    {isEn ? 'Top 5 Highest Rated Postcards' : 'Top 5 Postales Mejor Calificadas'}
+                  </h2>
+                </div>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {isEn ? 'Community average rating (1 - 4 paw scale)' : 'Promedio otorgado por la comunidad (Escala 1 a 4 huellas)'}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+                <Star className="text-amber-500 fill-amber-400" size={22} />
+              </div>
             </div>
             
-            <div className="space-y-5 flex-1 flex flex-col justify-center">
-              {avgRatings.map((rating, idx) => (
-                <div key={idx} className="flex items-center gap-4">
-                  <div className="w-12 h-12 shrink-0 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 font-black text-sm shadow-inner">
-                    #{idx + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="font-bold text-stone-700 truncate">{rating.name}</span>
-                      <span className="font-bold text-amber-600 flex items-center gap-1">
-                        {rating.avg} <PawPrint size={14} className="fill-amber-500" />
-                      </span>
+            <div className="space-y-4 flex-1 flex flex-col justify-center">
+              {topRatedPlaces.map((place, idx) => {
+                const rankStyles = [
+                  'bg-amber-100 text-amber-800 border-amber-300 shadow-sm ring-2 ring-amber-400/20',
+                  'bg-slate-100 text-slate-700 border-slate-300 shadow-sm',
+                  'bg-amber-50 text-amber-900 border-amber-200 shadow-sm',
+                  'bg-stone-50 text-stone-600 border-stone-200',
+                  'bg-stone-50 text-stone-600 border-stone-200',
+                ];
+                const badgeStyle = rankStyles[idx] || rankStyles[3];
+                const ratingPercent = Math.min(100, Math.round((place.avgScore / 4) * 100));
+
+                return (
+                  <div key={place.id || idx} className="p-3.5 bg-stone-50/70 hover:bg-stone-50 rounded-2xl border border-stone-100 transition-all">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-9 h-9 shrink-0 rounded-xl border flex items-center justify-center font-black text-sm ${badgeStyle}`}>
+                        #{idx + 1}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="font-bold text-stone-800 text-sm truncate" title={place.nombre}>
+                            {place.nombre}
+                          </span>
+                          <span className="shrink-0 flex items-center gap-1 text-xs font-black text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-200/80">
+                            {place.avgScore.toFixed(1)}
+                            <PawPrint size={12} className="fill-amber-500 text-amber-500" />
+                            <span className="text-[10px] text-amber-600/80 font-semibold">/ 4</span>
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-xs text-stone-400 mb-1.5">
+                          <span className="truncate max-w-[200px] sm:max-w-xs">{place.ubicacion}</span>
+                          <span className="text-[10px] text-stone-400 font-medium">
+                            {place.reviewCount} {isEn ? 'reviews' : 'reseñas'}
+                          </span>
+                        </div>
+
+                        <div className="w-full h-2 bg-stone-200/60 rounded-full overflow-hidden shadow-inner">
+                          <div 
+                            className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-400 rounded-full transition-all duration-700" 
+                            style={{ width: `${ratingPercent}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden shadow-inner">
-                      <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${(rating.avg / 4) * 100}%` }}></div>
-                    </div>
-                    <p className="text-[10px] text-stone-400 mt-1 uppercase tracking-wider text-right">{rating.count} reseñas</p>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+          </div>
+        </div>
+
+        {/* Fila 5: Lugar Favorito (Nube de Palabras) */}
+        <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col">
+          <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Navigation className="text-emerald-600" size={22} />
+                <h2 className="text-lg font-bold text-stone-800 tracking-wide">
+                  {isEn ? 'Favorite Places Mentioned by Explorers' : 'Lugares Favoritos Citados por Exploradores'}
+                </h2>
+              </div>
+              <p className="text-xs text-stone-400 mt-0.5">
+                {isEn ? 'Most cited places in Costa Rica during onboarding registration' : 'Lugares de Costa Rica más citados al completar el perfil de explorador'}
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-stone-400 bg-stone-50 px-3 py-1 rounded-full border border-stone-200">
+              {placeData.length} {isEn ? 'unique places' : 'menciones únicas'}
+            </span>
+          </div>
+          
+          <div className="flex flex-wrap justify-center items-center gap-4 py-8 px-6 bg-stone-50 rounded-2xl border border-stone-100 shadow-inner min-h-[160px]">
+            {placeData.length > 0 ? placeData.map((place: any, idx: any) => {
+              const ratio = place._count.id / maxPlaceCount;
+              const size = 0.85 + (ratio * 1.8);
+              const colors = [
+                'text-emerald-600 hover:text-emerald-700',
+                'text-blue-500 hover:text-blue-600',
+                'text-amber-500 hover:text-amber-600',
+                'text-rose-500 hover:text-rose-600',
+                'text-indigo-500 hover:text-indigo-600',
+                'text-cyan-600 hover:text-cyan-700',
+                'text-fuchsia-600 hover:text-fuchsia-700',
+                'text-teal-600 hover:text-teal-700'
+              ];
+              const colorClass = colors[idx % colors.length];
+              
+              return (
+                <span 
+                  key={idx} 
+                  className={`font-black ${colorClass} transition-all duration-200 hover:scale-110 cursor-default select-none px-2 py-1 rounded-lg hover:bg-white/80 hover:shadow-xs`}
+                  style={{ fontSize: `${size}rem`, opacity: 0.65 + (ratio * 0.35) }}
+                  title={`${place.lugarFavorito}: ${place._count.id} ${isEn ? 'explorers' : 'exploradores'}`}
+                >
+                  {place.lugarFavorito}
+                  <span className="text-[10px] ml-1.5 opacity-60 font-semibold align-super">
+                    {place._count.id}
+                  </span>
+                </span>
+              );
+            }) : (
+              <span className="text-stone-400 font-medium italic">
+                {isEn ? 'No favorite places registered yet.' : 'Aún no hay lugares registrados.'}
+              </span>
+            )}
           </div>
         </div>
 
