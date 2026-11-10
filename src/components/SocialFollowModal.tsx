@@ -1,13 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, ExternalLink, Copy, Check, Gift } from 'lucide-react';
+import { X, Sparkles, ExternalLink, Gift } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
-import { toast } from 'sonner';
 
 export default function SocialFollowModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const params = useParams();
   const pathname = usePathname();
 
@@ -54,21 +52,6 @@ export default function SocialFollowModal() {
       localStorage.setItem('hasSeenSocialFollowModal_v1', 'true');
     } catch {
       // Ignorar en entornos con almacenamiento deshabilitado
-    }
-  };
-
-  const handleCopyHandle = async () => {
-    try {
-      await navigator.clipboard.writeText('COLECTIKOS');
-      setCopied(true);
-      toast.success(
-        isEnglish
-          ? 'Handle copied: COLECTIKOS'
-          : '¡Usuario copiado: COLECTIKOS! Buscanos en tu app favorita'
-      );
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      toast.info('Búscanos como: COLECTIKOS');
     }
   };
 
@@ -153,35 +136,18 @@ export default function SocialFollowModal() {
                 <>
                   Find us on <strong className="text-white">TikTok</strong>,{' '}
                   <strong className="text-white">Instagram</strong>, and{' '}
-                  <strong className="text-white">Facebook</strong> as:
+                  <strong className="text-white">Facebook</strong> as{' '}
+                  <strong className="text-emerald-400 font-black tracking-wide">COLECTIKOS</strong>:
                 </>
               ) : (
                 <>
                   Buscanos en <strong className="text-white">TikTok</strong>,{' '}
                   <strong className="text-white">Instagram</strong> y{' '}
-                  <strong className="text-white">Facebook</strong> como:
+                  <strong className="text-white">Facebook</strong> como{' '}
+                  <strong className="text-emerald-400 font-black tracking-wide">COLECTIKOS</strong>:
                 </>
               )}
             </p>
-
-            {/* Barra interactiva de copiado rápido del usuario */}
-            <div className="mt-3 flex items-center justify-between gap-2 p-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-emerald-500/40 transition-colors">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs text-stone-400 font-bold uppercase shrink-0">Usuario:</span>
-                <span className="text-emerald-400 font-black text-base tracking-wider truncate">
-                  COLECTIKOS
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopyHandle}
-                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-400/40 transition-all active:scale-95 cursor-pointer"
-                title={isEnglish ? 'Copy username' : 'Copiar usuario'}
-              >
-                {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                <span>{copied ? (isEnglish ? 'Copied!' : '¡Copiado!') : isEnglish ? 'Copy' : 'Copiar'}</span>
-              </button>
-            </div>
           </div>
 
           {/* Tarjetas de Redes Sociales con Enlaces Directos */}
@@ -291,3 +257,4 @@ export default function SocialFollowModal() {
     </div>
   );
 }
+
