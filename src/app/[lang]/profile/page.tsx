@@ -39,6 +39,30 @@ import StaticProgressMap from '../../../components/StaticProgressMap';
 
 import { getProvincesForLugar } from '../../../utils/getLugares';
 
+function loadHtmlImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') {
+      return reject(new Error('Window not available'));
+    }
+    const img = new window.Image();
+    if (!src.startsWith('data:') && !src.startsWith('/')) {
+      img.crossOrigin = 'anonymous';
+    }
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      if (img.crossOrigin) {
+        const retry = new window.Image();
+        retry.onload = () => resolve(retry);
+        retry.onerror = (err: any) => reject(err);
+        retry.src = src;
+      } else {
+        reject(new Error(`Failed to load image: ${src.slice(0, 50)}`));
+      }
+    };
+    img.src = src;
+  });
+}
+
 export default function Profile() {
   const { completedPlaces, unlockModes, currentStreak, xp, level, userProfile } = useProgress(); 
   const dict = useDictionary(); 
@@ -132,55 +156,44 @@ export default function Profile() {
       
       // 2. Generar el Canvas base del póster (renderiza fondo, mapa SVG, medallas y textos)
       const canvas = await toCanvas(progressRef.current, { 
+        width: 1080,
+        height: 1080,
         pixelRatio,
         cacheBust: false,
       });
 
       // 3. Post-procesamiento directo sobre Canvas 2D (Garantía definitiva para Safari / iPhone / iOS)
       // Dibuja el Sello Dorado y el Avatar directamente en el lienzo usando la API nativa de Canvas 2D,
-      // evitando cualquier fallo de decodificación o restricciones de SVG foreignObject en WebKit.
+      // con coordenadas deterministas calculadas a partir del tamaño fijo (1080x1080) del pasaporte.
+      // Esto evita 100% cualquier fallo de getBoundingClientRect() en elementos fuera de pantalla
+      // y cualquier restricción de WebKit SVG foreignObject.
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        const posterEl = progressRef.current;
-        const posterRect = posterEl.getBoundingClientRect();
-        const scale = canvas.width / posterRect.width;
+        const scale = canvas.width / 1080;
 
-        // A. Dibujar el Sello Dorado directamente sobre el Canvas
-        const logoContainer = posterEl.querySelector('#poster-logo-container') as HTMLElement | null;
-        if (logoContainer) {
-          try {
-            const logoRect = logoContainer.getBoundingClientRect();
-            const lx = (logoRect.left - posterRect.left) * scale;
-            const ly = (logoRect.top - posterRect.top) * scale;
-            const lw = logoRect.width * scale;
-            const lh = logoRect.height * scale;
-
-            const logoImg = new window.Image();
-            logoImg.src = LOGO_BASE64;
-            if (logoImg.decode) {
-              await logoImg.decode();
-            } else {
-              await new Promise((res) => { logoImg.onload = res; logoImg.onerror = res; });
-            }
-            ctx.drawImage(logoImg, lx, ly, lw, lh);
-          } catch (e) {
-            console.warn("Logo direct draw fallback:", e);
-          }
+        // A. Dibujar el Sello Dorado directamente sobre el Canvas (centrado horizontalmente en 540)
+        try {
+          const logoImg = await loadHtmlImage(LOGO_BASE64);
+          const lx = 460 * scale;
+          const ly = 30 * scale;
+          const lw = 160 * scale;
+          const lh = 160 * scale;
+          ctx.drawImage(logoImg, lx, ly, lw, lh);
+        } catch (e) {
+          console.warn("Logo direct canvas draw fallback:", e);
         }
 
         // B. Dibujar el Avatar directamente sobre el Canvas con recorte circular y borde esmeralda
-        const avatarContainer = posterEl.querySelector('#poster-avatar-container') as HTMLElement | null;
-        if (avatarContainer && avatarUrl) {
-          try {
-            const avRect = avatarContainer.getBoundingClientRect();
-            const ax = (avRect.left - posterRect.left) * scale;
-            const ay = (avRect.top - posterRect.top) * scale;
-            const aw = avRect.width * scale;
-            const ah = avRect.height * scale;
-            const radius = aw / 2;
-            const centerX = ax + radius;
-            const centerY = ay + radius;
+        const ax = 64 * scale;
+        const ay = 54 * scale;
+        const aw = 112 * scale;
+        const ah = 112 * scale;
+        const radius = 56 * scale;
+        const cx = 120 * scale;
+        const cy = 110 * scale;
 
+        if (avatarUrl) {
+          try {
             let resolvedAvatarSrc = avatarUrl;
             try {
               const fetchUrl = avatarUrl.startsWith('/') && typeof window !== 'undefined'
@@ -198,19 +211,12 @@ export default function Profile() {
               // Si falla fetch, usamos avatarUrl directamente
             }
 
-            const avImg = new window.Image();
-            avImg.crossOrigin = 'anonymous';
-            avImg.src = resolvedAvatarSrc;
-            if (avImg.decode) {
-              await avImg.decode();
-            } else {
-              await new Promise((res) => { avImg.onload = res; avImg.onerror = res; });
-            }
+            const avImg = await loadHtmlImage(resolvedAvatarSrc);
 
             // Fondo oscuro para el avatar
             ctx.save();
             ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
             ctx.closePath();
             ctx.fillStyle = '#1c1917';
             ctx.fill();
@@ -223,14 +229,34 @@ export default function Profile() {
             // Borde verde esmeralda (4px escalado)
             ctx.save();
             ctx.beginPath();
-            ctx.arc(centerX, centerY, radius - (2 * scale), 0, Math.PI * 2);
+            ctx.arc(cx, cy, radius - (2 * scale), 0, Math.PI * 2);
             ctx.strokeStyle = '#10b981';
             ctx.lineWidth = 4 * scale;
             ctx.stroke();
             ctx.restore();
           } catch (e) {
-            console.warn("Avatar direct draw fallback:", e);
+            console.warn("Avatar direct canvas draw fallback:", e);
           }
+        } else {
+          // Fallback si no hay avatarUrl: inicial del usuario con fondo y borde esmeralda
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fillStyle = '#1c1917';
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius - (2 * scale), 0, Math.PI * 2);
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 4 * scale;
+          ctx.stroke();
+
+          ctx.font = `bold ${44 * scale}px sans-serif`;
+          ctx.fillStyle = '#10b981';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(username ? username.charAt(0).toUpperCase() : '?', cx, cy);
+          ctx.restore();
         }
       }
 

@@ -90,13 +90,16 @@ export default function SharePoster({
         }}
       >
         {/* HEADER */}
-        <div className="z-10 grid w-full grid-cols-3 items-center px-16 pt-8">
-          
+        <div 
+          className="z-10 w-full flex items-center justify-between px-16 pt-8 relative"
+          style={{ height: '220px', boxSizing: 'border-box' }}
+        >
           {/* LEFT: Avatar and User Info */}
-          <div className="flex items-center gap-5 justify-self-start">
+          <div className="flex items-center gap-5" style={{ width: '380px' }}>
             <div 
               id="poster-avatar-container"
               className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-emerald-500 shadow-2xl bg-stone-800 flex-shrink-0 flex items-center justify-center"
+              style={{ width: '112px', height: '112px' }}
             >
               {base64Avatar || avatarUrl ? (
                 <img 
@@ -113,15 +116,17 @@ export default function SharePoster({
                 </div>
               )}
             </div>
-            <div>
-              <h1 className="text-4xl font-black tracking-tight">{username}</h1>
-              <p className="mt-2 text-2xl font-medium text-emerald-400">{globalTitle}</p>
+            <div className="overflow-hidden">
+              <h1 className="text-4xl font-black tracking-tight truncate">{username}</h1>
+              <p className="mt-2 text-2xl font-medium text-emerald-400 truncate">{globalTitle}</p>
             </div>
           </div>
 
+          {/* CENTER: Colectikos Golden Seal Logo */}
           <div 
             id="poster-logo-container"
-            className="justify-self-center ml-16"
+            className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
+            style={{ width: '160px', height: '160px', top: '30px' }}
           >
             <div className="flex items-center justify-center h-40 w-40">
               <img 
@@ -129,14 +134,14 @@ export default function SharePoster({
                 width={160}
                 height={160}
                 src={LOGO_BASE64}
-                className="h-full w-full object-contain block"
+                className="h-full w-full object-contain block drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)]"
                 alt="Colectikos Logo"
               />
             </div>
           </div>
 
           {/* RIGHT: Collection Title */}
-          <div className="text-right justify-self-end flex flex-col items-end gap-1">
+          <div className="text-right flex flex-col items-end gap-1" style={{ width: '380px' }}>
             <h2 className="text-3xl font-black text-white leading-none tracking-tight">
               {dict?.profile?.posterTitleLine1 || 'Mi Pasaporte'}
             </h2>
