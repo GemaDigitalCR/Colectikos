@@ -18,6 +18,14 @@ interface AdminMediaKitClientProps {
     topAges: { range: string; count: number; pct: number }[];
     topScreens: { path: string; label: string; count: number; pct: number }[];
     gamesBreakdown: { name: string; emoji: string; count: number; xp: number; tag: string }[];
+    devices?: {
+      mobileCount: number;
+      mobilePct: number;
+      desktopCount: number;
+      desktopPct: number;
+      tabletCount: number;
+      tabletPct: number;
+    };
   };
 }
 
@@ -33,6 +41,9 @@ export default function AdminMediaKitClient({ stats }: AdminMediaKitClientProps)
 
     const topProvinceStr = stats.topProvinces.slice(0, 3).map((p) => `${p.name} (${p.pct}%)`).join(", ");
     const topAgeStr = stats.topAges.slice(0, 2).map((a) => `${a.range} años (${a.pct}%)`).join(", ");
+    const devicesStr = stats.devices 
+      ? `• Dispositivos de Acceso: ${stats.devices.mobilePct}% Smartphones (${stats.devices.mobileCount.toLocaleString("es-CR")} usuarios), ${stats.devices.desktopPct}% Laptop/PC (${stats.devices.desktopCount.toLocaleString("es-CR")}), ${stats.devices.tabletPct}% Tablets` 
+      : "";
     const topScreensStr = stats.topScreens.slice(0, 4).map((s, i) => `${i + 1}. ${s.label}`).join("\n");
     const gamesStr = stats.gamesBreakdown.map((g, i) => `   #${i + 1} ${g.emoji} ${g.name}: ${g.count.toLocaleString("es-CR")} partidas (${g.tag})`).join("\n");
 
@@ -45,6 +56,7 @@ Actualizado al: ${dateStr}
 • Nuevos Usuarios (Últimos 7 días): +${stats.newUsersWeek.toLocaleString("es-CR")}
 • Núcleo Demográfico: ${topProvinceStr || "San José, Alajuela, Heredia"}
 • Rango de Edad Predominante: ${topAgeStr || "26-35 años, 18-25 años"}
+${devicesStr ? `${devicesStr}\n` : ""}
 
 ⭐ ENGAGEMENT Y CONTENIDO TURÍSTICO
 • Postales y Destinos Desbloqueados: ${stats.totalUnlocks.toLocaleString("es-CR")}
