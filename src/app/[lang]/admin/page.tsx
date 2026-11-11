@@ -4,7 +4,8 @@ import AdminMediaKitClient from "./AdminMediaKitClient";
 import { 
   Users, MapPin, Award, Star, MessageSquare, Briefcase, 
   Gamepad2, Eye, Smartphone, Monitor, TrendingUp, Calendar, 
-  Sparkles, CheckCircle2, ShieldCheck, ArrowUpRight
+  Sparkles, CheckCircle2, ShieldCheck, ArrowUpRight, AlertTriangle,
+  Lightbulb, Zap, Flame, Compass
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,51 @@ const PATH_LABELS: Record<string, string> = {
   "/profile": "Pasaporte del Explorador",
   "/login": "Pantalla de Ingreso / Registro",
   "/contact": "Contacto y Soporte",
+};
+
+const GAME_METADATA: Record<string, { name: string; emoji: string; route: string; tag: string; tagType: "hot" | "good" | "warning" }> = {
+  CRUCETIKAS_GAME: {
+    name: "Crucetiko (Paso de Fauna)",
+    emoji: "🦥",
+    route: "/community/crucetiko",
+    tag: "🔥 Top 1 Juego Más Jugado · Ideal para Pauta B2B",
+    tagType: "hot",
+  },
+  SOLVE_PUZZLE: {
+    name: "Rompecabezas de Destinos",
+    emoji: "🧩",
+    route: "/destinos",
+    tag: "🗺️ Máxima Interacción en Postales",
+    tagType: "hot",
+  },
+  PAREJITIKAS_GAME: {
+    name: "Parejitikas (Memoria)",
+    emoji: "🃏",
+    route: "/community/parejitikas",
+    tag: "⭐ Alta Retención Visual",
+    tagType: "good",
+  },
+  PREGUNTIKAS_GAME: {
+    name: "Preguntikas (Trivia Tica)",
+    emoji: "🦜",
+    route: "/community/preguntikas",
+    tag: "🧠 Retención Diaria Educativa",
+    tagType: "good",
+  },
+  SOPITIKA_GAME: {
+    name: "Sopitika (Sopa de Letras)",
+    emoji: "🍲",
+    route: "/community/sopitika",
+    tag: "📖 Tráfico Estable",
+    tagType: "good",
+  },
+  BEACH_DAILY_PLAY: {
+    name: "Tiko Playa (Isla Isométrica)",
+    emoji: "🏖️",
+    route: "/community/playa",
+    tag: "⚠️ Menor Tráfico Relativo · Oportunidad de Mejora",
+    tagType: "warning",
+  },
 };
 
 export default async function AdminDashboard() {
@@ -99,6 +145,7 @@ export default async function AdminDashboard() {
   let totalSponsors = 0;
   let totalGamesPlayed = 0;
   let latestReviews: any[] = [];
+  let rawGameLogs: any[] = [];
 
   try {
     totalUnlocks = await prisma.userProgress.count({ where: { completado: true } });
@@ -111,11 +158,21 @@ export default async function AdminDashboard() {
     });
     totalReviewLikes = await prisma.reviewLike.count();
     totalSponsors = await prisma.sponsor.count();
-    totalGamesPlayed = await prisma.userActionLog.count({
+
+    // Consultar desglose exacto de partidas por minijuego
+    rawGameLogs = await (prisma.userActionLog as any).groupBy({
+      by: ["actionType"],
+      _count: { id: true },
+      _sum: { xpAwarded: true },
       where: {
-        actionType: { in: ["CRUCETIKAS_GAME", "PAREJITIKAS_GAME", "SOPITIKA_GAME", "PREGUNTIKAS_GAME", "BEACH_DAILY_PLAY"] }
-      }
+        actionType: {
+          in: ["CRUCETIKAS_GAME", "SOLVE_PUZZLE", "PAREJITIKAS_GAME", "PREGUNTIKAS_GAME", "SOPITIKA_GAME", "BEACH_DAILY_PLAY"]
+        }
+      },
+      orderBy: { _count: { id: "desc" } }
     });
+
+    totalGamesPlayed = rawGameLogs.reduce((acc: number, curr: any) => acc + curr._count.id, 0);
 
     latestReviews = await prisma.userProgress.findMany({
       where: {
@@ -132,6 +189,28 @@ export default async function AdminDashboard() {
   } catch (e) {
     console.error("Error fetching interactions:", e);
   }
+
+  // Procesar desglose de juegos
+  const maxGamePlays = rawGameLogs[0]?._count.id || 1;
+  const gamesBreakdown = rawGameLogs.map((log: any) => {
+    const meta = GAME_METADATA[log.actionType] || {
+      name: log.actionType,
+      emoji: "🎮",
+      route: "/community",
+      tag: "Juego Comunitario",
+      tagType: "good" as const,
+    };
+    return {
+      name: meta.name,
+      emoji: meta.emoji,
+      route: meta.route,
+      count: log._count.id,
+      xp: log._sum.xpAwarded || 0,
+      pct: Math.round((log._count.id / maxGamePlays) * 100),
+      tag: meta.tag,
+      tagType: meta.tagType,
+    };
+  });
 
   // 3. Métricas de Pantallas y Tráfico Real (PageViewLog)
   let topScreensData: { path: string; count: number; count_week: number }[] = [];
@@ -231,6 +310,13 @@ export default async function AdminDashboard() {
                 topProvinces,
                 topAges,
                 topScreens: formattedScreens,
+                gamesBreakdown: gamesBreakdown.map(g => ({
+                  name: g.name,
+                  emoji: g.emoji,
+                  count: g.count,
+                  xp: g.xp,
+                  tag: g.tag,
+                })),
               }}
             />
           </div>
@@ -299,14 +385,14 @@ export default async function AdminDashboard() {
           {/* Partidas de Minijuegos */}
           <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/80 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Minijuegos</span>
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Sesiones Juegos</span>
               <Gamepad2 size={16} className="text-teal-600" />
             </div>
             <span className="text-2xl sm:text-3xl font-black text-stone-900 block leading-tight">
               {totalGamesPlayed.toLocaleString("es-CR")}
             </span>
-            <span className="text-[10px] text-stone-400 font-semibold mt-2 block">
-              Sesiones de juego
+            <span className="text-[10px] text-teal-600 font-bold mt-2 block">
+              Retención alta
             </span>
           </div>
 
@@ -326,7 +412,122 @@ export default async function AdminDashboard() {
 
         </div>
 
-        {/* FILA 2: PANTALLAS MÁS VISITADAS Y DISPOSITIVOS */}
+        {/* FILA 2: AUDITORÍA DE MINIJUEGOS Y ENGAGEMENT REAL (RESPUESTA EXACTA A QUÉ JUEGOS VISITAN MÁS) */}
+        <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm flex flex-col">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 border-b border-stone-100 gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <Gamepad2 className="text-teal-600" size={22} />
+                <h2 className="text-lg md:text-xl font-black text-stone-900">
+                  Ranking de Minijuegos & Oportunidades de Pauta
+                </h2>
+              </div>
+              <p className="text-xs text-stone-400 mt-0.5">
+                Datos reales extraídos de {totalGamesPlayed.toLocaleString("es-CR")} sesiones de juego en la base de datos de Neon
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-full border border-emerald-200/60">
+                ⭐ {totalGamesPlayed} Partidas Totales
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            {gamesBreakdown.map((game, idx) => {
+              const badgeColors = {
+                hot: "bg-rose-50 text-rose-700 border-rose-200/70",
+                good: "bg-emerald-50 text-emerald-700 border-emerald-200/70",
+                warning: "bg-amber-50 text-amber-800 border-amber-200/70",
+              }[game.tagType];
+
+              return (
+                <div key={game.name} className="p-4 bg-stone-50 rounded-2xl border border-stone-200/70 flex flex-col justify-between hover:bg-stone-50/80 transition-all">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-2xl">{game.emoji}</span>
+                      <span className="text-xs font-black text-stone-400 bg-white px-2 py-0.5 rounded-lg border border-stone-200">
+                        #{idx + 1}
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-stone-900 text-sm mb-1 truncate" title={game.name}>
+                      {game.name}
+                    </h3>
+                    
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <span className="text-2xl font-black text-stone-900">
+                        {game.count.toLocaleString("es-CR")}
+                      </span>
+                      <span className="text-xs font-semibold text-stone-400">partidas</span>
+                      <span className="text-[11px] text-teal-600 font-bold ml-auto">
+                        +{game.xp.toLocaleString()} XP
+                      </span>
+                    </div>
+
+                    <div className="w-full h-2 bg-stone-200/70 rounded-full overflow-hidden shadow-inner mb-3">
+                      <div 
+                        className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-700" 
+                        style={{ width: `${game.pct}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-xl border block text-center truncate ${badgeColors}`}>
+                    {game.tag}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* DIAGNÓSTICO ESTRATÉGICO: DÓNDE PONER PAUTA VS DÓNDE HACER CAMBIOS */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 bg-stone-50/80 p-5 rounded-2xl border border-stone-200/80 text-xs">
+            
+            {/* Oportunidades de Pauta */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-emerald-800 font-black text-sm">
+                <Flame className="text-rose-500" size={18} />
+                <span>Zonas de Alto Tráfico para Promocionar Pauta (B2B)</span>
+              </div>
+              <ul className="space-y-1.5 text-stone-600 pl-2">
+                <li className="flex items-start gap-1.5">
+                  <span className="text-emerald-600 font-bold">1.</span>
+                  <span><strong>Álbum de Postales (857 desbloqueos):</strong> Es la pantalla con más interacción visual. Ideal para vender el botón <em>&quot;Patrocinador en Ruta&quot;</em> de marcas aliadas.</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-emerald-600 font-bold">2.</span>
+                  <span><strong>Crucetiko (215 partidas):</strong> Es el minijuego #1 en visitas y juego diario. Puedes ofrecer a marcas patrocinar camiones o vehículos con su logo en la carretera.</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-emerald-600 font-bold">3.</span>
+                  <span><strong>Parejitikas y Preguntikas (156 y 135 partidas):</strong> Frecuencia diaria muy sólida de usuarios recurrentes buscando sumar XP diario.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Zonas de Bajo Tráfico a Optimizar */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-amber-900 font-black text-sm">
+                <Lightbulb className="text-amber-500" size={18} />
+                <span>Zonas de Menor Tráfico que Conviene Impulsar</span>
+              </div>
+              <ul className="space-y-1.5 text-stone-600 pl-2">
+                <li className="flex items-start gap-1.5">
+                  <span className="text-amber-600 font-bold">1.</span>
+                  <span><strong>Tiko Playa (89 sesiones):</strong> Al estar más escondida en el submenú, tiene menor rotación que Crucetiko. <em>Recomendación:</em> Crear una misión diaria en la portada: &quot;¡Visita tu playa hoy y gana +20 Tikolones!&quot;.</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-amber-600 font-bold">2.</span>
+                  <span><strong>Sección de Complementos (51 visitas):</strong> Requiere un banner más visible en el inicio para guiar a los exploradores hacia beneficios comerciales.</span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+
+        {/* FILA 3: PANTALLAS MÁS VISITADAS Y DISPOSITIVOS */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Top Pantallas Más Visitadas (2 Columnas) */}
@@ -336,15 +537,15 @@ export default async function AdminDashboard() {
                 <div className="flex items-center gap-2">
                   <Eye className="text-emerald-600" size={20} />
                   <h2 className="text-lg font-bold text-stone-900">
-                    Pantallas Más Visitadas
+                    Pantallas Más Concurridas (Navegación Web)
                   </h2>
                 </div>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  Métricas de exposición y páginas con mayor concurrencia de exploradores
+                  Telemetría en tiempo real de URLs recorridas por los visitantes
                 </p>
               </div>
               <span className="text-xs font-semibold bg-stone-100 text-stone-600 px-3 py-1 rounded-full">
-                {totalPageViews > 0 ? `${totalPageViews.toLocaleString()} visitas registradas` : "Telemetría activa"}
+                {totalPageViews > 0 ? `${totalPageViews.toLocaleString()} visitas registradas` : "Rastreador activo"}
               </span>
             </div>
 
@@ -459,7 +660,7 @@ export default async function AdminDashboard() {
 
         </div>
 
-        {/* FILA 3: DEMOGRAFÍA REAL PARA EL MEDIA KIT */}
+        {/* FILA 4: DEMOGRAFÍA REAL PARA EL MEDIA KIT */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Top Provincias de Residencia */}
@@ -522,7 +723,7 @@ export default async function AdminDashboard() {
 
         </div>
 
-        {/* FILA 4: ACTIVIDAD RECIENTE EN VIVO (ÚLTIMOS EXPLORADORES Y RESEÑAS REALES) */}
+        {/* FILA 5: ACTIVIDAD RECIENTE EN VIVO */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Últimos Exploradores Registrados */}

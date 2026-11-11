@@ -17,6 +17,7 @@ interface AdminMediaKitClientProps {
     topProvinces: { name: string; count: number; pct: number }[];
     topAges: { range: string; count: number; pct: number }[];
     topScreens: { path: string; label: string; count: number; pct: number }[];
+    gamesBreakdown: { name: string; emoji: string; count: number; xp: number; tag: string }[];
   };
 }
 
@@ -32,7 +33,8 @@ export default function AdminMediaKitClient({ stats }: AdminMediaKitClientProps)
 
     const topProvinceStr = stats.topProvinces.slice(0, 3).map((p) => `${p.name} (${p.pct}%)`).join(", ");
     const topAgeStr = stats.topAges.slice(0, 2).map((a) => `${a.range} años (${a.pct}%)`).join(", ");
-    const topScreensStr = stats.topScreens.slice(0, 3).map((s, i) => `${i + 1}. ${s.label}`).join("\n");
+    const topScreensStr = stats.topScreens.slice(0, 4).map((s, i) => `${i + 1}. ${s.label}`).join("\n");
+    const gamesStr = stats.gamesBreakdown.map((g, i) => `   #${i + 1} ${g.emoji} ${g.name}: ${g.count.toLocaleString("es-CR")} partidas (${g.tag})`).join("\n");
 
     return `📊 COLECTIKOS | MEDIA KIT & MÉTRICAS OFICIALES
 Actualizado al: ${dateStr}
@@ -48,10 +50,12 @@ Actualizado al: ${dateStr}
 • Postales y Destinos Desbloqueados: ${stats.totalUnlocks.toLocaleString("es-CR")}
 • Calificaciones Comunitarias (Huellas): ${stats.totalRatings.toLocaleString("es-CR")}
 • Reseñas y Experiencias Escritas: ${stats.totalReviews.toLocaleString("es-CR")}
-• Partidas de Juegos y Retención: ${stats.totalGamesPlayed.toLocaleString("es-CR")} interacciones
 
-📱 PANTALLAS DE MAYOR EXPOSICIÓN
-${topScreensStr || "1. Álbum y Destinos de Costa Rica\n2. Muro Comunitario de Exploradores\n3. Tiko Playa y Minijuegos"}
+🎮 AUDITORÍA DE MINIJUEGOS Y RETENCIÓN DIARIA (${stats.totalGamesPlayed.toLocaleString("es-CR")} sesiones totales)
+${gamesStr || "• Crucetiko, Parejitikas, Preguntikas, Sopitika, Tiko Playa"}
+
+📱 PANTALLAS DE MAYOR EXPOSICIÓN (ESPACIOS DE PAUTA)
+${topScreensStr || "1. Álbum y Destinos de Costa Rica (Zona Premium)\n2. Muro Comunitario de Exploradores\n3. Hub de Minijuegos"}
 
 🤝 ALIANZAS Y COMERCIOS (B2B)
 • Patrocinadores y Comercios en Ruta: ${stats.totalSponsors}
@@ -79,3 +83,4 @@ Sitio oficial: https://colectikos.com`;
     </div>
   );
 }
+
