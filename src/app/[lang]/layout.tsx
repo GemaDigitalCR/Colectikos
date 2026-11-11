@@ -60,6 +60,8 @@ import { ProgressProvider } from "../../context/ProgressContext";
 import { DictionaryProvider } from "../../context/DictionaryContext";
 import { Toaster } from 'react-hot-toast';
 import { Toaster as SonnerToaster } from 'sonner';
+import { Analytics } from '@vercel/analytics/react';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 import { ClerkProvider } from '@clerk/nextjs';
 import { esES, enUS } from '@clerk/localizations';
 import Navbar from "../../components/Navbar";
@@ -182,6 +184,8 @@ export default async function RootLayout({
               }}
             />
               <SonnerToaster position="top-center" richColors closeButton />
+              <AnalyticsTracker />
+              <Analytics />
               </ProgressProvider>
             </DictionaryProvider>
             </LugaresProvider>

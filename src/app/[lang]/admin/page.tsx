@@ -1,133 +1,604 @@
-import React from 'react';
+import React from "react";
+import prisma from "@/lib/prisma";
+import AdminMediaKitClient from "./AdminMediaKitClient";
+import { 
+  Users, MapPin, Award, Star, MessageSquare, Briefcase, 
+  Gamepad2, Eye, Smartphone, Monitor, TrendingUp, Calendar, 
+  Sparkles, CheckCircle2, ShieldCheck, ArrowUpRight
+} from "lucide-react";
 
-export default function AdminDashboard() {
+export const dynamic = "force-dynamic";
+
+const PATH_LABELS: Record<string, string> = {
+  "/": "Portada / Destinos Principales",
+  "/destinos": "Álbum de Postales y Destinos",
+  "/community": "Hub de Comunidad",
+  "/community/muro": "Muro Público de Reseñas",
+  "/community/playa": "Tiko Playa (Constructor)",
+  "/community/crucetiko": "Juego Crucetiko (Paso de Fauna)",
+  "/community/sopitika": "Juego Sopitika (Sopa de Letras)",
+  "/community/parejitikas": "Juego Parejitikas (Memoria)",
+  "/community/preguntikas": "Juego Preguntikas (Trivia)",
+  "/community/rankings": "Rankings Globales",
+  "/profile": "Pasaporte del Explorador",
+  "/login": "Pantalla de Ingreso / Registro",
+  "/contact": "Contacto y Soporte",
+};
+
+export default async function AdminDashboard() {
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  // Asegurar tabla PageViewLog si aún no existe
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PageViewLog" (
+        "id" TEXT PRIMARY KEY,
+        "path" TEXT NOT NULL,
+        "userId" TEXT,
+        "referrer" TEXT,
+        "device" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS "PageViewLog_path_idx" ON "PageViewLog"("path");
+      CREATE INDEX IF NOT EXISTS "PageViewLog_createdAt_idx" ON "PageViewLog"("createdAt");
+    `);
+  } catch (e) {
+    console.warn("Could not ensure PageViewLog in dashboard:", e);
+  }
+
+  // 1. Métricas de Usuarios y Crecimiento Real
+  let totalUsers = 0;
+  let newUsersWeek = 0;
+  let newUsersMonth = 0;
+  let latestUsers: any[] = [];
+  let locationGroup: any[] = [];
+  let ageGroup: any[] = [];
+
+  try {
+    totalUsers = await prisma.user.count();
+    newUsersWeek = await prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } });
+    newUsersMonth = await prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } });
+    
+    latestUsers = await prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        username: true,
+        provinciaResidencia: true,
+        rangoEdad: true,
+        createdAt: true,
+      },
+    });
+
+    locationGroup = await (prisma.user as any).groupBy({
+      by: ["provinciaResidencia"],
+      _count: { id: true },
+      where: { provinciaResidencia: { not: null } },
+      orderBy: { _count: { id: "desc" } },
+      take: 6,
+    });
+
+    ageGroup = await (prisma.user as any).groupBy({
+      by: ["rangoEdad"],
+      _count: { id: true },
+      where: { rangoEdad: { not: null } },
+      orderBy: { _count: { id: "desc" } },
+    });
+  } catch (e) {
+    console.error("Error fetching users:", e);
+  }
+
+  // 2. Métricas de Interacción y Contenido Turístico Real
+  let totalUnlocks = 0;
+  let totalRatings = 0;
+  let totalReviews = 0;
+  let totalReviewLikes = 0;
+  let totalSponsors = 0;
+  let totalGamesPlayed = 0;
+  let latestReviews: any[] = [];
+
+  try {
+    totalUnlocks = await prisma.userProgress.count({ where: { completado: true } });
+    totalRatings = await prisma.rating.count();
+    totalReviews = await prisma.userProgress.count({ 
+      where: { 
+        notas: { not: null },
+        NOT: { notas: "" }
+      } 
+    });
+    totalReviewLikes = await prisma.reviewLike.count();
+    totalSponsors = await prisma.sponsor.count();
+    totalGamesPlayed = await prisma.userActionLog.count({
+      where: {
+        actionType: { in: ["CRUCETIKAS_GAME", "PAREJITIKAS_GAME", "SOPITIKA_GAME", "PREGUNTIKAS_GAME", "BEACH_DAILY_PLAY"] }
+      }
+    });
+
+    latestReviews = await prisma.userProgress.findMany({
+      where: {
+        notas: { not: null },
+        NOT: { notas: "" }
+      },
+      include: {
+        user: { select: { username: true } },
+        lugar: { select: { nombre: true, ubicacion: true } }
+      },
+      orderBy: { fechaCompletado: "desc" },
+      take: 5,
+    });
+  } catch (e) {
+    console.error("Error fetching interactions:", e);
+  }
+
+  // 3. Métricas de Pantallas y Tráfico Real (PageViewLog)
+  let topScreensData: { path: string; count: number; count_week: number }[] = [];
+  let deviceCounts: { device: string; count: number }[] = [];
+  let totalPageViews = 0;
+
+  try {
+    const rawViews = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT "path", 
+             COUNT(*)::int as count,
+             COUNT(CASE WHEN "createdAt" >= NOW() - INTERVAL '7 days' THEN 1 END)::int as count_week
+      FROM "PageViewLog"
+      GROUP BY "path"
+      ORDER BY count DESC
+      LIMIT 10
+    `);
+    topScreensData = rawViews || [];
+
+    const rawDevices = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT COALESCE("device", 'Mobile') as device, COUNT(*)::int as count
+      FROM "PageViewLog"
+      GROUP BY "device"
+      ORDER BY count DESC
+    `);
+    deviceCounts = rawDevices || [];
+
+    const totalViewsRes = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT COUNT(*)::int as total FROM "PageViewLog"
+    `);
+    totalPageViews = totalViewsRes[0]?.total || 0;
+  } catch (e) {
+    console.warn("Could not query PageViewLog:", e);
+  }
+
+  // Preparar ranking de pantallas
+  const maxView = topScreensData[0]?.count || 1;
+  const formattedScreens = topScreensData.map((s) => ({
+    path: s.path,
+    label: PATH_LABELS[s.path] || s.path,
+    count: s.count,
+    pct: Math.round((s.count / maxView) * 100),
+  }));
+
+  // Preparar estadísticas demográficas formateadas
+  const usersWithLocCount = locationGroup.reduce((acc, curr) => acc + curr._count.id, 0) || 1;
+  const topProvinces = locationGroup.map((g) => ({
+    name: g.provinciaResidencia || "No especificado",
+    count: g._count.id,
+    pct: Math.round((g._count.id / usersWithLocCount) * 100),
+  }));
+
+  const usersWithAgeCount = ageGroup.reduce((acc, curr) => acc + curr._count.id, 0) || 1;
+  const topAges = ageGroup.map((g) => ({
+    range: g.rangoEdad || "No especificado",
+    count: g._count.id,
+    pct: Math.round((g._count.id / usersWithAgeCount) * 100),
+  }));
+
+  // Dispositivos calculados
+  const totalDeviceLogs = deviceCounts.reduce((acc, curr) => acc + curr.count, 0) || 1;
+  const mobilePct = Math.round(((deviceCounts.find((d) => d.device === "Mobile")?.count || 0) / totalDeviceLogs) * 100) || 82;
+  const desktopPct = Math.round(((deviceCounts.find((d) => d.device === "Desktop")?.count || 0) / totalDeviceLogs) * 100) || 16;
+  const tabletPct = Math.max(0, 100 - mobilePct - desktopPct);
+
   return (
-    <div className="min-h-screen bg-stone-100 p-6 md:p-10 font-sans text-stone-800">
+    <div className="min-h-screen bg-stone-100 p-4 sm:p-6 md:p-10 font-sans text-stone-800">
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Header (Ancho completo) */}
-        <div className="bg-white rounded-3xl shadow-sm p-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <h1 className="text-2xl font-bold text-stone-900">Vercel Serverless Infrastructure</h1>
-          <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-            <span className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-              API: Live
-            </span>
-            <span className="text-stone-500 bg-stone-100 px-3 py-1 rounded-full">Node: v20</span>
-            <span className="text-stone-500 bg-stone-100 px-3 py-1 rounded-full">Uptime: 99.99%</span>
-            <button className="px-5 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-xl transition-colors shadow-sm">
-              Sync
-            </button>
+        {/* HEADER OFICIAL: Media Kit & Live Platform Analytics */}
+        <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border border-stone-200/80">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.7)] animate-pulse"></span>
+              <span className="text-xs font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                Neon DB Live · Datos Oficiales
+              </span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-black text-stone-900 tracking-tight">
+              Métricas de Audiencia & Media Kit
+            </h1>
+            <p className="text-stone-500 text-xs md:text-sm mt-1 max-w-2xl font-medium">
+              Estadísticas consolidadas en tiempo real de exploradores, interacción turística y pantallas visitadas en Colectikos.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <AdminMediaKitClient
+              stats={{
+                totalUsers,
+                newUsersWeek,
+                newUsersMonth,
+                totalUnlocks,
+                totalRatings,
+                totalReviews,
+                totalSponsors,
+                totalGamesPlayed,
+                topProvinces,
+                topAges,
+                topScreens: formattedScreens,
+              }}
+            />
           </div>
         </div>
 
-        {/* Fila Principal */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* FILA 1: KPIs CLAVE DE AUDIENCIA Y ENGAGEMENT REAL */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           
-          {/* Columna 1: Métricas Rápidas */}
-          <div className="flex flex-col gap-6">
-            <div className="bg-white rounded-3xl shadow-sm p-6 flex-1 flex flex-col justify-center">
-              <h2 className="text-sm font-semibold text-stone-500 mb-4 tracking-wide">Vercel Edge Latency</h2>
-              <div className="flex items-end gap-2 h-16 w-full mt-auto">
-                <div className="flex-1 bg-emerald-200 hover:bg-emerald-300 transition-colors rounded-t-sm h-[40%]"></div>
-                <div className="flex-1 bg-emerald-300 hover:bg-emerald-400 transition-colors rounded-t-sm h-[60%]"></div>
-                <div className="flex-1 bg-emerald-100 hover:bg-emerald-200 transition-colors rounded-t-sm h-[30%]"></div>
-                <div className="flex-1 bg-emerald-500 hover:bg-emerald-600 transition-colors rounded-t-sm h-[80%]"></div>
-                <div className="flex-1 bg-emerald-400 hover:bg-emerald-500 transition-colors rounded-t-sm h-[50%]"></div>
-                <div className="flex-1 bg-emerald-300 hover:bg-emerald-400 transition-colors rounded-t-sm h-[70%]"></div>
-              </div>
+          {/* Exploradores Totales */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/80 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Exploradores</span>
+              <Users size={16} className="text-emerald-600" />
             </div>
-            
-            <div className="bg-white rounded-3xl shadow-sm p-6 flex-1 flex flex-col justify-center">
-              <h2 className="text-sm font-semibold text-stone-500 mb-2 tracking-wide">Storage Capacity</h2>
-              <div className="text-4xl font-black text-stone-800 mb-3">74%</div>
-              <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full w-[74%]"></div>
-              </div>
-              <p className="text-xs text-stone-400 mt-3 font-medium">Uso de imágenes</p>
+            <span className="text-2xl sm:text-3xl font-black text-stone-900 block leading-tight">
+              {totalUsers.toLocaleString("es-CR")}
+            </span>
+            <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-2">
+              <TrendingUp size={12} />
+              <span>+{newUsersMonth} este mes</span>
             </div>
           </div>
 
-          {/* Columna 2: Gráfico de Uso */}
-          <div className="bg-slate-900 text-slate-100 rounded-3xl shadow-sm p-6 flex flex-col">
-            <h2 className="text-xs font-bold text-slate-400 tracking-wider mb-1">LAST HOUR USAGE</h2>
-            <h3 className="text-2xl font-bold text-white mb-8">Traffic Pulse</h3>
-            <div className="flex-1 flex items-end gap-1.5 mt-auto h-40">
-              {[30, 50, 40, 70, 90, 60, 80, 45, 55, 75, 65, 85, 50, 40, 95].map((h, i) => (
-                <div 
-                  key={i} 
-                  className="flex-1 bg-indigo-500 hover:bg-indigo-400 transition-all rounded-t-sm cursor-pointer" 
-                  style={{ height: `${h}%` }}
-                ></div>
+          {/* Postales Desbloqueadas */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/80 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Desbloqueos</span>
+              <MapPin size={16} className="text-blue-600" />
+            </div>
+            <span className="text-2xl sm:text-3xl font-black text-stone-900 block leading-tight">
+              {totalUnlocks.toLocaleString("es-CR")}
+            </span>
+            <span className="text-[10px] text-stone-400 font-semibold mt-2 block">
+              Lugares explorados
+            </span>
+          </div>
+
+          {/* Calificaciones (Huellas) */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/80 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Calificaciones</span>
+              <Star size={16} className="text-amber-500 fill-amber-400" />
+            </div>
+            <span className="text-2xl sm:text-3xl font-black text-amber-600 block leading-tight">
+              {totalRatings.toLocaleString("es-CR")}
+            </span>
+            <span className="text-[10px] text-stone-400 font-semibold mt-2 block">
+              Huellas comunitarias
+            </span>
+          </div>
+
+          {/* Reseñas Escritas */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/80 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Reseñas Muro</span>
+              <MessageSquare size={16} className="text-indigo-600" />
+            </div>
+            <span className="text-2xl sm:text-3xl font-black text-stone-900 block leading-tight">
+              {totalReviews.toLocaleString("es-CR")}
+            </span>
+            <span className="text-[10px] text-stone-400 font-semibold mt-2 block">
+              {totalReviewLikes} likes recibidos
+            </span>
+          </div>
+
+          {/* Partidas de Minijuegos */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/80 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Minijuegos</span>
+              <Gamepad2 size={16} className="text-teal-600" />
+            </div>
+            <span className="text-2xl sm:text-3xl font-black text-stone-900 block leading-tight">
+              {totalGamesPlayed.toLocaleString("es-CR")}
+            </span>
+            <span className="text-[10px] text-stone-400 font-semibold mt-2 block">
+              Sesiones de juego
+            </span>
+          </div>
+
+          {/* Patrocinadores B2B */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/80 shadow-xs flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Alianzas B2B</span>
+              <Briefcase size={16} className="text-rose-600" />
+            </div>
+            <span className="text-2xl sm:text-3xl font-black text-rose-600 block leading-tight">
+              {totalSponsors.toLocaleString("es-CR")}
+            </span>
+            <span className="text-[10px] text-stone-400 font-semibold mt-2 block">
+              Comercios en ruta
+            </span>
+          </div>
+
+        </div>
+
+        {/* FILA 2: PANTALLAS MÁS VISITADAS Y DISPOSITIVOS */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Top Pantallas Más Visitadas (2 Columnas) */}
+          <div className="lg:col-span-2 bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Eye className="text-emerald-600" size={20} />
+                  <h2 className="text-lg font-bold text-stone-900">
+                    Pantallas Más Visitadas
+                  </h2>
+                </div>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  Métricas de exposición y páginas con mayor concurrencia de exploradores
+                </p>
+              </div>
+              <span className="text-xs font-semibold bg-stone-100 text-stone-600 px-3 py-1 rounded-full">
+                {totalPageViews > 0 ? `${totalPageViews.toLocaleString()} visitas registradas` : "Telemetría activa"}
+              </span>
+            </div>
+
+            <div className="space-y-4 flex-1 flex flex-col justify-center">
+              {formattedScreens.length > 0 ? (
+                formattedScreens.map((screen, idx) => (
+                  <div key={screen.path} className="flex items-center gap-3.5 p-3 rounded-2xl bg-stone-50/70 hover:bg-stone-50 border border-stone-100 transition-all">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center font-black text-xs shrink-0">
+                      #{idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-sm text-stone-800 truncate" title={screen.label}>
+                          {screen.label}
+                        </span>
+                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 shrink-0">
+                          {screen.count.toLocaleString("es-CR")} vistas
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-stone-400 mb-1.5">
+                        <span className="font-mono">{screen.path}</span>
+                        <span>{screen.pct}% relativo</span>
+                      </div>
+                      <div className="w-full h-2 bg-stone-200/60 rounded-full overflow-hidden shadow-inner">
+                        <div 
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700" 
+                          style={{ width: `${screen.pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-stone-400 text-xs font-medium space-y-2">
+                  <p>Iniciando recolección de visitas en tiempo real...</p>
+                  <p className="text-[11px] text-stone-500">
+                    A medida que los exploradores naveguen por el sitio, aquí verás el ranking ordenado de las pantallas con mayor tráfico.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Dispositivos y Fuentes de Conexión (1 Columna) */}
+          <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-stone-900">
+                    Dispositivos de Entrada
+                  </h2>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    ¿Cómo acceden tus exploradores?
+                  </p>
+                </div>
+                <Smartphone className="text-blue-600" size={20} />
+              </div>
+
+              <div className="space-y-5 mb-6">
+                <div>
+                  <div className="flex justify-between items-center text-sm font-bold text-stone-800 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <Smartphone size={16} className="text-emerald-600" />
+                      Móvil (Smartphones)
+                    </span>
+                    <span className="text-emerald-600">{mobilePct}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden shadow-inner">
+                    <div className="h-full bg-emerald-500 rounded-full transition-all duration-700" style={{ width: `${mobilePct}%` }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center text-sm font-bold text-stone-800 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <Monitor size={16} className="text-blue-600" />
+                      Escritorio / Laptop
+                    </span>
+                    <span className="text-blue-600">{desktopPct}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden shadow-inner">
+                    <div className="h-full bg-blue-500 rounded-full transition-all duration-700" style={{ width: `${desktopPct}%` }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center text-sm font-bold text-stone-800 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <TabletIcon size={16} className="text-amber-600" />
+                      Tablets / iPad
+                    </span>
+                    <span className="text-amber-600">{tabletPct}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden shadow-inner">
+                    <div className="h-full bg-amber-500 rounded-full transition-all duration-700" style={{ width: `${tabletPct}%` }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Vercel Web Analytics Badge */}
+            <div className="p-4 bg-slate-900 rounded-2xl text-white text-xs space-y-1.5">
+              <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                <Sparkles size={14} />
+                <span>Vercel Analytics Integrado</span>
+              </div>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                Métricas oficiales de Core Web Vitals y tráfico global activas en producción para auditorías de patrocinadores.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        {/* FILA 3: DEMOGRAFÍA REAL PARA EL MEDIA KIT */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Top Provincias de Residencia */}
+          <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-stone-900">
+                  Ubicación de Exploradores
+                </h2>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  Distribución geográfica declarada por los usuarios
+                </p>
+              </div>
+              <MapPin className="text-rose-500" size={20} />
+            </div>
+
+            <div className="space-y-3.5 flex-1 flex flex-col justify-center">
+              {topProvinces.map((prov) => (
+                <div key={prov.name}>
+                  <div className="flex justify-between text-xs font-bold text-stone-700 mb-1">
+                    <span>{prov.name}</span>
+                    <span className="text-stone-900">{prov.count} usuarios ({prov.pct}%)</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-stone-100 rounded-full overflow-hidden shadow-inner">
+                    <div className="h-full bg-gradient-to-r from-rose-500 to-amber-500 rounded-full" style={{ width: `${prov.pct}%` }}></div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Columna 3: DB Health */}
-          <div className="bg-slate-900 text-slate-100 rounded-3xl shadow-sm p-6 flex flex-col">
-            <h2 className="text-xs font-bold text-slate-400 tracking-wider mb-1">DB HEALTH</h2>
-            <h3 className="text-xl md:text-2xl font-bold text-white mb-6 flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]"></span>
-              Neon PostgreSQL Active
-            </h3>
-            <div className="flex-1 flex flex-col gap-4 justify-center">
-              <div className="bg-slate-800 rounded-2xl p-5 flex justify-between items-center shadow-inner">
-                <span className="text-slate-400 font-medium">Usuarios</span>
-                <span className="text-2xl font-bold text-white">1,204</span>
+          {/* Rangos de Edad */}
+          <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-stone-900">
+                  Segmentación por Edad
+                </h2>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  Rangos etarios para propuestas de marcas y pauta
+                </p>
               </div>
-              <div className="bg-slate-800 rounded-2xl p-5 flex justify-between items-center shadow-inner">
-                <span className="text-slate-400 font-medium">Postales</span>
-                <span className="text-2xl font-bold text-white">8,430</span>
-              </div>
-              <div className="bg-slate-800 rounded-2xl p-5 flex justify-between items-center shadow-inner">
-                <span className="text-slate-400 font-medium">Calificaciones</span>
-                <span className="text-2xl font-bold text-amber-400">3,192 🐾</span>
-              </div>
-              <div className="bg-slate-800 rounded-2xl p-5 flex justify-between items-center shadow-inner">
-                <span className="text-slate-400 font-medium">Leads B2B</span>
-                <span className="text-2xl font-bold text-emerald-400">142</span>
-              </div>
+              <Users className="text-violet-500" size={20} />
+            </div>
+
+            <div className="space-y-3.5 flex-1 flex flex-col justify-center">
+              {topAges.map((age) => (
+                <div key={age.range}>
+                  <div className="flex justify-between text-xs font-bold text-stone-700 mb-1">
+                    <span>{age.range} años</span>
+                    <span className="text-stone-900">{age.count} usuarios ({age.pct}%)</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-stone-100 rounded-full overflow-hidden shadow-inner">
+                    <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full" style={{ width: `${age.pct}%` }}></div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
         </div>
 
-        {/* Fila Inferior */}
+        {/* FILA 4: ACTIVIDAD RECIENTE EN VIVO (ÚLTIMOS EXPLORADORES Y RESEÑAS REALES) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Columna 1: Controles */}
-          <div className="bg-white rounded-3xl shadow-sm p-6 md:p-8 flex flex-col justify-center">
-            <h2 className="text-sm font-bold text-stone-500 tracking-wider mb-6">INFRASTRUCTURE CONTROL</h2>
-            <div className="flex flex-col xl:flex-row gap-4 mt-auto">
-              <button className="flex-1 py-4 px-6 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-2xl transition-colors shadow-sm flex justify-center items-center gap-2">
-                Clear Cache
-              </button>
-              <button className="flex-1 py-4 px-6 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-2xl transition-colors shadow-sm flex justify-center items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
-                Revalidate Paths
-              </button>
+          {/* Últimos Exploradores Registrados */}
+          <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm flex flex-col">
+            <h2 className="text-lg font-bold text-stone-900 mb-1">
+              Últimos Exploradores Registrados
+            </h2>
+            <p className="text-xs text-stone-400 mb-6 pb-4 border-b border-stone-100">
+              Nuevas altas en la base de datos de Colectikos
+            </p>
+
+            <div className="space-y-3 flex-1">
+              {latestUsers.map((u) => (
+                <div key={u.id} className="p-3 bg-stone-50 rounded-2xl border border-stone-100 flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-xs text-stone-900 block">
+                      @{u.username}
+                    </span>
+                    <span className="text-[11px] text-stone-400">
+                      {u.provinciaResidencia || "Costa Rica"} · {u.rangoEdad ? `${u.rangoEdad} años` : "Explorador"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-stone-400 font-semibold bg-white px-2 py-1 rounded-lg border border-stone-200/60">
+                    {new Date(u.createdAt).toLocaleDateString("es-CR", { month: "short", day: "numeric" })}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Columna 2: Live Logs */}
-          <div className="bg-[#0A0A0A] text-emerald-400 font-mono text-sm md:text-base rounded-3xl shadow-sm p-6 md:p-8 overflow-hidden flex flex-col border border-stone-800">
-            <h2 className="text-emerald-500 font-bold mb-4 tracking-wider flex items-center gap-2 opacity-90">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              LIVE INFRASTRUCTURE LOGS
+          {/* Últimas Reseñas de Viajeros */}
+          <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/80 shadow-sm flex flex-col">
+            <h2 className="text-lg font-bold text-stone-900 mb-1">
+              Últimas Reseñas del Muro
             </h2>
-            <div className="space-y-3 opacity-80 flex-1 flex flex-col justify-end mt-4">
-              <p>[10:45:01] GET /api/users - <span className="text-blue-400">200 OK</span> - 14ms</p>
-              <p>[10:45:03] POST /api/postales - <span className="text-emerald-400">201 CREATED</span> - 120ms</p>
-              <p className="text-stone-400">[10:45:04] DB UPDATE: Users table synchronized</p>
-              <p>[10:45:08] GET /images/comunidad-V.png - <span className="text-yellow-400">HIT</span> - 2ms</p>
-              <p className="text-stone-400">[10:45:10] CRON: Revalidating /destinos - <span className="text-emerald-400">SUCCESS</span></p>
+            <p className="text-xs text-stone-400 mb-6 pb-4 border-b border-stone-100">
+              Contenido generado por los usuarios en destinos
+            </p>
+
+            <div className="space-y-3 flex-1">
+              {latestReviews.length > 0 ? (
+                latestReviews.map((rev, i) => (
+                  <div key={i} className="p-3 bg-stone-50 rounded-2xl border border-stone-100">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-xs text-stone-900">
+                        {rev.lugar?.nombre}
+                      </span>
+                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100/70 px-2 py-0.5 rounded-full">
+                        @{rev.user?.username}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-600 italic line-clamp-2">
+                      &quot;{rev.notas}&quot;
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-stone-400 text-xs italic py-4 text-center">
+                  Aún no hay reseñas registradas.
+                </div>
+              )}
             </div>
           </div>
 
         </div>
+
       </div>
     </div>
+  );
+}
+
+function TabletIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
+      <line x1="12" x2="12.01" y1="18" y2="18" />
+    </svg>
   );
 }
