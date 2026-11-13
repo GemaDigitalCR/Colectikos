@@ -1315,6 +1315,14 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
                     : (isEn ? "PLAY IN PRACTICE MODE" : "JUGAR MODO PRÁCTICA")}
                 </span>
               </button>
+
+              <Link
+                href={`/${lang}/community`}
+                className="w-full max-w-xs mt-2 py-2.5 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-95 text-stone-300 hover:text-white text-xs font-bold border border-stone-800 transition-all flex items-center justify-center gap-1.5"
+              >
+                <ArrowLeft size={14} />
+                <span>{isEn ? "Back to Community" : "Volver a la Comunidad"}</span>
+              </Link>
             </div>
           )}
 
@@ -1404,6 +1412,14 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
                 <RotateCcw size={16} />
                 <span>{isEn ? "Play Again" : "Intentar de Nuevo"}</span>
               </button>
+
+              <Link
+                href={`/${lang}/community`}
+                className="w-full max-w-xs mt-2 py-2.5 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-95 text-stone-300 hover:text-white text-xs font-bold border border-stone-800 transition-all flex items-center justify-center gap-1.5"
+              >
+                <ArrowLeft size={14} />
+                <span>{isEn ? "Back to Community" : "Volver a la Comunidad"}</span>
+              </Link>
             </div>
           )}
 
@@ -1468,6 +1484,14 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
                 >
                   {isEn ? "Replay this Sector" : "Repetir este Sector"}
                 </button>
+
+                <Link
+                  href={`/${lang}/community`}
+                  className="w-full py-2 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-95 text-stone-300 hover:text-white text-xs font-bold border border-stone-800 transition-all flex items-center justify-center gap-1.5"
+                >
+                  <ArrowLeft size={14} />
+                  <span>{isEn ? "Back to Community" : "Volver a la Comunidad"}</span>
+                </Link>
               </div>
             </div>
           )}
