@@ -631,6 +631,39 @@ export const mockLugares: Lugar[] = [
     "imagenUrl": "/images/Postales_Generales/Playas/Postales-playas-del-coco.png"
   },
   {
+    "id": "101",
+    "nombre": "Playa Biesanz",
+    "nombre_en": "Biesanz Beach",
+    "categoria": "PLAYA",
+    "descripcion": "Caleta escondida de aguas calmas color turquesa y selva tropical viva.",
+    "descripcion_en": "Hidden cove with calm turquoise waters surrounded by lush rainforest.",
+    "ubicacion": "Quepos, Puntarenas",
+    "ubicacion_en": "Quepos, Puntarenas",
+    "imagenUrl": "/images/Postales_Generales/Playas/Postales-playas-biesanz.png"
+  },
+  {
+    "id": "102",
+    "nombre": "Playa Rajada",
+    "nombre_en": "Rajada Beach",
+    "categoria": "PLAYA",
+    "descripcion": "Playa virgen de arena dorada, mar sereno y formaciones rocosas únicas.",
+    "descripcion_en": "Pristine beach with golden sand, serene waters, and unique rock formations.",
+    "ubicacion": "La Cruz, Guanacaste",
+    "ubicacion_en": "La Cruz, Guanacaste",
+    "imagenUrl": "/images/Postales_Generales/Playas/Postales-playas-rajada.png"
+  },
+  {
+    "id": "103",
+    "nombre": "Playa Junquillal",
+    "nombre_en": "Junquillal Beach",
+    "categoria": "PLAYA",
+    "descripcion": "Refugio costero de aguas cristalinas y apacibles rodeado de manglares y naturaleza.",
+    "descripcion_en": "Coastal refuge with crystal-clear calm waters surrounded by mangroves and nature.",
+    "ubicacion": "La Cruz, Guanacaste",
+    "ubicacion_en": "La Cruz, Guanacaste",
+    "imagenUrl": "/images/Postales_Generales/Playas/Postales-playas-junquillal.png"
+  },
+  {
     "id": "57",
     "nombre": "Catarata La Fortuna",
     "nombre_en": "La Fortuna Waterfall",
