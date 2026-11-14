@@ -15,6 +15,9 @@
     "provinces": "Provincias",
     "visitedDestinations": "Mis Destinos Visitados",
     "upcomingDestinations": "Mis Próximos Destinos",
+    "digitalPassport": "Mi Pasaporte Digital",
+    "exportPassport": "Exportar Pasaporte",
+    "exportPassportDesc": "Descarga tus sellos, medallas y avance oficial",
     "rideAddons": "Complementos de tu Ride",
     "explorersWall": "Muro de Exploradores"
   },

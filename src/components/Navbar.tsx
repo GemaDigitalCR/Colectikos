@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useClerk, useUser } from '@clerk/nextjs';
-import { Leaf, UserCircle, LogOut, LogIn, Search, Menu, X, ChevronDown, Globe, Settings, Compass, HelpCircle } from 'lucide-react';
+import { Leaf, UserCircle, LogOut, LogIn, Search, Menu, X, ChevronDown, ChevronRight, Globe, Settings, Compass, HelpCircle } from 'lucide-react';
 import { useLugaresData } from '../context/LugaresContext';
 import { calcularNivel } from '../utils/gamification';
 import { useProgress } from '../context/ProgressContext';
@@ -303,6 +303,16 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
                   {bucketListCount}
                 </span>
               </Link>
+
+              {/* Acceso Directo Destacado: Pasaporte Digital */}
+              <Link
+                href={`/${currentLang}/profile?export=passport`}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold transition-all duration-300 shadow-xs border -translate-y-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200 hover:scale-105 hover:shadow-sm"
+                title={dict?.navbar?.digitalPassport || (isEn ? "Export Digital Passport" : "Pasaporte Digital")}
+              >
+                <span className="text-base leading-none">🛂</span>
+                <span>{dict?.navbar?.digitalPassport || (isEn ? "Passport" : "Pasaporte")}</span>
+              </Link>
               <div className="relative group py-2">
                 <Link href={`/${currentLang}/community`} className="flex items-center gap-1 hover:text-emerald-700 transition-colors">
                   {dict?.community || 'Comunidad'} <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
@@ -376,6 +386,16 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
                 </span>
               )}
             </Link>
+
+            {/* Acceso Rápido Móvil a Pasaporte Digital */}
+            <Link
+              href={`/${currentLang}/profile?export=passport`}
+              className="relative p-1.5 text-stone-700 hover:text-emerald-700 active:scale-95 transition-all flex items-center justify-center rounded-xl bg-stone-50 border border-stone-200/80 shadow-2xs shrink-0"
+              title={dict?.navbar?.digitalPassport || (isEn ? "Export Digital Passport" : "Exportar Pasaporte Digital")}
+              aria-label={dict?.navbar?.digitalPassport || (isEn ? "Export Digital Passport" : "Exportar Pasaporte Digital")}
+            >
+              <span className="text-base leading-none">🛂</span>
+            </Link>
             {isLoaded && user ? (
               <>
                 {/* Racha Móvil */}
@@ -442,6 +462,35 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
                 className="w-full max-w-none"
               />
             </div>
+
+            {/* Tarjeta Destacada de Pasaporte Digital en Móvil */}
+            <Link
+              href={`/${currentLang}/profile?export=passport`}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-800 text-white shadow-md border border-emerald-400/30 active:scale-[0.99] transition-transform"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs border border-white/30 flex items-center justify-center text-xl shrink-0">
+                  🛂
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-extrabold text-white leading-tight">
+                      {dict?.navbar?.digitalPassport || (isEn ? "Digital Passport" : "Mi Pasaporte Digital")}
+                    </p>
+                    <span className="text-[10px] font-black bg-amber-400 text-stone-900 px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-xs">
+                      {isEn ? "Export" : "Descargar"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-100 mt-0.5 font-medium">
+                    {dict?.navbar?.exportPassportDesc || (isEn ? "Stamps, medals & official progress" : "Tus sellos, medallas y avance oficial")}
+                  </p>
+                </div>
+              </div>
+              <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white shrink-0">
+                <ChevronRight size={16} />
+              </div>
+            </Link>
 
             {/* Tarjeta Destacada de Próximos Destinos en Móvil */}
             <Link

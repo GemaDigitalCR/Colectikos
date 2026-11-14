@@ -92,14 +92,22 @@ export default function Hero({ completedCount, totalCount, lang: propLang }: Her
           </div>
         </div>
 
-        {/* CTA Button */}
-        <div className="mt-8 flex justify-center">
+        {/* CTA Buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-lg px-4">
           <a 
             href="#seccion-logros"
-            className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-105"
+            className="w-full sm:w-auto px-7 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-105 text-center text-sm md:text-base"
           >
             {dict?.home?.openAlbum || 'Abrir mi Álbum Virtual'}
           </a>
+          <Link
+            href={`/${lang}/profile?export=passport`}
+            className="w-full sm:w-auto px-6 py-3 bg-white/95 hover:bg-white text-stone-900 hover:text-emerald-800 font-extrabold rounded-full shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2 border border-white/40 backdrop-blur-md text-sm md:text-base text-center"
+            title={dict?.navbar?.digitalPassport || (isEn ? "Digital Passport" : "Mi Pasaporte Digital")}
+          >
+            <span className="text-base leading-none">🛂</span>
+            <span>{dict?.navbar?.digitalPassport || (isEn ? "Digital Passport" : "Mi Pasaporte Digital")}</span>
+          </Link>
         </div>
       </div>
 

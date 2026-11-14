@@ -368,6 +368,29 @@ export default function Profile() {
       setIsSharing(false);
     }
   };
+
+  // Auto-exportar pasaporte si la URL contiene ?export=passport o hash #export-passport
+  const autoExportTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || autoExportTriggeredRef.current) return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldExport = urlParams.get('export') === 'passport' || 
+                         urlParams.get('export') === 'true' || 
+                         window.location.hash === '#export-passport';
+
+    if (shouldExport && !isSharing && !isPassportModalOpen) {
+      autoExportTriggeredRef.current = true;
+      const attemptExport = (retries = 3) => {
+        if (progressRef.current) {
+          handleShareProgress();
+        } else if (retries > 0) {
+          setTimeout(() => attemptExport(retries - 1), 400);
+        }
+      };
+      const timer = setTimeout(() => attemptExport(), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoaded, user, localizedLugares]);
   
   // Calcular el progreso por provincia para el mapa
   const progressData: Record<string, { completed: number; total: number; percentage: number }> = {};
@@ -519,16 +542,21 @@ export default function Profile() {
                   </span>
                 </div>
                 
-                <div id="profile-actions" className="flex flex-wrap justify-center md:justify-end items-center gap-3">
+                <div id="profile-actions" className="flex flex-col sm:flex-row flex-wrap justify-center md:justify-end items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
                   <button 
                     onClick={handleShareProgress}
                     disabled={isSharing}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-bold text-white bg-emerald-600 border border-emerald-700 rounded-xl hover:bg-emerald-500 transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm md:text-base font-extrabold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 border border-emerald-500/50 rounded-2xl hover:from-emerald-500 hover:to-teal-600 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                    title={dict?.navbar?.exportPassport || (lang === 'en' ? 'Export Digital Passport' : 'Exportar Pasaporte Digital')}
                   >
-                    {isSharing ? <Loader2 size={16} className="animate-spin" /> : <BookOpen size={16} />}
-                    {isSharing ? (dict?.profile?.generating || 'Generando...') : (dict?.profile?.shareProgress || 'Mi Pasaporte')}
+                    {isSharing ? <Loader2 size={18} className="animate-spin" /> : <span className="text-lg leading-none">🛂</span>}
+                    <span>
+                      {isSharing 
+                        ? (dict?.profile?.generating || 'Generando...') 
+                        : (lang === 'en' ? 'Export Passport' : 'Exportar Pasaporte')}
+                    </span>
                   </button>
-                  <Link href={`/${lang}/settings`} className="inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-bold text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 transition-all shadow-sm hover:shadow">
+                  <Link href={`/${lang}/settings`} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-stone-700 bg-stone-50 hover:bg-white border border-stone-200 rounded-2xl hover:border-stone-300 transition-all shadow-xs hover:shadow active:scale-95">
                     <Edit3 size={16} /> {dict?.profile?.editProfile || 'Editar Perfil'}
                   </Link>
                 </div>

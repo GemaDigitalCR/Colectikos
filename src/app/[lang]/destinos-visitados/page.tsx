@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import CategoryFilter from '../../../components/CategoryFilter';
 import ProvinceFilter from '../../../components/ProvinceFilter';
 import PlaceCard from '../../../components/PlaceCard';
@@ -68,10 +69,17 @@ export default function DestinosVisitadosPage() {
         backgroundAttachment: 'fixed'
       }}
     >
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-12 mb-4">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-12 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight drop-shadow-md bg-white/60 inline-block px-6 py-2 rounded-2xl backdrop-blur-sm flex items-center gap-3 w-fit">
           <span className="text-emerald-500">✅</span> {dict?.home?.visitedDestinationsTitle || 'Mis Destinos Visitados'}
         </h2>
+        <Link
+          href={`/${lang}/profile?export=passport`}
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-extrabold rounded-2xl shadow-md hover:shadow-lg hover:from-emerald-500 hover:to-teal-600 transition-all active:scale-95 text-sm sm:text-base w-fit"
+        >
+          <span className="text-lg leading-none">🛂</span>
+          <span>{dict?.navbar?.exportPassport || (lang === 'en' ? 'Export Passport' : 'Exportar Pasaporte')}</span>
+        </Link>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 mb-2 scroll-mt-32 relative z-10">
