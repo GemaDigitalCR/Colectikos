@@ -1,22 +1,17 @@
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `next-app/node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
 # Reglas Críticas del Proyecto Colectikos
 
-## 1. Tiko Playa: Regla de Oro del Renderizado Isométrico 3D (Anti-Aplanamiento)
-En `src/app/[lang]/community/playa/page.tsx`:
-- **PROHIBICIÓN ESTRICTA DE FILTROS EN CONTENEDORES 3D**:
-  NUNCA aplicar filtros CSS (`drop-shadow-*`, `blur-*`, `filter`, `backdrop-blur`) en ningún contenedor o `div` que tenga transformaciones 3D (`rotateX`, `rotateZ`, `translateZ`, o el componente `IsometricBillboard`).
-  - *Razón técnica*: En navegadores móviles WebKit (Safari en iPhone/iOS), aplicar cualquier propiedad `filter` a un contenedor 3D destruye la propiedad `transform-style: preserve-3d` y fuerza `transform-style: flat`, aplanando las estructuras contra la arena como calcomanías bidimensionales.
-  - *Ubicación de sombras*: Las sombras DEBEN colocarse EXCLUSIVAMENTE en la etiqueta `<img>` interior, donde no interfieren con la matriz de proyección 3D.
-- **ANCLAJE INVARIABLE**:
-  Todo elemento colocado (incluyendo assets 1x1 como Sombrilla y Palmera) DEBE mantener `transformOrigin: 'bottom center'` y alineación `flex items-end justify-center` en su celda. Esto garantiza que las estructuras nazcan desde la superficie de la arena y se mantengan erguidas hacia la cámara.
-- **ENCAPSULACIÓN**:
-  Todas las estructuras colocadas en el tablero deben utilizar el componente `IsometricBillboard`. No deshacer esta abstracción ni mover estilos de transformación 3D de vuelta a etiquetas genéricas con filtros.
-- **ESCALAS MÍNIMAS EN ITEM_TYPES**:
-  - Sombrilla: `renderScale: 1.8`
-  - Palmera: `renderScale: 2.2`
-  No reducir estas escalas por debajo de estos valores, ya que en pantallas pequeñas móviles provocarían que los sprites se perciban microscópicos o sumergidos en la arena.
+## 1. Tiko Playa: Motor Isométrico Canvas 2D (Anti-Aplanamiento Definitivo)
+En `next-app/src/app/[lang]/community/playa/page.tsx`:
+- **RENDERIZADO EN CANVAS 2D NATIVO**:
+  Tiko Playa utiliza un motor de proyección isométrica sobre HTML5 Canvas 2D (`<canvas id="world">`). Esto elimina de raíz el problema histórico de "aplanamiento" de CSS 3D en WebKit/Safari de iPhone/iOS, garantizando 60 FPS estables y renderizado uniforme en cualquier dispositivo móvil.
+- **RETROCOMPATIBILIDAD DE COORDENADAS**:
+  Al interactuar con la base de datos (Neon / Prisma), se debe mantener siempre la normalización bidireccional entre `(c, r)` del motor Canvas y `(col, row)` del esquema tradicional para proteger las playas existentes de los usuarios.
+- **SPRITES OPTIMIZADOS**:
+  Los assets en `/public/assets/playa/` utilizan la colección de sprites recortados y optimizados con métricas de delimitación (`SP`) para garantizar mínima huella de memoria y máxima velocidad de carga.
+
