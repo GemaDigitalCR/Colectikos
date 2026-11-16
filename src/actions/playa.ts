@@ -124,8 +124,28 @@ export async function saveBeachState(
   const newChunks = Math.floor(newLifetimeVisitors / 50);
   const chunksEarned = newChunks - oldChunks;
 
-  let xpAwarded = chunksEarned * 10;
-  let newXp = dbUser.xp + xpAwarded;
+  let baseVisitorXp = chunksEarned * 10;
+
+  // --- REGLA ENFOQUE 3: Hitos Especiales de Progreso de Visitantes ---
+  let milestoneBonus = 0;
+  let milestoneName = "";
+
+  if (beach.lifetimeVisitors < 10 && newLifetimeVisitors >= 10) {
+    milestoneBonus += 25;
+    milestoneName = "¡Primeros 10 Visitantes!";
+  } else if (beach.lifetimeVisitors < 25 && newLifetimeVisitors >= 25) {
+    milestoneBonus += 50;
+    milestoneName = "¡25 Visitantes Conquistados!";
+  } else if (beach.lifetimeVisitors < 50 && newLifetimeVisitors >= 50) {
+    milestoneBonus += 100;
+    milestoneName = "¡Alcalde Playero (50 Visitantes)!";
+  } else if (beach.lifetimeVisitors < 100 && newLifetimeVisitors >= 100) {
+    milestoneBonus += 200;
+    milestoneName = "¡Paraíso Tropical (100 Visitantes)!";
+  }
+
+  let totalXpAwarded = baseVisitorXp + milestoneBonus;
+  let newXp = dbUser.xp + totalXpAwarded;
   let newLevel = Math.floor(newXp / 100) + 1;
 
   await prisma.$transaction(async (tx) => {
@@ -148,17 +168,24 @@ export async function saveBeachState(
       }
     });
 
-    if (xpAwarded > 0) {
+    if (totalXpAwarded > 0) {
       await tx.userActionLog.create({
         data: {
           userId: dbUser.id,
-          actionType: 'BEACH_VISITOR_MILESTONE',
+          actionType: milestoneBonus > 0 ? 'BEACH_MILESTONE_UNLOCKED' : 'BEACH_VISITOR_MILESTONE',
           targetId: 'playa_tikolones',
-          xpAwarded: xpAwarded
+          xpAwarded: totalXpAwarded
         }
       });
     }
   });
 
-  return { success: true, xpAwarded, newTotalXp: newXp, newLevel };
+  return { 
+    success: true, 
+    xpAwarded: totalXpAwarded, 
+    milestoneBonus, 
+    milestoneName, 
+    newTotalXp: newXp, 
+    newLevel 
+  };
 }

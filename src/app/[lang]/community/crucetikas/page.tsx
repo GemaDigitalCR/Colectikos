@@ -1317,8 +1317,16 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
               </button>
 
               <Link
+                href={`/${lang}/community/playa`}
+                className="w-full max-w-xs mt-2 py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold border border-amber-500/40 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>🏖️</span>
+                <span>{isEn ? "Visit Tiko Beach (+XP)" : "Visitar Tiko Playa (+XP)"}</span>
+              </Link>
+
+              <Link
                 href={`/${lang}/community`}
-                className="w-full max-w-xs mt-2 py-2.5 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-95 text-stone-300 hover:text-white text-xs font-bold border border-stone-800 transition-all flex items-center justify-center gap-1.5"
+                className="w-full max-w-xs mt-1.5 py-2 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-95 text-stone-300 hover:text-white text-xs font-bold border border-stone-800 transition-all flex items-center justify-center gap-1.5"
               >
                 <ArrowLeft size={14} />
                 <span>{isEn ? "Back to Community" : "Volver a la Comunidad"}</span>
@@ -1414,8 +1422,16 @@ export default function CrucetikasGamePage({ params }: { params: Promise<{ lang:
               </button>
 
               <Link
+                href={`/${lang}/community/playa`}
+                className="w-full max-w-xs mt-2 py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold border border-amber-500/40 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>🏖️</span>
+                <span>{isEn ? "Visit Tiko Beach (+XP)" : "Visitar Tiko Playa (+XP)"}</span>
+              </Link>
+
+              <Link
                 href={`/${lang}/community`}
-                className="w-full max-w-xs mt-2 py-2.5 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-95 text-stone-300 hover:text-white text-xs font-bold border border-stone-800 transition-all flex items-center justify-center gap-1.5"
+                className="w-full max-w-xs mt-1.5 py-2 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800 active:scale-95 text-stone-300 hover:text-white text-xs font-bold border border-stone-800 transition-all flex items-center justify-center gap-1.5"
               >
                 <ArrowLeft size={14} />
                 <span>{isEn ? "Back to Community" : "Volver a la Comunidad"}</span>

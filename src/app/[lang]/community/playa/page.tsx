@@ -703,7 +703,16 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
             updateLocalXp(saveRes.newTotalXp, saveRes.newLevel);
           }
           if (refreshGamification) refreshGamification();
-          sonnerToast.success(lang === 'en' ? `Milestone Reached! +${saveRes.xpAwarded} XP for your beach.` : `¡Hito Alcanzado! +${saveRes.xpAwarded} XP para tu playa.`, { icon: '🌟' });
+          if (saveRes.milestoneName) {
+            sonnerToast.success(
+              lang === 'en' 
+                ? `🏆 Milestone Unlocked: ${saveRes.milestoneName} (+${saveRes.xpAwarded} XP)!` 
+                : `🏆 ¡Hito Desbloqueado: ${saveRes.milestoneName} (+${saveRes.xpAwarded} XP para tu Pasaporte)!`,
+              { icon: '🌟', duration: 7000 }
+            );
+          } else {
+            sonnerToast.success(lang === 'en' ? `Milestone Reached! +${saveRes.xpAwarded} XP for your beach.` : `¡Hito Alcanzado! +${saveRes.xpAwarded} XP para tu playa.`, { icon: '🌟' });
+          }
         }
       } catch (err) {
         console.warn("Error auto-guardando playa:", err);
@@ -1619,17 +1628,73 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
     const head = (title: string, img = false) => `<h2>${img ? `<img src="${SRC('otico')}" alt="">` : ''}${title}<button class="ib" data-x aria-label="${t('close')}">${ico('x')}</button></h2>`;
 
     const openHelp = () => {
-      const rules = [
-        ['r1', 'plus', '#d1fae5', '#047857'],
-        ['r2', 'spark', '#fce7f3', '#be185d'],
-        ['r3', 'bed', '#dbeafe', '#1d4ed8'],
-        ['r4', 'leaf', '#dcfce7', '#15803d'],
-        ['r5', 'grid', '#fef3c7', '#b45309'],
-        ['r6', 'move', '#ede9fe', '#6d28d9']
+      const isEn = lang === 'en';
+      const steps = [
+        {
+          emoji: '🏗️',
+          bg: '#d1fae5',
+          title: isEn ? "1. Pick & Build on the Sand" : "1. Elige y Construye en la Arena",
+          desc: isEn 
+            ? "Pick an item from the dock below (umbrella, diner, cabin), drag it onto free sand and tap Build. (Moving it later is 100% free!)" 
+            : "Toca un artículo del menú inferior (sombrilla, soda, cabaña), arrástralo a la arena libre y toca Construir. ¡Moverlo luego es 100% gratis!"
+        },
+        {
+          emoji: '🪙',
+          bg: '#fef3c7',
+          title: isEn ? "2. Appeal Brings Paying Visitors" : "2. El Atractivo Atrae Turistas",
+          desc: isEn 
+            ? "Every structure raises your Appeal. Higher appeal brings more visitors, and visitors automatically pay you Tikolones every 10s!" 
+            : "Cada estructura sube tu Atractivo. Más atractivo trae más personas, y cada visitante te paga Tikolones automáticamente cada 10s."
+        },
+        {
+          emoji: '🛏️',
+          bg: '#dbeafe',
+          title: isEn ? "3. Keep Up with Demand" : "3. Equilibra la Demanda (Medidores)",
+          desc: isEn 
+            ? "Watch the 3 top meters: Lodging (cabins), Food (sodas/restaurant) and Fun (surf/sports). If any meter fills up to 100%, visitors leave!" 
+            : "Monitorea los 3 medidores arriba: Hospedaje (cabañas), Alimentación (sodas) y Diversión (surf). ¡Si alguno se llena, los visitantes se van!"
+        },
+        {
+          emoji: '🌴',
+          bg: '#dcfce7',
+          title: isEn ? "4. Clean & Eco-Friendly Beach" : "4. Playa Limpia y Ecológica",
+          desc: isEn 
+            ? "Commercial spots generate trash. High pollution ruins appeal! Plant Palm Trees and place Recycling Points to eliminate trash." 
+            : "Los comercios generan basura. Si la contaminación sube, el atractivo baja. Planta Palmeras y Puntos de Reciclaje para limpiarla."
+        },
+        {
+          emoji: '🏆',
+          bg: '#ede9fe',
+          title: isEn ? "5. Earn Real XP for your Passport!" : "5. ¡Gana XP para tu Pasaporte Digital!",
+          desc: isEn 
+            ? "Turn beach success into real explorer progress! Earn XP every 50 visitors, plus huge bonus bags (+25 to +200 XP) at 10, 25, 50 & 100 visitors!" 
+            : "¡Convierte tus visitantes en progreso real! Gana XP cada 50 visitantes, más bolsas de hasta +200 XP al alcanzar 10, 25, 50 y 100 visitantes."
+        }
       ];
-      openModal(head(t('help'), true) + rules.map(([k, ic2, bg, col]) => `<div class="rule"><div class="bx" style="background:${bg};color:${col}">${ico(ic2)}</div><div>${t(k)}</div></div>`).join('') +
-        `<div class="sub">${t('language')}</div><div class="seg"><button data-l="es" class="${lang === 'es' ? 'on' : ''}">Español</button><button data-l="en" class="${lang === 'en' ? 'on' : ''}">English</button></div>
-         <div class="btns" style="margin-top:14px"><button class="btn sec" id="bDemo">${t('demo')}</button><button class="btn sec" id="bReset" style="color:#b91c1c">${t('reset')}</button></div>`);
+
+      const stepsHtml = steps.map(s => `
+        <div class="guide-step">
+          <div class="step-badge" style="background:${s.bg}">${s.emoji}</div>
+          <div>
+            <h4>${s.title}</h4>
+            <p>${s.desc}</p>
+          </div>
+        </div>
+      `).join('');
+
+      openModal(
+        head(isEn ? "How to Play Tiko Beach" : "Instructivo: ¿Cómo Jugar Tiko Playa?", true) +
+        stepsHtml +
+        `<div class="sub">${t('language')}</div>
+         <div class="seg">
+           <button data-l="es" class="${lang === 'es' ? 'on' : ''}">Español 🇨🇷</button>
+           <button data-l="en" class="${lang === 'en' ? 'on' : ''}">English 🇺🇸</button>
+         </div>
+         <div class="btns" style="margin-top:14px">
+           <button class="btn" id="bDemo">${ico('spark')} ${isEn ? "Load Demo Beach" : "Ver Playa de Ejemplo"}</button>
+           <button class="btn sec" id="bReset" style="color:#b91c1c">${t('reset')}</button>
+         </div>`
+      );
 
       const m = $('#modal');
       if (!m) return;
@@ -1665,12 +1730,13 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
           stateRef.current.items = [];
           stateRef.current.tik = 500;
           stateRef.current.visitors = 0;
-          stateRef.current.name = 'Playa Tica';
+          stateRef.current.name = 'Playa Tikolones';
           walkers.length = 0;
           rebuild();
           syncDb();
           refresh();
           closeModal();
+          showToast(isEn ? 'Beach reset.' : 'Playa reiniciada de cero.');
         };
       }
     };
@@ -1786,6 +1852,17 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
       rebuild();
       refresh();
       setIsLoaded(true);
+
+      // Auto-abrir instructivo interactivo la primera vez si la playa es nueva
+      try {
+        const guideKey = 'tiko_playa_guide_v2_seen';
+        if (!localStorage.getItem(guideKey) && stateRef.current.items.length === 0) {
+          setTimeout(() => {
+            openHelp();
+            localStorage.setItem(guideKey, '1');
+          }, 800);
+        }
+      } catch (e) {}
     };
 
     // Keyboard Shortcuts
@@ -2553,6 +2630,39 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
           width: 34px;
           height: 34px;
           box-shadow: 0 2px 0 var(--line);
+        }
+        .guide-step {
+          background: #fff;
+          border: 1.5px solid #ecd9b0;
+          border-radius: 14px;
+          padding: 10px 12px;
+          margin-bottom: 8px;
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          box-shadow: 0 2px 4px rgba(8, 45, 35, .04);
+        }
+        .guide-step .step-badge {
+          width: 34px;
+          height: 34px;
+          border-radius: 11px;
+          display: grid;
+          place-items: center;
+          flex: none;
+          font-size: 16px;
+          box-shadow: 0 2px 0 rgba(0,0,0,.08);
+        }
+        .guide-step h4 {
+          margin: 0 0 2px;
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+        .guide-step p {
+          margin: 0;
+          font-size: 12px;
+          line-height: 1.35;
+          color: var(--ink2);
         }
         .rule {
           display: flex;

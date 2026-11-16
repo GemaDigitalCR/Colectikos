@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Hero from '../../components/Hero';
 import UpcomingRideWidget from '../../components/UpcomingRideWidget';
+import TikoPlayaMissionWidget from '../../components/TikoPlayaMissionWidget';
 import CategoryFilter from '../../components/CategoryFilter';
 import ProvinceFilter from '../../components/ProvinceFilter';
 import PlaceCard from '../../components/PlaceCard';
@@ -160,6 +161,8 @@ export default function Home() {
         />
 
         <UpcomingRideWidget />
+
+        <TikoPlayaMissionWidget />
 
         <div id="seccion-logros" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 md:mt-4 mb-4 scroll-mt-32">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
