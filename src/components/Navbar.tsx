@@ -75,6 +75,11 @@ export default function Navbar({ dict, dictLevels }: { dict: any; dictLevels?: a
 
   const { titulo: globalTitle } = calcularNivel(porcentajeGlobal, userGender.toUpperCase(), dictLevels);
 
+  // No renderizar la barra de navegación global en Tiko Playa (juego arcade a pantalla completa)
+  if (pathname?.includes('/community/playa')) {
+    return null;
+  }
+
   const handleLanguageChange = (targetLocale: string) => {
     const currentPath = pathname.replace(/^\/en/, '') || '/';
 

@@ -1371,25 +1371,27 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
       if (!hudEl) return;
       hudEl.innerHTML = `
       <div class="row">
-        <a class="ib" href="/${lang}/community" aria-label="${t('back')}">${ico('back')}</a>
+        <a class="ib" href="/${lang}/community" aria-label="${t('back')}" title="${t('back')}">${ico('back')}</a>
         <button class="name" id="bName" aria-label="${t('rename')}"><img src="${SRC('otico')}" alt=""><span><small>${t('tiko')}</small><b id="vName">${esc(stateRef.current.name)}</b></span>${ico('pencil')}</button>
         <button class="ib" id="bLang" aria-label="${lang === 'es' ? 'Cambiar a Inglés' : 'Switch to Spanish'}" style="font-size:12px;font-weight:700;color:var(--ink)">${lang === 'es' ? 'ES' : 'EN'}</button>
         <button class="ib" id="bHelp" aria-label="${t('help')}">${ico('help')}</button>
         <button class="ib" id="bSound" aria-label="${t('soundOn')}"></button>
       </div>
-      <button class="stats" id="bStats" aria-label="${t('report')}">
-        <div class="st coin">
-          <div class="ring">
-            <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="none" stroke="#f3d48a" stroke-width="3"/><circle id="ringp" class="pg" cx="16" cy="16" r="13" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-dasharray="81.7" stroke-dashoffset="81.7"/></svg>
-            <svg viewBox="0 0 24 24" style="inset:6px;width:20px;height:20px"><circle cx="12" cy="12.6" r="9.6" fill="#b45309"/><circle cx="12" cy="11.4" r="9.6" fill="#fbbf24"/><path d="M8.8 8.7h6.4M12 8.7v6.2" stroke="#92400e" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+      <div class="dash-deck" id="dashDeck">
+        <button class="stats" id="bStats" aria-label="${t('report')}">
+          <div class="st coin">
+            <div class="ring">
+              <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="none" stroke="#f3d48a" stroke-width="3"/><circle id="ringp" class="pg" cx="16" cy="16" r="13" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-dasharray="81.7" stroke-dashoffset="81.7"/></svg>
+              <svg viewBox="0 0 24 24" style="inset:5px;width:18px;height:18px"><circle cx="12" cy="12.6" r="9.6" fill="#b45309"/><circle cx="12" cy="11.4" r="9.6" fill="#fbbf24"/><path d="M8.8 8.7h6.4M12 8.7v6.2" stroke="#92400e" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+            </div>
+            <div class="coin-meta"><div class="n" id="vTik">0</div><div class="s" id="vInc"></div></div>
           </div>
-          <div><div class="n" id="vTik">0</div><div class="s" id="vInc"></div></div>
-        </div>
-        <div class="st"><div class="v">${fico('person', '#059669')}<span id="vVis">0</span></div><div class="l">${t('vis')}</div></div>
-        <div class="st"><div class="v">${fico('spark', '#db2777')}<span id="vAtt">0</span></div><div class="l">${t('att')}</div></div>
-        <div class="st"><div class="v" id="polV">${fico('cloud', '#16a34a')}<span id="vPol">0</span></div><div class="l">${t('pol')}</div></div>
-      </button>
-      <div class="meters">${['lodging', 'food', 'fun'].map(c => `<div class="m" id="m_${c}" title="${t(c)}">${ico(CAT[c as keyof typeof CAT].ic, 'color:' + CAT[c as keyof typeof CAT].col)}<div class="bar"><i style="background:${CAT[c as keyof typeof CAT].col}"></i></div><span></span></div>`).join('')}</div>
+          <div class="st"><div class="v">${fico('person', '#059669')}<span id="vVis">0</span></div><div class="l">${t('vis')}</div></div>
+          <div class="st"><div class="v">${fico('spark', '#db2777')}<span id="vAtt">0</span></div><div class="l">${t('att')}</div></div>
+          <div class="st"><div class="v" id="polV">${fico('cloud', '#16a34a')}<span id="vPol">0</span></div><div class="l">${t('pol')}</div></div>
+        </button>
+        <div class="dash-meters">${['lodging', 'food', 'fun'].map(c => `<div class="m" id="m_${c}" title="${t(c)}">${ico(CAT[c as keyof typeof CAT].ic, 'color:' + CAT[c as keyof typeof CAT].col)}<div class="bar"><i style="background:${CAT[c as keyof typeof CAT].col}"></i></div><span></span></div>`).join('')}</div>
+      </div>
       <div id="toasts" aria-live="polite"></div>`;
 
       const mapctlEl = $('#mapctl');
@@ -1844,7 +1846,7 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
   }, []);
 
   return (
-    <div ref={containerRef} className="tiko-playa-v2 fixed inset-0 overflow-hidden select-none bg-[#0f4f2c]">
+    <div ref={containerRef} className="tiko-playa-v2 fixed inset-0 z-50 overflow-hidden select-none bg-[#0f4f2c] h-[100dvh] max-h-[100dvh]">
       <style jsx global>{`
         :root {
           --ink: #3a2817;
@@ -1885,33 +1887,34 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
           height: 18px;
           flex: none;
         }
-        /* Top HUD */
+        /* Top HUD - Compact, Ergonomic, High-Performance Mobile Deck */
         #hud {
           position: absolute;
           left: 0;
           right: 0;
           top: 0;
           margin: 0 auto;
-          max-width: 560px;
-          padding: calc(8px + var(--sat)) 10px 0;
+          max-width: 520px;
+          padding: calc(6px + var(--sat)) 8px 0;
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 5px;
           pointer-events: none;
-          z-index: 5;
+          z-index: 25;
         }
         #hud > * {
           pointer-events: auto;
         }
         .row {
           display: flex;
-          gap: 6px;
+          gap: 5px;
           align-items: center;
+          width: 100%;
         }
         .ib {
-          width: 40px;
-          height: 40px;
-          border-radius: 14px;
+          width: 36px;
+          height: 36px;
+          border-radius: 12px;
           border: 0;
           background: #fff;
           display: grid;
@@ -1923,31 +1926,32 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
           transition: transform .08s;
         }
         .ib:active {
-          transform: translateY(2px);
-          box-shadow: 0 0 0 #dccaa4, 0 2px 6px rgba(8, 45, 35, .2);
+          transform: translateY(1px);
+          box-shadow: 0 1px 0 #dccaa4, 0 2px 4px rgba(8, 45, 35, .2);
         }
         .ib svg {
-          width: 20px;
-          height: 20px;
+          width: 18px;
+          height: 18px;
         }
         .name {
           flex: 1;
           min-width: 0;
-          height: 40px;
-          border-radius: 14px;
+          height: 36px;
+          border-radius: 12px;
           border: 0;
           background: #fff;
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 0 10px 0 4px;
+          gap: 6px;
+          padding: 0 8px 0 4px;
           box-shadow: var(--lift);
           text-align: left;
+          overflow: hidden;
         }
         .name img {
-          width: 32px;
-          height: 32px;
-          border-radius: 10px;
+          width: 28px;
+          height: 28px;
+          border-radius: 9px;
           background: #d1fae5;
           object-fit: cover;
           flex: none;
@@ -1955,43 +1959,60 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
         .name span {
           min-width: 0;
           flex: 1;
+          overflow: hidden;
         }
         .name small {
           display: block;
-          font-size: 9px;
+          font-size: 8px;
           font-weight: 700;
-          letter-spacing: .13em;
+          letter-spacing: .1em;
           color: var(--ambd);
-          line-height: 1.1;
+          line-height: 1;
+          text-transform: uppercase;
         }
         .name b {
           display: block;
-          font-size: 15px;
-          font-weight: 600;
+          font-size: 13px;
+          font-weight: 700;
           line-height: 1.15;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          color: var(--ink);
         }
         .name svg {
-          width: 14px;
-          height: 14px;
+          width: 13px;
+          height: 13px;
           color: var(--ink2);
+          flex: none;
         }
-        .stats {
-          display: grid;
-          grid-template-columns: 1.5fr 1fr 1fr 1fr;
+
+        /* Unified Dashboard Deck (Vital Stats + Integrated Demand Bars) */
+        .dash-deck {
           width: 100%;
-          padding: 0;
-          border: 0;
           background: #fff;
           border-radius: 16px;
           box-shadow: var(--lift);
+          border: 1.5px solid #ecd9b0;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+        .stats {
+          display: grid;
+          grid-template-columns: 1.35fr 1fr 1fr 1fr;
+          width: 100%;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          border-radius: 0;
+          box-shadow: none;
           overflow: hidden;
           text-align: left;
+          cursor: pointer;
         }
         .st {
-          padding: 6px 2px 5px;
+          padding: 5px 3px 4px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -2004,59 +2025,67 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
         .st .v {
           display: flex;
           align-items: center;
-          gap: 4px;
-          font-size: 16px;
-          font-weight: 600;
+          gap: 3.5px;
+          font-size: 14.5px;
+          font-weight: 700;
           line-height: 1.15;
+          color: var(--ink);
         }
         .st .v svg {
-          width: 15px;
-          height: 15px;
+          width: 14px;
+          height: 14px;
         }
         .st .l {
-          font-size: 8.5px;
-          font-weight: 600;
-          letter-spacing: .07em;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: .05em;
           text-transform: uppercase;
           color: var(--ink2);
           max-width: 100%;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          padding: 0 3px;
+          padding: 0 2px;
+          line-height: 1.1;
+          margin-top: 1px;
         }
         .st.coin {
-          background: linear-gradient(180deg, #fff6dc, #ffe7a8);
+          background: linear-gradient(180deg, #fff9e6, #ffecb8);
           flex-direction: row;
-          gap: 7px;
+          gap: 6px;
           justify-content: flex-start;
-          padding-left: 8px;
+          padding-left: 7px;
         }
         .ring {
           position: relative;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           flex: none;
         }
         .ring svg {
           position: absolute;
           inset: 0;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
         }
         .ring .pg {
           transform: rotate(-90deg);
           transform-origin: 50% 50%;
         }
+        .coin-meta {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
         .coin .n {
-          font-size: 18px;
-          font-weight: 700;
+          font-size: 15.5px;
+          font-weight: 800;
           line-height: 1;
           color: #7c3d06;
         }
         .coin .s {
-          font-size: 10px;
-          font-weight: 600;
+          font-size: 9px;
+          font-weight: 700;
           color: #a15c0e;
           line-height: 1.2;
           white-space: nowrap;
@@ -2067,46 +2096,63 @@ export default function TikoPlayaPage(props: { params: Promise<{ lang: string }>
         @keyframes bump {
           40% { transform: scale(1.22); }
         }
-        .meters {
+
+        /* Integrated Demand Meters Sub-deck */
+        .dash-meters {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 6px;
+          background: #faf6ed;
+          border-top: 1px solid #f2e3c7;
         }
         .m {
-          background: rgba(255, 255, 255, .94);
-          border-radius: 11px;
-          padding: 4px 7px;
+          background: #fffdf9;
+          padding: 4px 6px;
           display: flex;
           align-items: center;
-          gap: 5px;
-          box-shadow: 0 3px 10px rgba(8, 45, 35, .2);
-          font-size: 11px;
-          font-weight: 600;
+          gap: 4px;
+          font-size: 10px;
+          font-weight: 700;
           min-width: 0;
+          transition: background .2s;
+        }
+        .m + .m {
+          border-left: 1px solid #f2e3c7;
         }
         .m svg {
-          width: 14px;
-          height: 14px;
+          width: 12px;
+          height: 12px;
+          flex: none;
         }
         .m .bar {
           flex: 1;
-          height: 6px;
-          border-radius: 9px;
-          background: #efe4cc;
+          height: 5px;
+          border-radius: 6px;
+          background: #e8dcc4;
           overflow: hidden;
-          min-width: 14px;
+          min-width: 16px;
         }
         .m .bar i {
           display: block;
           height: 100%;
-          border-radius: 9px;
+          border-radius: 6px;
           width: 0;
-          transition: width .45s;
+          transition: width .45s ease-out;
+        }
+        .m span {
+          font-size: 9.5px;
+          font-weight: 700;
+          color: var(--ink);
+          white-space: nowrap;
+          letter-spacing: -0.02em;
+          flex: none;
         }
         .m.over {
           background: #fee2e2;
           color: #991b1b;
           animation: wig .5s 2;
+        }
+        .m.over span {
+          color: #b91c1c;
         }
         @keyframes wig {
           25% { transform: translateX(-2px); }
