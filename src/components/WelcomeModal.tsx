@@ -293,6 +293,37 @@ export default function WelcomeModal() {
           )}
         </div>
 
+        {/* Recordatorio temporal de Rifa del Pasaporte Digital (Vigente hasta el 26 de noviembre de 2026) */}
+        {new Date() <= new Date('2026-11-26T23:59:59-06:00') && (
+          <div className="mt-5 bg-gradient-to-r from-amber-50 via-amber-100/80 to-emerald-50 border-2 border-amber-300 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl leading-none shrink-0 mt-0.5">🎁</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-bold text-stone-900 leading-snug">
+                  {isEnglish
+                    ? 'Share your Digital Passport on your social media stories, tag @Colectikos, and enter the raffle for 3 awesome prizes!'
+                    : 'Compartí tu Pasaporte Digital en tus historias de redes sociales, etiquetá a @Colectikos y quedá participando en una rifa de 3 premios buenísimos.'}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2.5 py-0.5 rounded-full">
+                    ⏰ {isEnglish ? 'Deadline: Nov 26' : 'Fecha límite: 26 de noviembre'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOpen(false);
+                      router.push(`/${isEnglish ? 'en' : 'es'}/profile?export=passport`);
+                    }}
+                    className="text-xs font-black text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
+                  >
+                    {isEnglish ? '🛂 Download Passport →' : '🛂 Descargar Pasaporte →'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
           <button 
             onClick={handleExplore}
