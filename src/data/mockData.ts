@@ -664,6 +664,17 @@ export const mockLugares: Lugar[] = [
     "imagenUrl": "/images/Postales_Generales/Playas/Postales-playas-junquillal.png"
   },
   {
+    "id": "105",
+    "nombre": "Playa Penca",
+    "nombre_en": "Penca Beach",
+    "categoria": "PLAYA",
+    "descripcion": "Bahía escondida de arena clara y aguas turquesas sumamente tranquilas.",
+    "descripcion_en": "Hidden bay with light sand and remarkably calm turquoise waters.",
+    "ubicacion": "Carrillo, Guanacaste",
+    "ubicacion_en": "Carrillo, Guanacaste",
+    "imagenUrl": "/images/Postales_Generales/Playas/Postales-playas-penca.png"
+  },
+  {
     "id": "57",
     "nombre": "Catarata La Fortuna",
     "nombre_en": "La Fortuna Waterfall",
@@ -873,6 +884,17 @@ export const mockLugares: Lugar[] = [
     "imagenUrl": "/images/Postales_Generales/Rios y Cataratas/Postales-rios-y-cataratas-rio-naranjo.png"
   },
   {
+    "id": "106",
+    "nombre": "Catarata Los Chorros",
+    "nombre_en": "Los Chorros Waterfall",
+    "categoria": "RIOS_Y_CATARATAS",
+    "descripcion": "Mágicas caídas de agua que brotan de una pared rocosa cubierta de musgo y helechos.",
+    "descripcion_en": "Magical waterfalls springing from a rocky wall covered in moss and ferns.",
+    "ubicacion": "Grecia, Alajuela",
+    "ubicacion_en": "Grecia, Alajuela",
+    "imagenUrl": "/images/Postales_Generales/Rios y Cataratas/Postales-rios-y-cataratas-catarata-los-chorros.png"
+  },
+  {
     "id": "76",
     "nombre": "Laguna Hule",
     "nombre_en": "Hule Lagoon",
@@ -1080,6 +1102,17 @@ export const mockLugares: Lugar[] = [
     "ubicacion": "San José Centro, San José",
     "ubicacion_en": "Downtown, San Jose",
     "imagenUrl": "/images/Postales_Generales/Cultura/Postales-cultura-catedral-metropolitana.png"
+  },
+  {
+    "id": "104",
+    "nombre": "Museo Histórico Juan Santamaría",
+    "nombre_en": "Juan Santamaría Historical Museum",
+    "categoria": "CIUDAD_Y_CULTURA",
+    "descripcion": "Emblemático recinto histórico que preserva la memoria de la Campaña Nacional de 1856.",
+    "descripcion_en": "Iconic historical museum preserving the memory of the 1856 National Campaign.",
+    "ubicacion": "Alajuela Centro, Alajuela",
+    "ubicacion_en": "Downtown Alajuela, Alajuela",
+    "imagenUrl": "/images/Postales_Generales/Cultura/Postales-cultura-museo-historico-juan-santamaria.png"
   },
   {
     "id": "95",
