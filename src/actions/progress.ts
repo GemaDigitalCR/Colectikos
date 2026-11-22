@@ -354,6 +354,20 @@ export async function getPublicReviews(filters?: {
       where: whereClause,
     });
 
+    const isRatingSort = sortBy === 'rating';
+
+    const orderByClause: any =
+      sortBy === 'popular'
+        ? [
+            { likes: { _count: 'desc' } },
+            { fechaCompletado: 'desc' },
+            { id: 'desc' },
+          ]
+        : [
+            { fechaCompletado: 'desc' },
+            { id: 'desc' },
+          ];
+
     const records = await prisma.userProgress.findMany({
       where: whereClause,
       include: {
@@ -384,11 +398,8 @@ export async function getPublicReviews(filters?: {
           },
         } : {}),
       },
-      orderBy: {
-        fechaCompletado: 'desc',
-      },
-      take: limit,
-      skip: offset,
+      orderBy: orderByClause,
+      ...(isRatingSort ? {} : { take: limit, skip: offset }),
     });
 
     // Fetch ratings for these reviews
@@ -439,8 +450,13 @@ export async function getPublicReviews(filters?: {
       hasLiked: Boolean(r.likes && r.likes.length > 0),
     }));
 
-    if (sortBy === 'rating') {
-      items.sort((a, b) => (b.ratingScore || 0) - (a.ratingScore || 0));
+    if (isRatingSort) {
+      items.sort(
+        (a, b) =>
+          (b.ratingScore || 0) - (a.ratingScore || 0) ||
+          (b.likesCount || 0) - (a.likesCount || 0)
+      );
+      items = items.slice(offset, offset + limit);
     } else if (sortBy === 'popular') {
       items.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
     }
