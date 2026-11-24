@@ -294,17 +294,31 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
           
           progressRes.checkins.forEach((item: any) => {
             dbCompleted.push(item.lugarId);
+            // Si el catálogo actual usa IDs de fallback o un ID distinto pero coincide por nombre, mapear ambos
+            const itemNombre = item.lugar?.nombre?.toLowerCase().trim();
+            const matchedPlace = dbLugares.find(
+              l => l.id === item.lugarId || (itemNombre && l.nombre.toLowerCase().trim() === itemNombre)
+            );
+            if (matchedPlace && !dbCompleted.includes(matchedPlace.id)) {
+              dbCompleted.push(matchedPlace.id);
+            }
+
             if (item.notas || item.fechaCompletado || item.esPublico !== undefined) {
-              dbDetails[item.lugarId] = {
+              const detailObj = {
                 date: item.fechaCompletado ? new Date(item.fechaCompletado).toISOString().split('T')[0] : '',
                 note: item.notas || '',
                 isPublic: Boolean(item.esPublico)
               };
+              dbDetails[item.lugarId] = detailObj;
+              if (matchedPlace) {
+                dbDetails[matchedPlace.id] = detailObj;
+              }
             }
             if (item.modo) {
               dbModes[item.lugarId] = item.modo;
-              const place = dbLugares.find(l => l.id === item.lugarId);
+              const place = matchedPlace || dbLugares.find(l => l.id === item.lugarId);
               if (place) {
+                dbModes[place.id] = item.modo;
                 dbModes[place.nombre] = item.modo;
                 const cleanNombre = place.nombre.toLowerCase().trim();
                 const mockMatch = mockLugares.find(m => m.nombre.toLowerCase().trim() === cleanNombre);

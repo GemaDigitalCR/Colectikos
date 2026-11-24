@@ -1,9 +1,10 @@
 "use server";
+import { unstable_cache } from 'next/cache';
 import prisma from '../lib/prisma';
 import { mockLugares } from '../data/mockData';
 
-export async function getDbLugares() {
-  try {
+const fetchCachedLugares = unstable_cache(
+  async () => {
     const lugares = await prisma.lugar.findMany({
       where: { isVisible: true },
       select: {
@@ -20,8 +21,7 @@ export async function getDbLugares() {
     });
 
     if (!lugares || lugares.length === 0) {
-      console.warn("No places found in DB, using mockLugares fallback.");
-      return mockLugares;
+      throw new Error("Empty lugares result from DB - do not cache fallback");
     }
 
     const orderMap = new Map<string, number>();
@@ -44,6 +44,14 @@ export async function getDbLugares() {
       descripcion_en: l.descripcion_en || undefined,
       ubicacion_en: undefined,
     }));
+  },
+  ['db-lugares-v2'],
+  { revalidate: 3600, tags: ['lugares'] }
+);
+
+export async function getDbLugares() {
+  try {
+    return await fetchCachedLugares();
   } catch (error) {
     console.error("Error fetching places from DB, using mockLugares fallback:", error);
     return mockLugares;

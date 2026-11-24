@@ -7,7 +7,12 @@ const prismaClientSingleton = () => {
   if (connectionString.includes('sslmode=require') && !connectionString.includes('uselibpqcompat=')) {
     connectionString = connectionString.replace('sslmode=require', 'uselibpqcompat=true&sslmode=require')
   }
-  const pool = new Pool({ connectionString })
+  const pool = new Pool({
+    connectionString,
+    max: 3,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 10000,
+  })
   const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }

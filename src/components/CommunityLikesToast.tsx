@@ -69,8 +69,13 @@ export default function CommunityLikesToast() {
       }
     };
 
+    // Evitar consultar la BD en cada cambio de ruta dentro de la misma sesión
+    const checkedThisSession = sessionStorage.getItem('colectikos_likes_checked_session');
+    if (checkedThisSession) return;
+    sessionStorage.setItem('colectikos_likes_checked_session', 'true');
+
     checkLikes();
-  }, [clerkLoaded, user, pathname]);
+  }, [clerkLoaded, user]);
 
   const handleDismiss = () => {
     setIsVisible(false);

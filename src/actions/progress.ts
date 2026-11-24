@@ -157,7 +157,14 @@ export async function getUserProgress(localUsername?: string, fallbackClerkId?: 
     if (!user) return { success: false, error: 'User not found' };
     
     const checkins = await prisma.userProgress.findMany({
-      where: { userId: user.id }
+      where: { userId: user.id },
+      include: {
+        lugar: {
+          select: {
+            nombre: true
+          }
+        }
+      }
     });
     
     const userRatings = await prisma.rating.findMany({
